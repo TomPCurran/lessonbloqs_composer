@@ -1,0 +1,226 @@
+/* ========================
+dark-theme.css
+======================== */
+
+.dark-theme {
+--background: 235 11% 12%;      / #202124 /
+--surface: 235 11% 18%;         / #303134 /
+--foreground: 0 0% 93%;         / #ededed /
+--muted: 0 0% 69%;              / #b0b0b0 /
+--border: 0 0% 42%;             / #6b6b6b /
+--accent: 220 90% 66%;          / blue-400 /
+--success: 142 62% 58%;         / green-500 /
+--warning: 42 100% 66%;         / yellow-400 /
+--error: 4 90% 68%;             / red-400 */
+}
+
+body {
+margin: 0;
+background: hsl(var(--background));
+color: hsl(var(--foreground));
+font-family: "Inter", sans-serif;
+font-weight: 500;
+-webkit-font-smoothing: antialiased;
+-moz-osx-font-smoothing: grayscale;
+}
+
+/* CLERK Styles Overrides */
+.cl-avatarBox {
+width: 36px;
+height: 36px;
+border: 2px solid hsl(var(--accent));
+border-radius: 50%;
+}
+
+/* Lexical Editor - Dark Theme */
+.editor-container {
+background: hsl(var(--surface));
+border: 1px solid hsl(var(--border));
+border-radius: 0.5rem;
+color: hsl(var(--foreground));
+line-height: 1.5;
+font-weight: 400;
+}
+
+.toolbar {
+display: flex;
+gap: 0.5rem;
+background: hsl(var(--surface));
+padding: 0.5rem;
+border-radius: 0.5rem 0.5rem 0 0;
+border: 1px solid hsl(var(--border));
+border-bottom: none;
+}
+
+.toolbar button.toolbar-item {
+background: transparent;
+color: hsl(var(--foreground));
+border: none;
+border-radius: 0.375rem;
+padding: 0.5rem;
+cursor: pointer;
+transition: background-color 0.2s;
+}
+
+.toolbar button.toolbar-item:hover:not([disabled]) {
+background: hsl(var(--foreground) / 0.1);
+}
+
+.toolbar button.toolbar-item:disabled {
+opacity: 0.5;
+cursor: not-allowed;
+}
+
+.toolbar .divider {
+width: 1px;
+background: hsl(var(--border));
+margin: 0 0.5rem;
+opacity: 0.6;
+}
+
+.editor-inner {
+background: hsl(var(--surface));
+border: 1px solid hsl(var(--border));
+border-radius: 0 0 0.5rem 0.5rem;
+position: relative;
+}
+
+.editor-input {
+width: 100%;
+min-height: 400px;
+padding: 2.5rem;
+font-size: 1rem;
+color: hsl(var(--foreground));
+caret-color: hsl(var(--accent));
+background: transparent;
+border: none;
+outline: none;
+resize: none;
+}
+
+.editor-placeholder {
+color: hsl(var(--muted));
+position: absolute;
+top: 2.5rem;
+left: 2.5rem;
+font-size: 1rem;
+user-select: none;
+pointer-events: none;
+}
+
+/* Inline code */
+.editor-text-code {
+background: hsl(var(--border));
+padding: 0.125rem 0.5rem;
+border-radius: 0.25rem;
+font-family: Menlo, Consolas, Monaco, monospace;
+font-size: 0.875rem;
+color: hsl(var(--foreground));
+}
+
+/* Code Block */
+.editor-code {
+background: hsl(var(--surface));
+color: hsl(var(--foreground));
+font-family: Menlo, Consolas, Monaco, monospace;
+padding: 1rem;
+margin: 0.5rem 0;
+border-radius: 0.375rem;
+border: 1px solid hsl(var(--border));
+overflow-x: auto;
+position: relative;
+}
+
+.editor-code:before {
+content: attr(data-gutter);
+position: absolute;
+top: 0;
+left: 0;
+bottom: 0;
+width: 3rem;
+background: hsl(var(--border));
+color: hsl(var(--muted));
+padding: 0.75rem 0.5rem;
+text-align: right;
+font-size: 0.75rem;
+}
+
+.editor-code:after {
+content: attr(data-highlight-language);
+position: absolute;
+top: 0.5rem;
+right: 0.5rem;
+background: hsl(var(--border));
+color: hsl(var(--muted));
+padding: 0.25rem 0.5rem;
+font-size: 0.75rem;
+border-radius: 0.25rem;
+}
+
+.tree-view-output {
+background: hsl(var(--border));
+color: hsl(var(--foreground));
+padding: 0.5rem;
+font-size: 0.75rem;
+border-radius: 0 0 0.5rem 0.5rem;
+border: 1px solid hsl(var(--border));
+border-top: none;
+max-height: 250px;
+overflow: auto;
+}
+
+/* Syntax Highlighting */
+.editor-tokenComment { color: hsl(var(--muted)); }
+.editor-tokenPunctuation { color: hsl(var(--foreground)); }
+.editor-tokenProperty { color: hsl(var(--accent)); }
+.editor-tokenSelector { color: hsl(var(--success)); }
+.editor-tokenOperator { color: hsl(var(--accent)); }
+.editor-tokenAttr { color: hsl(var(--accent)); }
+.editor-tokenVariable { color: hsl(var(--warning)); }
+.editor-tokenFunction { color: hsl(var(--accent)); }
+
+/* Scrollbars */
+pre::-webkit-scrollbar { width: 8px; height: 8px; }
+pre::-webkit-scrollbar-thumb { background: hsl(var(--border)); border-radius: 4px; }
+pre::-webkit-scrollbar-thumb:hover { background: hsl(var(--muted)); }
+
+/* Timetravel Panel */
+.debug-timetravel-panel {
+display: flex;
+overflow: hidden;
+border: 1px solid hsl(var(--border));
+border-radius: 0.5rem;
+background: hsl(var(--surface));
+padding: 0.5rem;
+}
+
+.debug-timetravel-panel-button {
+flex: 1;
+background: transparent;
+border: none;
+color: hsl(var(--foreground));
+font-size: 0.875rem;
+cursor: pointer;
+transition: background-color 0.2s;
+}
+
+.debug-timetravel-panel-button:hover {
+background: hsl(var(--border));
+}
+
+.debug-timetravel-button {
+position: absolute;
+top: 1rem;
+right: 1rem;
+background: transparent;
+border: none;
+padding: 0.5rem;
+color: hsl(var(--foreground));
+border-radius: 0.375rem;
+transition: background-color 0.2s;
+}
+
+.debug-timetravel-button:hover {
+background: hsl(var(--border));
+}
+
