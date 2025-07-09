@@ -264,9 +264,15 @@ const ShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose }) => {
                     </div>
                     <UserTypeSelector
                       userType={permission}
-                      setUserType={(newPermission: UserType) =>
-                        updateUserPermission(user.id, newPermission)
-                      }
+                      setUserType={(
+                        newPermission: UserType | ((prev: UserType) => UserType)
+                      ) => {
+                        const finalPermission =
+                          typeof newPermission === "function"
+                            ? newPermission(permission)
+                            : newPermission;
+                        updateUserPermission(user.id, finalPermission);
+                      }}
                       onClickHandler={() => {}}
                     />
                     <Button
