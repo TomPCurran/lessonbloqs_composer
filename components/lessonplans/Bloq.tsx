@@ -8,37 +8,31 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { BloqEditor } from "./editor/BloqEditor";
 import { cn } from "@/lib/utils";
+import { useOthers } from "@liveblocks/react";
+import { useStatus } from "@liveblocks/react";
 
 interface BloqProps {
   id: string;
   title: string;
-  onUpdate: (updates: { title?: string; content?: string }) => void;
+  onUpdate: (updates: { title?: string }) => void;
   onRemove: () => void;
 }
 
 export default function Bloq({ id, title, onUpdate, onRemove }: BloqProps) {
   const [localTitle, setLocalTitle] = useState(title);
   const [isFocused, setIsFocused] = useState(false);
+  const others = useOthers();
+  const status = useStatus();
 
-  const presentUsers = [
-    {
-      connectionId: "1",
-      presence: { user: { name: "Alice", color: "#6B4CE6" } },
-    },
-    {
-      connectionId: "2",
-      presence: { user: { name: "Bob", color: "#4A90E2" } },
-    },
-  ];
+  // Get users currently editing this bloq
+  const usersInThisBloq = others.filter(
+    (other) => other.presence?.activeBloqId === id
+  );
 
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newTitle = e.target.value;
     setLocalTitle(newTitle);
     onUpdate({ title: newTitle });
-  };
-
-  const handleContentUpdate = (updates: { content?: string }) => {
-    onUpdate(updates);
   };
 
   return (
@@ -56,23 +50,25 @@ export default function Bloq({ id, title, onUpdate, onRemove }: BloqProps) {
         }
       }}
     >
-      {presentUsers.length > 0 && (
+      {usersInThisBloq.length > 0 && (
         <div className="absolute -top-3 -right-3 flex items-center gap-1 z-10">
           <div className="flex -space-x-1">
-            {presentUsers.map((user) => (
+            {usersInThisBloq.map((user) => (
               <div
                 key={user.connectionId}
                 className="w-6 h-6 rounded-full border-2 border-card flex items-center justify-center text-white text-xs font-medium shadow-md transition-transform hover:scale-110"
-                style={{ backgroundColor: user.presence.user.color }}
-                title={user.presence.user.name}
+                style={{
+                  backgroundColor: user.presence?.user?.color || "#6B4CE6",
+                }}
+                title={user.presence?.user?.name || "Unknown"}
               >
-                {user.presence.user.name.charAt(0)}
+                {user.presence?.user?.name?.charAt(0) || "U"}
               </div>
             ))}
           </div>
           <div className="bg-primary/10 backdrop-blur-sm rounded-md px-2 py-1 text-xs text-primary font-medium flex items-center">
             <Users2 className="w-3 h-3 mr-1" />
-            {presentUsers.length}
+            {usersInThisBloq.length}
           </div>
         </div>
       )}
@@ -107,7 +103,13 @@ export default function Bloq({ id, title, onUpdate, onRemove }: BloqProps) {
               : ""
           )}
         >
-          <BloqEditor onUpdate={handleContentUpdate} isEditable />
+          {status === "connected" ? (
+            <BloqEditor bloqId={id} isEditable />
+          ) : (
+            <div className="text-center text-muted-foreground">
+              Connecting editor...
+            </div>
+          )}
         </div>
       </div>
     </Card>

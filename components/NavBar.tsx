@@ -7,160 +7,222 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Menu, X, User, LogOut, BookOpen } from "lucide-react";
+import { SignIn, SignUp, useUser, useClerk } from "@clerk/nextjs";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const user = true; // Mocked user state
+  const [isSignInOpen, setIsSignInOpen] = useState(false);
+  const [isSignUpOpen, setIsSignUpOpen] = useState(false);
+  const { isSignedIn } = useUser();
+  const { signOut } = useClerk();
 
-  const handleSignOut = () => {
-    // TODO: Implement sign out logic
-    console.log("Sign out clicked");
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+    } catch (error) {
+      console.error("Error signing out:", error);
+    }
   };
 
   return (
-    <nav
-      className={cn(
-        "fixed top-0 w-full z-50 border-b bg-background/95 backdrop-blur",
-        "border-border/50"
-      )}
-    >
-      <div className="max-w-screen-2xl mx-auto flex items-center justify-between px-4 sm:px-6 lg:px-8 h-16">
-        {/* Logo */}
-        <Link
-          href="/"
-          className="flex items-center gap-2 transition-opacity hover:opacity-80"
-        >
-          <Image
-            src="/assets/logo.svg"
-            alt="Lessonbloqs Logo"
-            width={32}
-            height={32}
-            className="h-8 w-8"
-          />
-          <span className="hidden text-lg font-semibold text-foreground sm:inline">
-            Lessonbloqs
-          </span>
-        </Link>
-
-        {/* Desktop Navigation */}
-        <div className="hidden items-center gap-4 md:flex">
-          <ThemeToggle />
-          {user ? (
-            <>
-              <Link href="/profile">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="flex items-center gap-2 text-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
-                >
-                  <User className="h-4 w-4" />
-                  <span>Profile</span>
-                </Button>
-              </Link>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleSignOut}
-                className="flex items-center gap-2 text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
-              >
-                <LogOut className="h-4 w-4" />
-                <span>Sign out</span>
-              </Button>
-              <Link href="/lessonplans">
-                <Button
-                  size="sm"
-                  className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground transition-colors"
-                >
-                  <BookOpen className="h-4 w-4" />
-                  <span>Lesson Plans</span>
-                </Button>
-              </Link>
-            </>
-          ) : (
-            <Link href="/signin">
-              <Button
-                size="sm"
-                className="bg-primary hover:bg-primary/90 text-primary-foreground transition-colors"
-              >
-                Sign In
-              </Button>
-            </Link>
-          )}
-        </div>
-
-        {/* Mobile menu button */}
-        <div className="flex items-center gap-2 md:hidden">
-          <ThemeToggle />
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="p-2 text-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
-            aria-label="Toggle mobile menu"
+    <>
+      <nav
+        className={cn(
+          "fixed top-0 w-full z-50 border-b bg-background/95 backdrop-blur",
+          "border-border/50"
+        )}
+      >
+        <div className="max-w-screen-2xl mx-auto flex items-center justify-between px-4 sm:px-6 lg:px-8 h-16">
+          {/* Logo */}
+          <Link
+            href="/"
+            className="flex items-center gap-2 transition-opacity hover:opacity-80"
           >
-            {isMobileMenuOpen ? (
-              <X className="h-5 w-5" />
-            ) : (
-              <Menu className="h-5 w-5" />
-            )}
-          </Button>
-        </div>
+            <Image
+              src="/assets/logo.svg"
+              alt="Lessonbloqs Logo"
+              width={32}
+              height={32}
+              className="h-8 w-8"
+            />
+            <span className="hidden text-lg font-semibold text-foreground sm:inline">
+              Lessonbloqs
+            </span>
+          </Link>
 
-        {/* Mobile Navigation */}
-        {isMobileMenuOpen && (
-          <div className="absolute top-full left-0 w-full border-t bg-background/95 backdrop-blur border-border/50 md:hidden">
-            <div className="space-y-1 p-2">
-              {user ? (
-                <>
-                  <Link href="/profile">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setIsMobileMenuOpen(false)}
-                      className="flex w-full items-center gap-2 justify-start text-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
-                    >
-                      <User className="h-4 w-4" />
-                      <span>Profile</span>
-                    </Button>
-                  </Link>
+          {/* Desktop Navigation */}
+          <div className="hidden items-center gap-4 md:flex">
+            <ThemeToggle />
+            {isSignedIn ? (
+              <>
+                <Link href="/profile">
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => {
-                      handleSignOut();
-                      setIsMobileMenuOpen(false);
-                    }}
-                    className="flex w-full items-center gap-2 justify-start text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
+                    className="flex items-center gap-2 text-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
                   >
-                    <LogOut className="h-4 w-4" />
-                    <span>Sign out</span>
-                  </Button>
-                  <Link href="/lessonplans">
-                    <Button
-                      size="sm"
-                      onClick={() => setIsMobileMenuOpen(false)}
-                      className="flex w-full items-center gap-2 justify-start bg-primary hover:bg-primary/90 text-primary-foreground transition-colors"
-                    >
-                      <BookOpen className="h-4 w-4" />
-                      <span>Lesson Plans</span>
-                    </Button>
-                  </Link>
-                </>
-              ) : (
-                <Link href="/signin">
-                  <Button
-                    size="sm"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className="flex w-full items-center gap-2 justify-start bg-primary hover:bg-primary/90 text-primary-foreground transition-colors"
-                  >
-                    Sign In
+                    <User className="h-4 w-4" />
+                    <span>Profile</span>
                   </Button>
                 </Link>
-              )}
-            </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleSignOut}
+                  className="flex items-center gap-2 text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
+                >
+                  <LogOut className="h-4 w-4" />
+                  <span>Sign out</span>
+                </Button>
+                <Link href="/lessonplans">
+                  <Button
+                    size="sm"
+                    className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground transition-colors"
+                  >
+                    <BookOpen className="h-4 w-4" />
+                    <span>Lesson Plans</span>
+                  </Button>
+                </Link>
+              </>
+            ) : (
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsSignInOpen(true)}
+                  className="text-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
+                >
+                  Sign In
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={() => setIsSignUpOpen(true)}
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground transition-colors"
+                >
+                  Sign Up
+                </Button>
+              </div>
+            )}
           </div>
-        )}
-      </div>
-    </nav>
+
+          {/* Mobile menu button */}
+          <div className="flex items-center gap-2 md:hidden">
+            <ThemeToggle />
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="p-2 text-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
+              aria-label="Toggle mobile menu"
+            >
+              {isMobileMenuOpen ? (
+                <X className="h-5 w-5" />
+              ) : (
+                <Menu className="h-5 w-5" />
+              )}
+            </Button>
+          </div>
+
+          {/* Mobile Navigation */}
+          {isMobileMenuOpen && (
+            <div className="absolute top-full left-0 w-full border-t bg-background/95 backdrop-blur border-border/50 md:hidden">
+              <div className="space-y-1 p-2">
+                {isSignedIn ? (
+                  <>
+                    <Link href="/profile">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className="flex w-full items-center gap-2 justify-start text-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
+                      >
+                        <User className="h-4 w-4" />
+                        <span>Profile</span>
+                      </Button>
+                    </Link>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        handleSignOut();
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className="flex w-full items-center gap-2 justify-start text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
+                    >
+                      <LogOut className="h-4 w-4" />
+                      <span>Sign out</span>
+                    </Button>
+                    <Link href="/lessonplans">
+                      <Button
+                        size="sm"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className="flex w-full items-center gap-2 justify-start bg-primary hover:bg-primary/90 text-primary-foreground transition-colors"
+                      >
+                        <BookOpen className="h-4 w-4" />
+                        <span>Lesson Plans</span>
+                      </Button>
+                    </Link>
+                  </>
+                ) : (
+                  <div className="space-y-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setIsSignInOpen(true);
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className="flex w-full items-center gap-2 justify-start text-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
+                    >
+                      Sign In
+                    </Button>
+                    <Button
+                      size="sm"
+                      onClick={() => {
+                        setIsSignUpOpen(true);
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className="flex w-full items-center gap-2 justify-start bg-primary hover:bg-primary/90 text-primary-foreground transition-colors"
+                    >
+                      Sign Up
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      </nav>
+
+      {/* Sign In Modal */}
+      <Dialog open={isSignInOpen} onOpenChange={setIsSignInOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Sign In</DialogTitle>
+          </DialogHeader>
+          <div className="flex justify-center">
+            <SignIn />
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Sign Up Modal */}
+      <Dialog open={isSignUpOpen} onOpenChange={setIsSignUpOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Sign Up</DialogTitle>
+          </DialogHeader>
+          <div className="flex justify-center">
+            <SignUp />
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }

@@ -1,68 +1,99 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { cn } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { FileText, Plus } from "lucide-react";
 import { FloatingToolbar } from "@/components/composer/FloatingToolbar";
 import BloqContainer from "@/components/lessonplans/BloqContainer";
+import { useStorage, useMutation, useStatus } from "@liveblocks/react";
+import { LiveObject } from "@liveblocks/client";
+import { v4 as uuidv4 } from "uuid";
 
 interface Bloq {
   id: string;
   title: string;
-  content: string;
   type: string;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: number;
+  updatedAt: number;
+  order: number;
+}
+
+interface BloqType {
+  title: string;
+  key: string;
 }
 
 export default function Canvas() {
   const [isHovered, setIsHovered] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [lessonTitle, setLessonTitle] = useState("Untitled Lesson Plan");
-  const [bloqs, setBloqs] = useState<Bloq[]>([]);
-  const [lastSaved, setLastSaved] = useState<Date | null>(null);
-
-  const addBloq = (bloqType: any) => {
-    const newBloq: Bloq = {
-      id: Date.now().toString(),
+  const status = useStatus();
+  const lessonPlanTitle = useStorage((root) => root.lessonPlan?.title);
+  const bloqsData = useStorage((root) => root.bloqs);
+  const updateLessonPlan = useMutation(
+    ({ storage }, updates: { title?: string; description?: string }) => {
+      const lessonPlan = storage.get("lessonPlan");
+      if (lessonPlan) {
+        lessonPlan.update({
+          ...updates,
+          updatedAt: Date.now(),
+        });
+      }
+    },
+    []
+  );
+  const addBloq = useMutation(({ storage }, bloqType: BloqType) => {
+    const bloqs = storage.get("bloqs");
+    const newBloq = new LiveObject({
+      id: uuidv4(),
       title: bloqType.title,
-      content: `Add your ${bloqType.title.toLowerCase()} content here...`,
       type: bloqType.key,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-    setBloqs((prev) => [...prev, newBloq]);
-  };
-
-  const updateBloq = (id: string, updates: Partial<Bloq>) => {
-    setBloqs((prev) =>
-      prev.map((b) =>
-        b.id === id ? { ...b, ...updates, updatedAt: new Date() } : b
-      )
-    );
-  };
-
-  const removeBloq = (id: string) => {
-    setBloqs((prev) => prev.filter((b) => b.id !== id));
-  };
-
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+      order: bloqs.length,
+    });
+    bloqs.push(newBloq);
+  }, []);
+  const updateBloq = useMutation(
+    ({ storage }, id: string, updates: Partial<Bloq>) => {
+      const bloqs = storage.get("bloqs");
+      const bloqIndex = bloqs.findIndex((bloq) => bloq.get("id") === id);
+      if (bloqIndex !== -1) {
+        const bloq = bloqs.get(bloqIndex);
+        if (bloq) {
+          bloq.update({
+            ...updates,
+            updatedAt: Date.now(),
+          });
+        }
+      }
+    },
+    []
+  );
+  const removeBloq = useMutation(({ storage }, id: string) => {
+    const bloqs = storage.get("bloqs");
+    const bloqIndex = bloqs.findIndex((bloq) => bloq.get("id") === id);
+    if (bloqIndex !== -1) {
+      bloqs.delete(bloqIndex);
+    }
+  }, []);
   const handleTitleChange = (newTitle: string) => {
-    setLessonTitle(newTitle);
+    updateLessonPlan({ title: newTitle });
   };
-
   const handleSave = async () => {
     setIsSaving(true);
     await new Promise((r) => setTimeout(r, 1000));
-    setLastSaved(new Date());
     setIsSaving(false);
   };
-
-  const wordCount = bloqs.reduce(
-    (count, b) => count + (b.content?.split(/\s+/).length || 0),
-    0
-  );
+  const lessonTitle = lessonPlanTitle || "Untitled Lesson Plan";
+  if (status !== "connected") {
+    return (
+      <div className="p-8 text-center text-muted-foreground">
+        Connecting to collaboration room...
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 space-y-6">
@@ -94,7 +125,7 @@ export default function Canvas() {
         onMouseLeave={() => setIsHovered(false)}
       >
         <div className="relative z-10 p-8 flex flex-col min-h-[650px]">
-          {bloqs.length === 0 ? (
+          {!bloqsData || bloqsData.length === 0 ? (
             <>
               <div className="absolute inset-8 opacity-5">
                 {Array.from({ length: 25 }).map((_, i) => (
@@ -134,7 +165,7 @@ export default function Canvas() {
           ) : (
             <div className="relative z-20">
               <BloqContainer
-                bloqs={bloqs}
+                bloqs={bloqsData}
                 title={lessonTitle}
                 onTitleChange={handleTitleChange}
                 onUpdate={updateBloq}
@@ -150,11 +181,6 @@ export default function Canvas() {
         <div className="flex items-center gap-4">
           <span className="font-medium">Page 1 of 1</span>
           <span className="w-1 h-1 bg-muted/50 rounded-full" />
-          <span>{wordCount} words</span>
-          <span className="w-1 h-1 bg-muted/50 rounded-full" />
-          <span>
-            Last saved: {lastSaved ? lastSaved.toLocaleTimeString() : "Never"}
-          </span>
         </div>
         <div className="flex items-center gap-2">
           <span className="font-medium">Ready</span>

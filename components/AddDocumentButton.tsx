@@ -3,18 +3,15 @@
 import { Button } from "./ui/button";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { AddDocumentBtnProps } from "@/types";
+import { v4 as uuidv4 } from "uuid";
 
-const AddDocumentBtn = ({ userId, email }: AddDocumentBtnProps) => {
+const AddDocumentBtn = () => {
   const router = useRouter();
 
   const addDocumentHandler = async () => {
     try {
-      const room = "1234";
-      console.log("document created");
-      if (room) {
-        router.push(`/documents/${room.id}`);
-      }
+      const roomId = uuidv4();
+      router.push(`/lessonplans/${roomId}`);
     } catch (error) {
       console.error("Failed to create document:", error);
     }
@@ -24,7 +21,7 @@ const AddDocumentBtn = ({ userId, email }: AddDocumentBtnProps) => {
     <Button
       type="button"
       onClick={addDocumentHandler}
-      size="md"
+      size="default"
       className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg shadow-sm hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 transition-colors"
     >
       <Image
