@@ -2,37 +2,46 @@
 "use client";
 
 import React, { useState } from "react";
-import { X, Users2 } from "lucide-react";
+import { X } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { BloqEditor } from "./editor/BloqEditor";
 import { cn } from "@/lib/utils";
-import { useOthers } from "@liveblocks/react";
-import { useStatus } from "@liveblocks/react";
+import { useLessonPlanMutations } from "@/lib/hooks/useLessonplanHooks";
+import { Editor } from "@/components/editor/Editor";
 
-interface BloqProps {
+interface BloqComponentProps {
   id: string;
   title: string;
-  onUpdate: (updates: { title?: string }) => void;
-  onRemove: () => void;
+  onUpdate?: (updates: { title?: string }) => void;
+  onRemove?: () => void;
 }
 
-export default function Bloq({ id, title, onUpdate, onRemove }: BloqProps) {
-  const [localTitle, setLocalTitle] = useState(title);
+export default function Bloq({
+  id,
+  title,
+  onUpdate,
+  onRemove,
+}: BloqComponentProps) {
   const [isFocused, setIsFocused] = useState(false);
-  const others = useOthers();
-  const status = useStatus();
+  const { removeBloq } = useLessonPlanMutations();
+  const [localTitle, setLocalTitle] = useState(title);
 
-  // Get users currently editing this bloq
-  const usersInThisBloq = others.filter(
-    (other) => other.presence?.activeBloqId === id
-  );
-
+  // Handle title change and call onUpdate if provided
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newTitle = e.target.value;
     setLocalTitle(newTitle);
-    onUpdate({ title: newTitle });
+    if (onUpdate) {
+      onUpdate({ title: newTitle });
+    }
+  };
+
+  // Handle remove with both local mutation and callback
+  const handleRemove = () => {
+    removeBloq(id);
+    if (onRemove) {
+      onRemove();
+    }
   };
 
   return (
@@ -50,33 +59,10 @@ export default function Bloq({ id, title, onUpdate, onRemove }: BloqProps) {
         }
       }}
     >
-      {usersInThisBloq.length > 0 && (
-        <div className="absolute -top-3 -right-3 flex items-center gap-1 z-10">
-          <div className="flex -space-x-1">
-            {usersInThisBloq.map((user) => (
-              <div
-                key={user.connectionId}
-                className="w-6 h-6 rounded-full border-2 border-card flex items-center justify-center text-white text-xs font-medium shadow-md transition-transform hover:scale-110"
-                style={{
-                  backgroundColor: user.presence?.user?.color || "#6B4CE6",
-                }}
-                title={user.presence?.user?.name || "Unknown"}
-              >
-                {user.presence?.user?.name?.charAt(0) || "U"}
-              </div>
-            ))}
-          </div>
-          <div className="bg-primary/10 backdrop-blur-sm rounded-md px-2 py-1 text-xs text-primary font-medium flex items-center">
-            <Users2 className="w-3 h-3 mr-1" />
-            {usersInThisBloq.length}
-          </div>
-        </div>
-      )}
-
       <Button
         variant="ghost"
         size="icon"
-        onClick={onRemove}
+        onClick={handleRemove}
         className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200 text-destructive hover:bg-destructive/10"
       >
         <X className="w-4 h-4" />
@@ -93,23 +79,9 @@ export default function Bloq({ id, title, onUpdate, onRemove }: BloqProps) {
             "focus-visible:ring-0 focus-visible:ring-offset-0 rounded-md transition-colors hover:bg-muted/10"
           )}
         />
-        <div className="h-px bg-gradient-to-r from-transparent via-border/50 to-transparent" />
-        <div
-          className={cn(
-            "rounded-xl border border-border bg-card/80 backdrop-blur-sm p-4",
-            "transition-colors duration-200 hover:border-primary/30",
-            isFocused
-              ? "focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 shadow-inner"
-              : ""
-          )}
-        >
-          {status === "connected" ? (
-            <BloqEditor bloqId={id} isEditable />
-          ) : (
-            <div className="text-center text-muted-foreground">
-              Connecting editor...
-            </div>
-          )}
+
+        <div className="min-h-[200px] border-t border-border/20 pt-4">
+          <Editor key={id} bloqId={id} />
         </div>
       </div>
     </Card>

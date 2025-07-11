@@ -19,7 +19,7 @@ import {
   X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import UserTypeSelector from "./UserPermissionsSelector";
+import UserTypeSelector from "@/components/composer/UserPermissionsSelector";
 
 type UserType = "creator" | "editor" | "viewer";
 

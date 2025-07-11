@@ -2,8 +2,9 @@
 
 import { nanoid } from "nanoid";
 import { v4 as uuidv4 } from "uuid";
-import { liveblocks } from "../liveblocks";
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
+import { liveblocks } from "@/lib/auth/liveblocks";
 import { getAccessType, parseStringify } from "../utils";
 import {
   CreateDocumentParams,
@@ -40,6 +41,7 @@ export const createDocument = async ({
     return parseStringify(room);
   } catch (error) {
     console.log(`Error happened while creating a room: ${error}`);
+    throw error; // Re-throw the error so we can handle it properly
   }
 };
 
@@ -62,6 +64,16 @@ export const getDocument = async ({
     return parseStringify(room);
   } catch (error) {
     console.log(`Error happened while getting a room: ${error}`);
+    throw error; // Re-throw the error so we can handle it properly
+  }
+};
+
+export const checkRoomExists = async (roomId: string) => {
+  try {
+    await liveblocks.getRoom(roomId);
+    return true;
+  } catch {
+    return false;
   }
 };
 
@@ -83,11 +95,14 @@ export const updateDocument = async (roomId: string, title: string) => {
 
 export const getDocuments = async (email: string) => {
   try {
-    const rooms = await liveblocks.getRooms({ userId: email });
+    const response = await liveblocks.getRooms({ userId: email });
+    const parsedResponse = parseStringify(response);
 
-    return parseStringify(rooms);
+    // Return the data array from the response
+    return parsedResponse.data || [];
   } catch (error) {
     console.log(`Error happened while getting rooms: ${error}`);
+    throw error; // Re-throw the error so we can handle it properly
   }
 };
 

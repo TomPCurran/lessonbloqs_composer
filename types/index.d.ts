@@ -1,4 +1,6 @@
 /* eslint-disable no-unused-vars */
+import type { LsonObject } from "@liveblocks/client";
+
 declare type SearchParamProps = {
   params: { [key: string]: string };
   searchParams: { [key: string]: string | string[] | undefined };
@@ -92,3 +94,71 @@ declare type AddDocumentBtnProps = {
 declare type DeleteModalProps = { roomId: string };
 
 declare type ThreadWrapperProps = { thread: ThreadData<BaseMetadata> };
+
+export interface Bloq extends LsonObject {
+  id: string;
+  title: string;
+  type: string;
+  createdAt: number;
+  updatedAt: number;
+  order: number;
+  content: string;
+}
+
+export interface BloqType {
+  title: string;
+  key: string;
+}
+
+export interface BloqProps {
+  id: string;
+  title: string;
+  onUpdate: (updates: { title?: string }) => void;
+  onRemove: () => void;
+}
+
+interface LessonPlan {
+  id: string;
+  title: string;
+  updatedAt: string;
+}
+
+interface DocumentData {
+  type: string;
+  id: string;
+  tenantId: string;
+  lastConnectionAt: string;
+  createdAt: string;
+  metadata: {
+    email: string;
+    title: string;
+    creatorId: string;
+  };
+  defaultAccesses: string[];
+  groupsAccesses: Record<string, never>;
+  usersAccesses: Record<string, string[]>;
+}
+
+type UserData = {
+  id: string;
+  firstName: string | null;
+  lastName: string | null;
+  imageUrl: string;
+  email: string;
+};
+
+type RoomProps = {
+  roomId: string;
+  initialDocument?: DocumentData;
+  user: UserData;
+  error?: string | null;
+};
+type DocumentData = {
+  id: string;
+  metadata: {
+    creatorId: string;
+    email: string;
+    title: string;
+  };
+  usersAccesses: Record<string, string[]>;
+};

@@ -1,4 +1,4 @@
-import { LiveObject, LiveList, LiveText } from "@liveblocks/client";
+import { LiveObject, LiveList } from "@liveblocks/client";
 
 // Define Liveblocks types for your application
 // https://liveblocks.io/docs/api-reference/liveblocks-react#Typing-your-data
@@ -37,6 +37,7 @@ declare global {
           createdAt: number;
           updatedAt: number;
           order: number;
+          content: string;
         }>
       >;
       // Collaboration settings

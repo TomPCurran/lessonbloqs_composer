@@ -1,7 +1,7 @@
 "use client";
 
 import React, { memo, useEffect } from "react";
-import Bloq from "./Bloq";
+import Bloq from "@/components/lessonplans/Bloq";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { useStorage, useMutation, useStatus } from "@liveblocks/react";
@@ -140,7 +140,7 @@ const BloqContainer = memo(function BloqContainer({
           {displayBloqs.map((bloq) => {
             const bloqData =
               bloq instanceof LiveObject ? bloq.toObject() : bloq;
-            console.log(bloq.id);
+            console.log("Bloq ID:", bloqData.id);
             return (
               <div key={bloqData.id} className="relative group">
                 <Bloq

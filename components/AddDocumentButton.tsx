@@ -3,17 +3,38 @@
 import { Button } from "./ui/button";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { v4 as uuidv4 } from "uuid";
+import { useUser } from "@clerk/nextjs";
+import { createDocument } from "@/lib/actions/room.actions";
+import { useState } from "react";
 
 const AddDocumentBtn = () => {
   const router = useRouter();
+  const { user } = useUser();
+  const [isCreating, setIsCreating] = useState(false);
 
   const addDocumentHandler = async () => {
+    if (!user) {
+      console.error("User not authenticated");
+      return;
+    }
+
+    setIsCreating(true);
+
     try {
-      const roomId = uuidv4();
-      router.push(`/lessonplans/${roomId}`);
+      const document = await createDocument({
+        userId: user.id,
+        email: user.emailAddresses[0].emailAddress,
+      });
+
+      if (document) {
+        router.push(`/lessonplans/${document.id}`);
+      } else {
+        console.error("Failed to create document");
+      }
     } catch (error) {
       console.error("Failed to create document:", error);
+    } finally {
+      setIsCreating(false);
     }
   };
 
@@ -21,8 +42,9 @@ const AddDocumentBtn = () => {
     <Button
       type="button"
       onClick={addDocumentHandler}
+      disabled={isCreating || !user}
       size="default"
-      className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg shadow-sm hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 transition-colors"
+      className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg shadow-sm hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
     >
       <Image
         src="/assets/icons/add.svg"
@@ -31,7 +53,9 @@ const AddDocumentBtn = () => {
         height={20}
         className="h-5 w-5"
       />
-      <span className="font-medium">Start a blank document</span>
+      <span className="font-medium">
+        {isCreating ? "Creating..." : "Start a blank document"}
+      </span>
     </Button>
   );
 };

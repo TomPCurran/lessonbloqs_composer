@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -19,8 +19,14 @@ export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSignInOpen, setIsSignInOpen] = useState(false);
   const [isSignUpOpen, setIsSignUpOpen] = useState(false);
-  const { isSignedIn } = useUser();
+  const [isMounted, setIsMounted] = useState(false);
+  const { isSignedIn, isLoaded } = useUser();
   const { signOut } = useClerk();
+
+  // Prevent hydration mismatch by only rendering auth-dependent content after mount
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const handleSignOut = async () => {
     try {
@@ -59,7 +65,7 @@ export default function Navbar() {
           {/* Desktop Navigation */}
           <div className="hidden items-center gap-4 md:flex">
             <ThemeToggle />
-            {isSignedIn ? (
+            {isMounted && isLoaded && isSignedIn ? (
               <>
                 <Link href="/profile">
                   <Button
@@ -90,7 +96,7 @@ export default function Navbar() {
                   </Button>
                 </Link>
               </>
-            ) : (
+            ) : isMounted && isLoaded && !isSignedIn ? (
               <div className="flex items-center gap-2">
                 <Button
                   variant="ghost"
@@ -107,6 +113,12 @@ export default function Navbar() {
                 >
                   Sign Up
                 </Button>
+              </div>
+            ) : (
+              // Loading state - render skeleton to prevent hydration mismatch
+              <div className="flex items-center gap-2">
+                <div className="h-8 w-16 bg-muted animate-pulse rounded" />
+                <div className="h-8 w-20 bg-muted animate-pulse rounded" />
               </div>
             )}
           </div>
@@ -133,7 +145,7 @@ export default function Navbar() {
           {isMobileMenuOpen && (
             <div className="absolute top-full left-0 w-full border-t bg-background/95 backdrop-blur border-border/50 md:hidden">
               <div className="space-y-1 p-2">
-                {isSignedIn ? (
+                {isMounted && isLoaded && isSignedIn ? (
                   <>
                     <Link href="/profile">
                       <Button
@@ -169,7 +181,7 @@ export default function Navbar() {
                       </Button>
                     </Link>
                   </>
-                ) : (
+                ) : isMounted && isLoaded && !isSignedIn ? (
                   <div className="space-y-1">
                     <Button
                       variant="ghost"
@@ -192,6 +204,12 @@ export default function Navbar() {
                     >
                       Sign Up
                     </Button>
+                  </div>
+                ) : (
+                  // Loading state for mobile
+                  <div className="space-y-1">
+                    <div className="h-8 w-full bg-muted animate-pulse rounded" />
+                    <div className="h-8 w-full bg-muted animate-pulse rounded" />
                   </div>
                 )}
               </div>

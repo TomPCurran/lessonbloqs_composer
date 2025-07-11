@@ -1,13 +1,13 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { useUser } from "@clerk/nextjs";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import {
   List,
   FileText,
-  Plus,
   MoreVertical,
   UploadCloud,
   Copy,
@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import AddDocumentBtn from "@/components/AddDocumentButton";
 import { DeleteModal } from "@/components/DeleteModal";
+import { getDocuments } from "@/lib/actions/room.actions";
 
 interface LessonPlan {
   id: string;
@@ -23,20 +24,63 @@ interface LessonPlan {
   updatedAt: string;
 }
 
+// Import DocumentData type from types file
+type DocumentData = {
+  type: string;
+  id: string;
+  tenantId: string;
+  lastConnectionAt: string;
+  createdAt: string;
+  metadata: {
+    email: string;
+    title: string;
+    creatorId: string;
+  };
+  defaultAccesses: string[];
+  groupsAccesses: Record<string, never>;
+  usersAccesses: Record<string, string[]>;
+};
+
 export default function LessonPlansListPage() {
   const router = useRouter();
+  const { user, isLoaded } = useUser();
   const [search, setSearch] = useState("");
   const [plans, setPlans] = useState<LessonPlan[]>([]);
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const fetchDocuments = useCallback(async () => {
+    if (!isLoaded || !user) return;
+
+    try {
+      const documents = await getDocuments(user.emailAddresses[0].emailAddress);
+
+      console.log(documents);
+
+      // Check if documents is an array and has items
+      if (documents && Array.isArray(documents) && documents.length > 0) {
+        const formattedPlans = documents.map((doc: DocumentData) => ({
+          id: doc.id,
+          title: doc.metadata?.title || "Untitled",
+          updatedAt:
+            doc.lastConnectionAt || doc.createdAt || new Date().toISOString(),
+        }));
+        setPlans(formattedPlans);
+      } else {
+        // No documents found, set empty array
+        setPlans([]);
+      }
+    } catch (error) {
+      console.error("Failed to fetch documents:", error);
+      setPlans([]); // Set empty array on error
+    } finally {
+      setIsLoading(false);
+    }
+  }, [user, isLoaded]);
 
   useEffect(() => {
-    // TODO: fetch user's actual plans
-    setPlans([
-      { id: "1", title: "Biology Basics", updatedAt: "2025-07-07T10:30:00Z" },
-      { id: "2", title: "Chemistry 101", updatedAt: "2025-07-06T14:20:00Z" },
-      { id: "3", title: "World History", updatedAt: "2025-07-05T09:15:00Z" },
-    ]);
-  }, []);
+    fetchDocuments();
+  }, [fetchDocuments]);
 
   const filtered = plans.filter((plan) =>
     plan.title.toLowerCase().includes(search.toLowerCase())
@@ -44,6 +88,19 @@ export default function LessonPlansListPage() {
 
   const toggleMenu = (id: string) =>
     setOpenMenuId(openMenuId === id ? null : id);
+
+  if (!isLoaded || isLoading) {
+    return (
+      <div className="container mx-auto p-8 space-y-6">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-muted-foreground">Loading your documents...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto p-8 space-y-6">
@@ -56,8 +113,8 @@ export default function LessonPlansListPage() {
           </h1>
         </div>
         <div className="flex items-center gap-2">
-          {/* Replace manual new-button with AddDocumentBtn */}
-          <AddDocumentBtn userId="" email="" />
+          {/* AddDocumentBtn now handles user data internally */}
+          <AddDocumentBtn />
           <button
             onClick={() => {
               /* placeholder upload */
@@ -89,66 +146,79 @@ export default function LessonPlansListPage() {
       {/* Lesson Plans List */}
       <Card className="overflow-hidden bg-white dark:bg-gray-800 shadow-sm border border-gray-200 dark:border-gray-700 rounded-xl">
         <div className="divide-y divide-gray-200 dark:divide-gray-700">
-          {filtered.map((plan) => (
-            <div key={plan.id} className="relative group">
-              <div
-                onClick={() => router.push(`/lessonplans/${plan.id}`)}
-                className="flex items-center justify-between px-6 py-4 text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer"
-              >
-                <div className="flex items-center space-x-4">
-                  <FileText className="w-6 h-6 text-gray-500 dark:text-gray-400" />
-                  <div>
-                    <p className="text-lg font-medium truncate">{plan.title}</p>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      Last modified:{" "}
-                      {new Date(plan.updatedAt).toLocaleDateString()}
-                    </p>
-                  </div>
-                </div>
-                <div className="relative">
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      toggleMenu(plan.id);
-                    }}
-                    className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 p-2 rounded-full transition-colors"
-                  >
-                    <MoreVertical className="w-5 h-5" />
-                  </button>
-
-                  {openMenuId === plan.id && (
-                    <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-lg rounded-md z-10 py-1">
-                      <button className="w-full flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
-                        <Copy className="w-4 h-4 mr-2" /> Copy
-                      </button>
-                      <button className="w-full flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
-                        <Share2 className="w-4 h-4 mr-2" /> Share
-                      </button>
-                      <button className="w-full flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
-                        <Archive className="w-4 h-4 mr-2" /> Archive
-                      </button>
-                      <div className="border-t border-gray-200 dark:border-gray-700 my-1" />
-                      <DeleteModal roomId={plan.id} />
+          {filtered.length === 0 && plans.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-16 px-6">
+              <FileText className="w-16 h-16 text-gray-400 dark:text-gray-500 mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
+                No lesson plans yet
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400 text-center mb-6">
+                Create your first lesson plan to get started
+              </p>
+              <AddDocumentBtn />
+            </div>
+          ) : filtered.length === 0 && search ? (
+            <div className="flex flex-col items-center justify-center py-16 px-6">
+              <FileText className="w-16 h-16 text-gray-400 dark:text-gray-500 mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
+                No matching lesson plans
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400 text-center">
+                Try adjusting your search terms
+              </p>
+            </div>
+          ) : (
+            filtered.map((plan) => (
+              <div key={plan.id} className="relative group">
+                <div
+                  onClick={() => router.push(`/lessonplans/${plan.id}`)}
+                  className="flex items-center justify-between px-6 py-4 text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+                >
+                  <div className="flex items-center space-x-4">
+                    <FileText className="w-6 h-6 text-gray-500 dark:text-gray-400" />
+                    <div>
+                      <p className="text-lg font-medium truncate">
+                        {plan.title}
+                      </p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        Last modified:{" "}
+                        {new Date(plan.updatedAt).toLocaleDateString()}
+                      </p>
                     </div>
-                  )}
+                  </div>
+                  <div className="relative">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleMenu(plan.id);
+                      }}
+                      className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 p-2 rounded-full transition-colors"
+                    >
+                      <MoreVertical className="w-5 h-5" />
+                    </button>
+
+                    {openMenuId === plan.id && (
+                      <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-lg rounded-md z-10 py-1">
+                        <button className="w-full flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                          <Copy className="w-4 h-4 mr-2" /> Copy
+                        </button>
+                        <button className="w-full flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                          <Share2 className="w-4 h-4 mr-2" /> Share
+                        </button>
+                        <button className="w-full flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                          <Archive className="w-4 h-4 mr-2" /> Archive
+                        </button>
+                        <div className="border-t border-gray-200 dark:border-gray-700 my-1" />
+                        <DeleteModal roomId={plan.id} />
+                      </div>
+                    )}
+                  </div>
+
+                  <span className="absolute inset-0 rounded-xl bg-gradient-to-r from-primary/5 to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
                 </div>
-
-                <span className="absolute inset-0 rounded-xl bg-gradient-to-r from-primary/5 to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
               </div>
-            </div>
-          ))}
-
-          {/* New Plan Row */}
-          <div
-            onClick={() => router.push("/lessonplans/new")}
-            className="relative group flex items-center space-x-4 px-6 py-4 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer"
-          >
-            <div className="w-6 h-6 flex items-center justify-center rounded-md border-2 border-dashed border-gray-400 dark:border-gray-500">
-              <Plus className="w-4 h-4 text-gray-400 dark:text-gray-500" />
-            </div>
-            <p className="text-lg font-medium">Create New Lesson Plan</p>
-            <span className="absolute inset-0 rounded-xl bg-gradient-to-r from-primary/5 to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
-          </div>
+            ))
+          )}
         </div>
       </Card>
     </div>
