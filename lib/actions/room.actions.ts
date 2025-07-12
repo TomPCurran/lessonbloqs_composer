@@ -46,28 +46,26 @@ export const createDocument = async ({
 };
 
 export const getDocument = async ({
-  roomId,
+  documentId,
   userId,
 }: {
-  roomId: string;
+  documentId: string;
   userId: string;
 }) => {
   try {
-    const room = await liveblocks.getRoom(roomId);
+    const document = await liveblocks.getRoom(documentId);
 
-    const hasAccess = Object.keys(room.usersAccesses).includes(userId);
+    const hasAccess = Object.keys(document.usersAccesses).includes(userId);
 
     if (!hasAccess) {
       throw new Error("You do not have access to this document");
     }
 
-    return parseStringify(room);
+    return parseStringify(document);
   } catch (error) {
     console.log(`Error happened while getting a room: ${error}`);
-    throw error; // Re-throw the error so we can handle it properly
   }
 };
-
 export const checkRoomExists = async (roomId: string) => {
   try {
     await liveblocks.getRoom(roomId);
@@ -162,51 +160,6 @@ export const updateDocumentAccess = async ({
     throw error;
   }
 };
-
-// export const removeCollaborator = async ({
-//   roomId,
-//   email,
-//   updatedBy,
-// }: {
-//   roomId: string;
-//   email: string;
-//   updatedBy: import("@/types").User;
-// }) => {
-//   try {
-//     const room = await liveblocks.getRoom(roomId);
-//     const currentUserEmail = updatedBy.email;
-//     const isSelf = email === currentUserEmail;
-//     const isOwner = room.metadata.creatorId === updatedBy.id;
-//     const isViewer = updatedBy.userType === "viewer";
-//     const isEditor = updatedBy.userType === "editor";
-
-//     // Viewers cannot remove anyone
-//     if (isViewer) {
-//       throw new Error("Viewers cannot remove collaborators.");
-//     }
-//     // Editors/Owners cannot remove themselves
-//     if (isSelf && (isEditor || isOwner)) {
-//       throw new Error("You cannot remove yourself from the document.");
-//     }
-//     // Cannot remove the creator
-//     if (room.metadata.creatorId === email) {
-//       throw new Error("You cannot remove the creator from the document");
-//     }
-
-//     const updatedRoom = await liveblocks.updateRoom(roomId, {
-//       usersAccesses: {
-//         [email]: null,
-//       },
-//     });
-
-//     revalidatePath(`/documents/${roomId}`);
-
-//     return parseStringify(updatedRoom);
-//   } catch (error) {
-//     console.log(`Error happened while removing a collaborator: ${error}`);
-//     throw error;
-//   }
-// };
 
 export const removeCollaborator = async ({
   roomId,

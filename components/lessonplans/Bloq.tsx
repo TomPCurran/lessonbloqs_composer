@@ -9,12 +9,19 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useLessonPlanMutations } from "@/lib/hooks/useLessonplanHooks";
 import { Editor } from "@/components/editor/Editor";
+import { getUserColor } from "@/lib/utils";
 
 interface BloqComponentProps {
   id: string;
   title: string;
   onUpdate?: (updates: { title?: string }) => void;
   onRemove?: () => void;
+  currentUser: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    imageUrl: string;
+  };
 }
 
 export default function Bloq({
@@ -22,10 +29,14 @@ export default function Bloq({
   title,
   onUpdate,
   onRemove,
+  currentUser,
 }: BloqComponentProps) {
   const [isFocused, setIsFocused] = useState(false);
   const { removeBloq } = useLessonPlanMutations();
   const [localTitle, setLocalTitle] = useState(title);
+
+  const userName = `${currentUser.firstName} ${currentUser.lastName}`;
+  const userColor = getUserColor(currentUser.id);
 
   // Handle title change and call onUpdate if provided
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -81,7 +92,12 @@ export default function Bloq({
         />
 
         <div className="min-h-[200px] border-t border-border/20 pt-4">
-          <Editor key={id} bloqId={id} />
+          <Editor
+            key={id}
+            bloqId={id}
+            userName={userName}
+            userColor={userColor}
+          />
         </div>
       </div>
     </Card>

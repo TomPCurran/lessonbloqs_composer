@@ -1,86 +1,22 @@
-// "use client";
-
-// import { useCreateBlockNote } from "@blocknote/react";
-// import { BlockNoteView } from "@blocknote/mantine";
-// import { useRoom } from "@liveblocks/react";
-// import { useEffect, useState } from "react";
-// import * as Y from "yjs";
-// import { LiveblocksYjsProvider } from "@liveblocks/yjs";
-// import { EditorToolbar } from "./EditorToolbar";
-
-// export function Editor({ bloqId }: { bloqId: string }) {
-//   const room = useRoom();
-//   const [doc, setDoc] = useState<Y.Doc>();
-//   const [provider, setProvider] = useState<any>();
-
-//   // Create isolated Yjs document for this specific bloq
-//   useEffect(() => {
-//     const yDoc = new Y.Doc();
-//     const yProvider = new LiveblocksYjsProvider(room, yDoc, {
-//       awareness: `bloq-awareness-${bloqId}`,
-//     });
-
-//     setDoc(yDoc);
-//     setProvider(yProvider);
-
-//     return () => {
-//       yProvider?.destroy();
-//       yDoc?.destroy();
-//     };
-//   }, [room, bloqId]);
-
-//   const editor = useCreateBlockNote({
-//     collaboration:
-//       doc && provider
-//         ? {
-//             provider,
-//             fragment: doc.getXmlFragment(`blocknote-${bloqId}`),
-//             user: {
-//               name: "User",
-//               color: "#ff0000",
-//             },
-//           }
-//         : undefined,
-//   });
-
-//   if (!editor) {
-//     return (
-//       <div className="min-h-[150px] flex items-center justify-center text-muted-foreground">
-//         Loading editor...
-//       </div>
-//     );
-//   }
-
-//   return (
-//     <div className="min-h-[150px] border border-border rounded-lg overflow-hidden bg-surface">
-//       <EditorToolbar editor={editor} />
-//       <div className="p-4">
-//         <BlockNoteView
-//           editor={editor}
-//           className="editor"
-//           sideMenu={false}
-//           slashMenu={false}
-//           // The menu on text selection is the formattingToolbar, not a suggestionMenu.
-//           formattingToolbar={false}
-//         />
-//       </div>
-//     </div>
-//   );
-// }
 "use client";
 
 import { useCreateBlockNote } from "@blocknote/react";
 import { BlockNoteView } from "@blocknote/mantine";
-import { useRoom, useMutation, useStorage } from "@liveblocks/react";
-import { useEffect, useState } from "react";
-import * as Y from "yjs";
-import { LiveblocksYjsProvider } from "@liveblocks/yjs";
+import { useMutation, useStorage } from "@liveblocks/react";
+import { useEffect } from "react";
 import { EditorToolbar } from "./EditorToolbar";
+import { useYjs } from "@/lib/providers/yjsProvider";
 
-export function Editor({ bloqId }: { bloqId: string }) {
-  const room = useRoom();
-  const [doc, setDoc] = useState<Y.Doc>();
-  const [provider, setProvider] = useState<any>();
+export function Editor({
+  bloqId,
+  userName,
+  userColor,
+}: {
+  bloqId: string;
+  userName: string;
+  userColor: string;
+}) {
+  const { doc, provider, awareness } = useYjs(); // Get awareness from context
 
   // Get the bloq's content from Liveblocks storage
   const bloqContent = useStorage((root) => {
@@ -110,36 +46,30 @@ export function Editor({ bloqId }: { bloqId: string }) {
     []
   );
 
-  // Create isolated Yjs document for this specific bloq
-  useEffect(() => {
-    const yDoc = new Y.Doc();
-    const yProvider = new LiveblocksYjsProvider(room, yDoc, {
-      awareness: `bloq-awareness-${bloqId}`,
-    });
-
-    setDoc(yDoc);
-    setProvider(yProvider);
-
-    return () => {
-      yProvider?.destroy();
-      yDoc?.destroy();
-    };
-  }, [room, bloqId]);
-
   const editor = useCreateBlockNote({
     collaboration:
-      doc && provider
+      doc && provider && awareness // Make sure awareness is available
         ? {
             provider,
             fragment: doc.getXmlFragment(`blocknote-${bloqId}`),
             user: {
-              name: "User",
-              color: "#ff0000",
+              name: userName,
+              color: userColor,
             },
           }
         : undefined,
     initialContent: bloqContent ? JSON.parse(bloqContent) : undefined,
   });
+
+  // Set user info in awareness when editor is ready
+  useEffect(() => {
+    if (awareness && editor) {
+      awareness.setLocalStateField("user", {
+        name: userName,
+        color: userColor,
+      });
+    }
+  }, [awareness, editor, userName, userColor]);
 
   // Save content to Liveblocks storage when editor content changes
   useEffect(() => {
@@ -150,14 +80,12 @@ export function Editor({ bloqId }: { bloqId: string }) {
       updateBloqContent(bloqId, content);
     };
 
-    // Save content after a delay to avoid too frequent saves
     let timeoutId: NodeJS.Timeout;
     const debouncedSave = () => {
       clearTimeout(timeoutId);
-      timeoutId = setTimeout(saveContent, 1000); // Save after 1 second of inactivity
+      timeoutId = setTimeout(saveContent, 3000);
     };
 
-    // Listen for editor changes
     const unsubscribe = editor.onChange(debouncedSave);
 
     return () => {
@@ -171,7 +99,6 @@ export function Editor({ bloqId }: { bloqId: string }) {
     if (editor && bloqContent) {
       try {
         const parsedContent = JSON.parse(bloqContent);
-        // Only update if content is different to avoid infinite loops
         const currentContent = JSON.stringify(editor.document);
         if (currentContent !== bloqContent) {
           editor.replaceBlocks(editor.document, parsedContent);
@@ -193,7 +120,7 @@ export function Editor({ bloqId }: { bloqId: string }) {
   return (
     <div className="min-h-[150px] border border-border rounded-lg overflow-hidden bg-surface">
       <EditorToolbar editor={editor} />
-      <div className="p-4">
+      <div className="p-4 relative">
         <BlockNoteView
           editor={editor}
           className="editor"

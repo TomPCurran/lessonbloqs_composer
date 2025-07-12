@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { cn } from "@/lib/utils";
 import { Plus } from "lucide-react";
 import { bloqTypes } from "@/constants";
@@ -14,16 +14,24 @@ import {
 import ListItem from "@/components/composer/ListItem";
 import { useLessonPlanMutations } from "@/lib/hooks/useLessonplanHooks";
 import { useStorage } from "@liveblocks/react";
-
+import ShareModal from "./ShareModal";
 interface FloatingToolbarProps {
   disabled?: boolean;
+  roomId: string;
+  users: any[];
+  currentUserType: string;
+  roomMetadata: any;
 }
 
-export function FloatingToolbar({ disabled = false }: FloatingToolbarProps) {
+export function FloatingToolbar({
+  disabled = false,
+  roomId,
+  users,
+  currentUserType,
+  roomMetadata,
+}: FloatingToolbarProps) {
   const { addBloq } = useLessonPlanMutations();
   const bloqs = useStorage((root) => root.bloqs);
-
-  // Check if storage is ready
   const isStorageReady = bloqs !== undefined;
 
   return (
@@ -79,6 +87,13 @@ export function FloatingToolbar({ disabled = false }: FloatingToolbarProps) {
           </NavigationMenuItem>
         </NavigationMenuList>
       </NavigationMenu>
+
+      <ShareModal
+        roomId={roomId}
+        collaborators={users || []}
+        creatorId={roomMetadata?.creatorId}
+        currentUserType={currentUserType}
+      />
     </div>
   );
 }

@@ -22,6 +22,12 @@ interface BloqContainerProps {
   onTitleChange: (newTitle: string) => void;
   onUpdate: (id: string, updates: Partial<BloqData>) => void;
   onRemove: (id: string) => void;
+  currentUser: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    imageUrl: string;
+  };
 }
 
 const BloqContainer = memo(function BloqContainer({
@@ -30,6 +36,7 @@ const BloqContainer = memo(function BloqContainer({
   onTitleChange,
   onUpdate,
   onRemove,
+  currentUser,
 }: BloqContainerProps) {
   const lessonPlan = useStorage((root) => root.lessonPlan);
   const liveBloqs = useStorage((root) => root.bloqs);
@@ -148,6 +155,7 @@ const BloqContainer = memo(function BloqContainer({
                   title={bloqData.title}
                   onUpdate={(updates) => handleBloqUpdate(bloqData.id, updates)}
                   onRemove={() => handleBloqRemove(bloqData.id)}
+                  currentUser={currentUser}
                 />
               </div>
             );

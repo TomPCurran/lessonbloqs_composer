@@ -6,8 +6,17 @@ import Canvas from "./composer/Canvas";
 import { LiveObject, LiveList } from "@liveblocks/client";
 import Link from "next/link";
 import type { RoomProps } from "@/types";
+import { getUserColor } from "@/lib/utils";
 
-const Room = ({ roomId, initialDocument, user, error }: RoomProps) => {
+const Room = ({
+  documentId,
+  initialDocument,
+  collaborators,
+  documentMetadata,
+  currentUserType,
+  user,
+  error,
+}: RoomProps) => {
   // If there's an error, show error state
   if (error) {
     return (
@@ -42,7 +51,10 @@ const Room = ({ roomId, initialDocument, user, error }: RoomProps) => {
       </div>
     );
   }
+
   const now = Date.now();
+  const userName = `${user.firstName} ${user.lastName}`;
+  const userColor = getUserColor(user.id);
 
   const initialStorage = {
     lessonPlan: new LiveObject({
@@ -60,21 +72,22 @@ const Room = ({ roomId, initialDocument, user, error }: RoomProps) => {
     }),
   };
 
-  const initialPresence = {
-    cursor: null,
-    activeBloqId: null,
-    user: {
-      name: `${user.firstName} ${user.lastName}`,
-      color: "#000000",
-      avatar: user.imageUrl,
-    },
-  };
+  // const initialPresence = {
+  //   cursor: null,
+  //   activeBloqId: null,
+  //   typing: false,
+  //   user: {
+  //     name: userName,
+  //     color: userColor,
+  //     avatar: user.imageUrl,
+  //   },
+  // };
 
   return (
     <RoomProvider
-      id={roomId}
+      id={documentId}
       initialStorage={initialStorage}
-      initialPresence={initialPresence}
+      // initialPresence={initialPresence}
     >
       <ClientSideSuspense
         fallback={
@@ -83,7 +96,7 @@ const Room = ({ roomId, initialDocument, user, error }: RoomProps) => {
           </div>
         }
       >
-        <Canvas roomId={roomId} />
+        <Canvas documentId={documentId} currentUser={user} />
       </ClientSideSuspense>
     </RoomProvider>
   );

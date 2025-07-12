@@ -123,21 +123,21 @@ interface LessonPlan {
   updatedAt: string;
 }
 
-interface DocumentData {
-  type: string;
+type DocumentData = {
+  type?: string;
   id: string;
-  tenantId: string;
-  lastConnectionAt: string;
-  createdAt: string;
+  tenantId?: string;
+  lastConnectionAt?: string;
+  createdAt?: string;
   metadata: {
     email: string;
     title: string;
     creatorId: string;
   };
-  defaultAccesses: string[];
-  groupsAccesses: Record<string, never>;
+  defaultAccesses?: string[];
+  groupsAccesses?: Record<string, never>;
   usersAccesses: Record<string, string[]>;
-}
+};
 
 type UserData = {
   id: string;
@@ -148,17 +148,11 @@ type UserData = {
 };
 
 type RoomProps = {
-  roomId: string;
+  documentId: string;
   initialDocument?: DocumentData;
+  collaborators?: User[];
+  documentMetadata?: DocumentData["metadata"];
+  currentUserType?: UserType;
   user: UserData;
   error?: string | null;
-};
-type DocumentData = {
-  id: string;
-  metadata: {
-    creatorId: string;
-    email: string;
-    title: string;
-  };
-  usersAccesses: Record<string, string[]>;
 };
