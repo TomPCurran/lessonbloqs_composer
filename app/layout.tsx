@@ -5,11 +5,12 @@ import NavBar from "@/components/NavBar";
 import { cn } from "@/lib/utils";
 import { ClerkProvider } from "@clerk/nextjs";
 import Provider from "@/lib/providers/Provider";
-// import "@blocknote/core/fonts/inter.css";
+import "@blocknote/core/fonts/inter.css";
 // import "@blocknote/mantine/style.css";
 // import "@liveblocks/react-ui/styles.css";
 // import "@liveblocks/react-ui/styles/dark/media-query.css";
 // import "@liveblocks/react-tiptap/styles.css";
+
 import "./globals.css";
 const inter = Inter({
   variable: "--font-inter",

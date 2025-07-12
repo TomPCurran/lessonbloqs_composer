@@ -40,16 +40,37 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
     });
   };
 
+  // Fixed list methods
   const setBulletList = () => {
-    editor.updateBlock(editor.getTextCursorPosition().block, {
-      type: "bulletListItem",
-    });
+    const currentBlock = editor.getTextCursorPosition().block;
+
+    if (currentBlock.type === "bulletListItem") {
+      // If already a bullet list, convert to paragraph
+      editor.updateBlock(currentBlock, {
+        type: "paragraph",
+      });
+    } else {
+      // Convert to bullet list
+      editor.updateBlock(currentBlock, {
+        type: "bulletListItem",
+      });
+    }
   };
 
   const setNumberedList = () => {
-    editor.updateBlock(editor.getTextCursorPosition().block, {
-      type: "numberedListItem",
-    });
+    const currentBlock = editor.getTextCursorPosition().block;
+
+    if (currentBlock.type === "numberedListItem") {
+      // If already a numbered list, convert to paragraph
+      editor.updateBlock(currentBlock, {
+        type: "paragraph",
+      });
+    } else {
+      // Convert to numbered list
+      editor.updateBlock(currentBlock, {
+        type: "numberedListItem",
+      });
+    }
   };
 
   // Helper function for button styling

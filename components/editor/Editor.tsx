@@ -2,10 +2,11 @@
 
 import { useCreateBlockNote } from "@blocknote/react";
 import { BlockNoteView } from "@blocknote/mantine";
-import { useRoom, useSelf } from "@liveblocks/react";
+import { useRoom } from "@liveblocks/react";
 import { useEffect, useState } from "react";
 import * as Y from "yjs";
 import { LiveblocksYjsProvider } from "@liveblocks/yjs";
+import { EditorToolbar } from "./EditorToolbar";
 
 export function Editor({ bloqId }: { bloqId: string }) {
   const room = useRoom();
@@ -16,7 +17,6 @@ export function Editor({ bloqId }: { bloqId: string }) {
   useEffect(() => {
     const yDoc = new Y.Doc();
     const yProvider = new LiveblocksYjsProvider(room, yDoc, {
-      // Use bloqId to create completely separate document space
       awareness: `bloq-awareness-${bloqId}`,
     });
 
@@ -52,8 +52,18 @@ export function Editor({ bloqId }: { bloqId: string }) {
   }
 
   return (
-    <div className="min-h-[150px]">
-      <BlockNoteView editor={editor} className="editor" />
+    <div className="min-h-[150px] border border-border rounded-lg overflow-hidden bg-surface">
+      <EditorToolbar editor={editor} />
+      <div className="p-4">
+        <BlockNoteView
+          editor={editor}
+          className="editor"
+          sideMenu={false}
+          slashMenu={false}
+          // The menu on text selection is the formattingToolbar, not a suggestionMenu.
+          formattingToolbar={false}
+        />
+      </div>
     </div>
   );
 }
