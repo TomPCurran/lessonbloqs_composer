@@ -15,12 +15,15 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Trash } from "lucide-react";
 
 interface DeleteModalProps {
   roomId: string;
+  onDelete?: (roomId: string) => Promise<void>;
+  trigger?: React.ReactNode;
 }
 
-export function DeleteModal({ roomId }: DeleteModalProps) {
+export function DeleteModal({ roomId, onDelete, trigger }: DeleteModalProps) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -28,10 +31,19 @@ export function DeleteModal({ roomId }: DeleteModalProps) {
     setLoading(true);
     try {
       console.log("Deleting document", roomId);
-      // await deleteDocument(roomId);
+
+      if (onDelete) {
+        await onDelete(roomId);
+      } else {
+        // Fallback to direct server action if no callback provided
+        const { deleteDocument } = await import("@/lib/actions/room.actions");
+        await deleteDocument(roomId);
+      }
+
       setOpen(false);
     } catch (error) {
       console.error("Delete error:", error);
+      // You might want to show a toast notification here
     } finally {
       setLoading(false);
     }
@@ -40,15 +52,12 @@ export function DeleteModal({ roomId }: DeleteModalProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="icon" className="p-2">
-          <Image
-            src="/delete.svg"
-            alt="Delete document"
-            width={20}
-            height={20}
-          />
-          Delete
-        </Button>
+        {trigger || (
+          <Button variant="outline" size="icon" className="p-2">
+            <Trash className="w-4 h-4" />
+            Delete
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContent
         className={cn(
@@ -57,13 +66,6 @@ export function DeleteModal({ roomId }: DeleteModalProps) {
         )}
       >
         <DialogHeader className="text-center">
-          <Image
-            src="/assets/icons/delete-modal.svg"
-            alt="Delete confirmation"
-            width={48}
-            height={48}
-            className="mx-auto mb-4"
-          />
           <DialogTitle>Delete Document</DialogTitle>
           <DialogDescription>
             Are you sure you want to delete this document? This action cannot be

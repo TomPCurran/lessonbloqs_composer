@@ -2,9 +2,10 @@
 
 import React from "react";
 import { useEditorContentOrSelectionChange } from "@blocknote/react";
+import { BlockNoteEditor } from "@blocknote/core"; // Import the type
 
 interface EditorToolbarProps {
-  editor: any;
+  editor: BlockNoteEditor | null; // Use the specific type instead of 'any'
 }
 
 export function EditorToolbar({ editor }: EditorToolbarProps) {
@@ -19,8 +20,8 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
       setCurrentBlock(block);
       setActiveStyles(styles);
     }
-  }, editor);
-
+  }, editor ?? undefined);
+  
   if (!editor) return null;
 
   const toggleBold = () => editor.toggleStyles({ bold: true });

@@ -64,8 +64,8 @@ declare type ShareDocumentDialogProps = {
   collaborators: User[];
   creatorId: string;
   currentUserType: UserType;
+  currentUser: UserData; // Add this line
 };
-
 declare type HeaderProps = {
   children: React.ReactNode;
   className?: string;
@@ -155,4 +155,11 @@ type RoomProps = {
   currentUserType?: UserType;
   user: UserData;
   error?: string | null;
+};
+
+declare type DocumentDataWithOwner = DocumentData & {
+  ownerName: string;
+  collaborators: User[];
+  currentUserType: UserType;
+  currentUser: UserData;
 };

@@ -3,7 +3,6 @@
 import { nanoid } from "nanoid";
 import { v4 as uuidv4 } from "uuid";
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 import { liveblocks } from "@/lib/auth/liveblocks";
 import { getAccessType, parseStringify } from "../utils";
 import {
@@ -77,17 +76,24 @@ export const checkRoomExists = async (roomId: string) => {
 
 export const updateDocument = async (roomId: string, title: string) => {
   try {
+    console.log("Server: Updating document", { roomId, title });
+
     const updatedRoom = await liveblocks.updateRoom(roomId, {
       metadata: {
         title,
       },
     });
 
-    revalidatePath(`/documents/${roomId}`);
+    console.log("Server: Document updated successfully");
+
+    // Revalidate the lessonplans page since that's where the document list is shown
+    revalidatePath("/lessonplans");
+    revalidatePath(`/lessonplans/${roomId}`);
 
     return parseStringify(updatedRoom);
   } catch (error) {
     console.log(`Error happened while updating a room: ${error}`);
+    throw error; // Re-throw the error so we can handle it properly
   }
 };
 
@@ -188,12 +194,17 @@ export const removeCollaborator = async ({
   }
 };
 
-export const deleteDocument = async (roomId: string) => {
+export const deleteDocument = async (roomId: string, userId: string) => {
   try {
+    const room = await liveblocks.getRoom(roomId);
+    if (room.metadata.creatorId !== userId) {
+      throw new Error("Only the creator can delete this document.");
+    }
     await liveblocks.deleteRoom(roomId);
     revalidatePath("/");
-    redirect("/");
+    // Removed redirect("/"); so the UI does not navigate away after deletion
   } catch (error) {
     console.log(`Error happened while deleting a room: ${error}`);
+    throw error;
   }
 };

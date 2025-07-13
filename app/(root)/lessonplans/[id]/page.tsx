@@ -1,89 +1,76 @@
 import React from "react";
 import { currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
-import { SearchParamProps, UserData } from "@/types";
 import Room from "@/components/Room";
 import { getDocument } from "@/lib/actions/room.actions";
 import { getClerkUsers } from "@/lib/actions/user.actions";
-import { getUserColor } from "@/lib/utils";
-import { UserType } from "@/types";
+import { UserData } from "@/types";
 
-const Page = async ({ params }: SearchParamProps) => {
+interface PageProps {
+  params: {
+    id: string;
+  };
+}
+
+const Page = async ({ params }: PageProps) => {
   const resolvedParams = await params;
-  const documentId = resolvedParams?.id as string;
-  const user = await currentUser();
+  const documentId = resolvedParams?.id;
 
-  if (!user) {
+  if (!documentId) {
+    // Handle the case where id is not present, though this is unlikely in a dynamic route
+    return <div>Document ID not found.</div>;
+  }
+
+  const clerkUser = await currentUser();
+
+  if (!clerkUser) {
     redirect("/sign-in");
   }
 
-  const document = await getDocument({
-    documentId: documentId,
-    userId: user.emailAddresses[0].emailAddress,
-  });
+  try {
+    const room = await getDocument({
+      documentId,
+      userId: clerkUser.emailAddresses[0].emailAddress,
+    });
 
-  console.log(`Document: ${document}`);
+    if (!room) {
+      redirect("/lessonplans");
+    }
 
-  if (!document) {
-    redirect("/lessonplans");
+    const userIds = Object.keys(room.usersAccesses);
+    const users = await getClerkUsers({ userIds });
+
+    const collaborators = users
+      .filter(
+        (user): user is UserData & { name: string; avatar: string } => !!user
+      )
+      .map((user) => ({
+        ...user,
+        userType: room.usersAccesses[user.email as string]?.[0],
+      }));
+
+    const currentUserData: UserData = {
+      id: clerkUser.id,
+      firstName: clerkUser.firstName || "",
+      lastName: clerkUser.lastName || "",
+      imageUrl: clerkUser.imageUrl,
+      email: clerkUser.emailAddresses[0].emailAddress,
+    };
+
+    return (
+      <main className="flex-1 flex flex-col items-center justify-center w-full pt-16 px-4 sm:px-6 lg:px-8">
+        <Room
+          documentId={documentId}
+          initialDocument={room}
+          user={currentUserData}
+          collaborators={collaborators}
+        />
+      </main>
+    );
+  } catch (error) {
+    console.error("Error fetching document:", error);
+    return <div>Error loading document. Please try again later.</div>;
   }
-
-  const userIds = Object.keys(document?.usersAccesses);
-  const users = await getClerkUsers({ userIds });
-
-  const collaborators =
-    users && Array.isArray(users)
-      ? users
-          .filter(
-            (
-              user
-            ): user is {
-              id: string;
-              name: string;
-              email: string;
-              avatar: string;
-            } => user !== undefined && user !== null
-          )
-          .map((user) => ({
-            ...user,
-            color: getUserColor(user.id),
-            userType: (document.usersAccesses[user.email]?.includes(
-              "room:write"
-            )
-              ? "editor"
-              : "viewer") as UserType,
-          }))
-      : [];
-
-  const currentUserType = (
-    document.usersAccesses[user.emailAddresses[0].emailAddress]?.includes(
-      "room:write"
-    )
-      ? "editor"
-      : "viewer"
-  ) as UserType;
-
-  // Convert Clerk user to plain object for client component
-  const userData: UserData = {
-    id: user.id,
-    firstName: user.firstName || "",
-    lastName: user.lastName || "",
-    imageUrl: user.imageUrl,
-    email: user.emailAddresses[0].emailAddress,
-  };
-
-  return (
-    <main className="flex-1 flex flex-col items-center justify-center w-full pt-16 px-4 sm:px-6 lg:px-8">
-      <Room
-        documentId={documentId}
-        initialDocument={document}
-        collaborators={collaborators}
-        documentMetadata={document.metadata}
-        currentUserType={currentUserType}
-        user={userData}
-      />
-    </main>
-  );
 };
 
 export default Page;

@@ -1,56 +1,68 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  ReactNode,
+} from "react";
 import { useRoom } from "@liveblocks/react";
 import * as Y from "yjs";
 import { LiveblocksYjsProvider } from "@liveblocks/yjs";
+import { Awareness } from "y-protocols/awareness";
 
-interface YjsContextType {
-  doc: Y.Doc | null;
-  provider: LiveblocksYjsProvider | null;
-  awareness: any | null; // Add awareness to context
+// Define the shape of the context value
+interface YjsContextValue {
+  doc: Y.Doc;
+  provider: LiveblocksYjsProvider;
+  awareness: Awareness;
 }
 
-const YjsContext = createContext<YjsContextType>({
-  doc: null,
-  provider: null,
-  awareness: null,
-});
+const YjsContext = createContext<YjsContextValue | null>(null);
 
-export const useYjs = () => {
+export const useYjs = (): YjsContextValue => {
   const context = useContext(YjsContext);
   if (!context) {
-    throw new Error("useYjs must be used within YjsProvider");
+    throw new Error("useYjs must be used within a YjsProvider");
   }
   return context;
 };
 
-export function YjsProvider({ children }: { children: React.ReactNode }) {
+export function YjsProvider({ children }: { children: ReactNode }) {
   const room = useRoom();
-  const [doc, setDoc] = useState<Y.Doc | null>(null);
-  const [provider, setProvider] = useState<LiveblocksYjsProvider | null>(null);
-  const [awareness, setAwareness] = useState<any | null>(null);
+  const [yjsState, setYjsState] = useState<YjsContextValue | null>(null);
 
   useEffect(() => {
+    // Create the Yjs document and provider only once
     const yDoc = new Y.Doc();
     const yProvider = new LiveblocksYjsProvider(room, yDoc);
-
-    // Get awareness from the provider - this is crucial for cursors
     const yAwareness = yProvider.awareness;
 
-    setDoc(yDoc);
-    setProvider(yProvider);
-    setAwareness(yAwareness);
+    setYjsState({
+      doc: yDoc,
+      provider: yProvider,
+      awareness: yAwareness,
+    });
 
+    // Cleanup function to destroy the provider and doc when the component unmounts
     return () => {
-      yProvider?.destroy();
-      yDoc?.destroy();
+      yProvider.destroy();
+      yDoc.destroy();
     };
+    // The `room` object is stable, so this effect runs only once
   }, [room]);
 
-  return (
-    <YjsContext.Provider value={{ doc, provider, awareness }}>
-      {children}
-    </YjsContext.Provider>
-  );
+  // Render a loading state until the Yjs state is initialized
+  if (!yjsState) {
+    return (
+      <div className="flex items-center justify-center p-4">
+        <div className="text-muted-foreground">
+          Initializing collaboration...
+        </div>
+      </div>
+    );
+  }
+
+  return <YjsContext.Provider value={yjsState}>{children}</YjsContext.Provider>;
 }

@@ -2,28 +2,39 @@
 
 import { clerkClient } from "@clerk/nextjs/server";
 import { liveblocks } from "../auth/liveblocks";
+import { UserData } from "@/types";
 
-export const getClerkUsers = async ({ userIds }: { userIds: string[] }) => {
+export const getClerkUsers = async ({
+  userIds,
+}: {
+  userIds: string[];
+}): Promise<UserData[]> => {
   try {
-    const client = await clerkClient();
-    const { data } = await client.users.getUserList({
-      emailAddress: userIds,
+    // Check if userIds is empty or undefined
+    if (!userIds || userIds.length === 0) {
+      return [];
+    }
+
+    // Get the clerk client instance
+    const clerk = await clerkClient();
+    const { data } = await clerk.users.getUserList({
+      userId: userIds,
     });
 
     const users = data.map((user) => ({
       id: user.id,
-      name: `${user.firstName} ${user.lastName}`,
-      email: user.emailAddresses[0].emailAddress,
-      avatar: user.imageUrl,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.emailAddresses.find(
+        (e) => e.id === user.primaryEmailAddressId
+      )?.emailAddress,
+      imageUrl: user.imageUrl,
     }));
 
-    const sortedUsers = userIds.map((email) =>
-      users.find((user) => user.email === email)
-    );
-
-    return sortedUsers;
+    // Filter out any users who couldn't be mapped properly
+    return users.filter((u) => u.email) as UserData[];
   } catch (error) {
-    console.log(`Error fetching users: ${error}`);
+    console.error(`Error fetching users: ${error}`);
     return [];
   }
 };
@@ -56,7 +67,7 @@ export const getDocumentUsers = async ({
 
     return users;
   } catch (error) {
-    console.log(`Error fetching document users: ${error}`);
+    console.error(`Error fetching document users: ${error}`);
     return [];
   }
 };

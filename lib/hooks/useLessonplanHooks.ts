@@ -2,8 +2,11 @@ import { useMutation } from "@liveblocks/react";
 import { LiveObject } from "@liveblocks/client";
 import { v4 as uuidv4 } from "uuid";
 import type { Bloq, BloqType } from "@/types";
+import { updateDocument, deleteDocument } from "@/lib/actions/room.actions";
+import { useState, useCallback } from "react";
+import { DocumentDataWithOwner } from "@/types";
 
-export function useLessonPlanMutations() {
+export function useLessonPlanMutations(roomId?: string) {
   const updateLessonplan = useMutation(
     ({ storage }, updates: { title?: string; description?: string }) => {
       // Check if storage is loaded
@@ -75,5 +78,75 @@ export function useLessonPlanMutations() {
     }
   }, []);
 
-  return { updateLessonplan, addBloq, updateBloq, removeBloq };
+  // Separate function to update document metadata
+  const updateDocumentMetadata = async (title: string) => {
+    if (roomId) {
+      console.log("Updating document metadata:", { roomId, title });
+      try {
+        await updateDocument(roomId, title);
+        console.log("Document metadata updated successfully");
+      } catch (error) {
+        console.error("Failed to update document metadata:", error);
+        // You might want to show a toast notification here
+        // toast.error("Failed to save title to server");
+      }
+    }
+  };
+
+  // Function to delete the current document
+  const deleteCurrentDocument = async (userId: string) => {
+    if (roomId) {
+      console.log("Deleting document:", roomId);
+      try {
+        await deleteDocument(roomId, userId);
+        console.log("Document deleted successfully");
+      } catch (error) {
+        console.error("Failed to delete document:", error);
+        throw error; // Re-throw so the UI can handle it
+      }
+    }
+  };
+
+  return {
+    updateLessonplan,
+    addBloq,
+    updateBloq,
+    removeBloq,
+    updateDocumentMetadata,
+    deleteCurrentDocument,
+  };
+}
+
+// Hook for managing lesson plans list
+export function useLessonPlanList() {
+  const [documents, setDocuments] = useState<DocumentDataWithOwner[]>([]);
+
+  const deleteDocumentFromList = useCallback(
+    async (roomId: string, userId: string) => {
+      try {
+        console.log("Deleting document from list:", roomId);
+        await deleteDocument(roomId, userId);
+
+        // Remove the document from the local state
+        setDocuments((prev) => prev.filter((doc) => doc.id !== roomId));
+
+        console.log("Document deleted from list successfully");
+        return true;
+      } catch (error) {
+        console.error("Failed to delete document from list:", error);
+        throw error;
+      }
+    },
+    []
+  );
+
+  const setDocumentsList = useCallback((docs: DocumentDataWithOwner[]) => {
+    setDocuments(docs);
+  }, []);
+
+  return {
+    documents,
+    setDocumentsList,
+    deleteDocumentFromList,
+  };
 }

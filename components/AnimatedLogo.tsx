@@ -1,3 +1,6 @@
+// lessonbloqs_composer copy/components/AnimatedLogo.tsx
+"use client";
+
 import React from "react";
 import { motion, useMotionValue, useTransform } from "framer-motion";
 

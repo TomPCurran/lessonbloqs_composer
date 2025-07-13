@@ -391,75 +391,54 @@ html {
     background: #0c0c0c;
   }
 }
-
-/* Add this to your globals.css file */
-
-/* Live cursor styles for BlockNote */
-.ProseMirror .collaboration-cursor__caret {
-  position: relative;
-  margin-left: -1px;
-  margin-right: -1px;
+/* BlockNote collaboration cursor styles */
+.bn-editor .ProseMirror .collaboration-cursor__caret {
   border-left: 1px solid;
   border-right: 1px solid;
-  word-break: normal;
+  margin-left: -1px;
+  margin-right: -1px;
   pointer-events: none;
+  position: relative;
+  word-break: normal;
 }
 
-.ProseMirror .collaboration-cursor__label {
-  position: absolute;
-  top: -1.4em;
-  left: -1px;
+.bn-editor .ProseMirror .collaboration-cursor__label {
+  background: var(--user-color, #007bff);
+  border-radius: 3px;
+  color: white;
   font-size: 12px;
   font-style: normal;
   font-weight: 600;
+  left: -1px;
   line-height: normal;
-  user-select: none;
-  color: white;
   padding: 2px 6px;
-  border-radius: 3px;
-  white-space: nowrap;
   pointer-events: none;
+  position: absolute;
+  top: -1.4em;
+  user-select: none;
+  white-space: nowrap;
   z-index: 1000;
 }
 
-/* Ensure cursors are visible */
-.ProseMirror .collaboration-cursor__caret::after {
+.bn-editor .ProseMirror .collaboration-cursor__caret::after {
+  background-color: inherit;
   content: "";
+  height: 1.2em;
+  left: -1px;
+  pointer-events: none;
   position: absolute;
   top: 0;
-  left: -1px;
   width: 2px;
-  height: 1.2em;
-  background-color: inherit;
-  pointer-events: none;
 }
 
-/* Hide cursor labels on mobile to reduce clutter */
-@media (max-width: 768px) {
-  .ProseMirror .collaboration-cursor__label {
-    display: none;
-  }
+/* Ensure cursors inherit user colors */
+.bn-editor .ProseMirror .collaboration-cursor__caret,
+.bn-editor .ProseMirror .collaboration-cursor__label {
+  border-color: var(--user-color, #007bff);
+  background-color: var(--user-color, #007bff);
 }
 
 /* Animate cursor appearance */
-.ProseMirror .collaboration-cursor__caret {
+.bn-editor .ProseMirror .collaboration-cursor__caret {
   animation: blink 1s infinite;
-}
-
-@keyframes blink {
-  0%,
-  50% {
-    opacity: 1;
-  }
-  51%,
-  100% {
-    opacity: 0;
-  }
-}
-
-/* Custom cursor colors - these will be overridden by user colors */
-.ProseMirror .collaboration-cursor__caret,
-.ProseMirror .collaboration-cursor__label {
-  border-color: var(--user-color, #007bff);
-  background-color: var(--user-color, #007bff);
 }
