@@ -18,8 +18,23 @@ const BloqContainer = ({ currentUser, roomId }: BloqContainerProps) => {
   // Directly use live data from Liveblocks storage
   const lessonPlan = useStorage((root) => root.lessonPlan);
   const bloqs = useStorage((root) => root.bloqs);
+  const settings = useStorage((root) => root.settings);
   const { updateLessonplan, updateDocumentMetadata } =
     useLessonPlanMutations(roomId);
+
+  // Debug logging for BloqContainer
+  React.useEffect(() => {
+    console.log("=== BLOQ CONTAINER DEBUG ===");
+    console.log("Current User:", currentUser);
+    console.log("Room ID:", roomId);
+    console.log("Lesson Plan:", lessonPlan);
+    console.log("Bloqs:", bloqs);
+    console.log("Settings:", settings);
+    console.log("Comments Allowed:", settings?.allowComments);
+    console.log("Editing Allowed:", settings?.allowEditing);
+    console.log("Number of Bloqs:", bloqs?.length || 0);
+    console.log("===========================");
+  }, [currentUser, roomId, lessonPlan, bloqs, settings]);
 
   const handleTitleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {

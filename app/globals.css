@@ -1,5 +1,5 @@
 @import "@liveblocks/react-ui/styles.css";
-
+@import "@liveblocks/react-blocknote/styles.css";
 * {
   font-family: "Inter", sans-serif;
 }
@@ -441,4 +441,179 @@ html {
 /* Animate cursor appearance */
 .bn-editor .ProseMirror .collaboration-cursor__caret {
   animation: blink 1s infinite;
+}
+
+/*————————————————————————————————————————*/
+/* Floating comment styles: always above editor content  */
+/*————————————————————————————————————————*/
+/* The gutter “+” anchors */
+.anchored-threads {
+  @apply absolute right-3 z-50;
+}
+/* The pop-up composer when you click “+” or select text */
+.floating-composer {
+  @apply absolute z-50;
+  /* You can tweak top/left/right in your component if needed,
+     but absolute+z-50 ensures it floats above everything. */
+}
+
+/* BlockNote Comment Styles */
+.bn-comment-thread {
+  @apply z-50;
+}
+
+.bn-comment-thread__thread {
+  @apply bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg;
+}
+
+.bn-comment-thread__comment {
+  @apply p-3 border-b border-gray-100 dark:border-gray-700 last:border-b-0;
+}
+
+.bn-comment-thread__comment-header {
+  @apply flex items-center gap-2 mb-2;
+}
+
+.bn-comment-thread__comment-author {
+  @apply text-sm font-medium text-gray-900 dark:text-gray-100;
+}
+
+.bn-comment-thread__comment-time {
+  @apply text-xs text-gray-500 dark:text-gray-400;
+}
+
+.bn-comment-thread__comment-content {
+  @apply text-sm text-gray-700 dark:text-gray-300;
+}
+
+.bn-comment-thread__composer {
+  @apply p-3;
+}
+
+.bn-comment-thread__composer-input {
+  @apply w-full p-2 text-sm border border-gray-200 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent;
+}
+
+.bn-comment-thread__composer-actions {
+  @apply flex justify-end gap-2 mt-2;
+}
+
+.bn-comment-thread__composer-button {
+  @apply px-3 py-1 text-sm font-medium rounded-md transition-colors;
+}
+
+.bn-comment-thread__composer-button--primary {
+  @apply bg-blue-600 text-white hover:bg-blue-700;
+}
+
+.bn-comment-thread__composer-button--secondary {
+  @apply bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600;
+}
+
+/* Comment bubble highlight */
+.bn-comment-thread__highlight {
+  @apply bg-yellow-200 dark:bg-yellow-800/30;
+}
+
+/* Side menu comment button */
+.bn-side-menu__button--comment {
+  @apply bg-blue-600 text-white hover:bg-blue-700;
+}
+
+/* Floating comment composer */
+.bn-floating-composer {
+  @apply z-50 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg;
+}
+
+/* BlockNote specific comment styles */
+.bn-comment {
+  @apply relative;
+}
+
+.bn-comment__highlight {
+  @apply bg-yellow-200 dark:bg-yellow-800/30;
+}
+
+.bn-comment__thread {
+  @apply absolute z-50 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg min-w-64;
+}
+
+.bn-comment__composer {
+  @apply p-3 border-t border-gray-100 dark:border-gray-700;
+}
+
+.bn-comment__input {
+  @apply w-full p-2 text-sm border border-gray-200 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none;
+}
+
+.bn-comment__actions {
+  @apply flex justify-end gap-2 mt-2;
+}
+
+.bn-comment__button {
+  @apply px-3 py-1 text-sm font-medium rounded-md transition-colors;
+}
+
+.bn-comment__button--primary {
+  @apply bg-blue-600 text-white hover:bg-blue-700;
+}
+
+.bn-comment__button--secondary {
+  @apply bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600;
+}
+
+/* Ensure side menu is visible */
+.bn-side-menu {
+  @apply z-40;
+}
+
+.bn-side-menu__button {
+  @apply bg-blue-600 text-white hover:bg-blue-700 rounded-full p-2 shadow-lg;
+}
+
+/* Comment thread positioning */
+.bn-comment-thread {
+  @apply fixed z-50;
+}
+
+/* Ensure proper layering */
+.bn-editor {
+  @apply relative z-10;
+}
+
+.bn-comment-thread {
+  @apply z-50;
+}
+
+/* BlockNote Side Menu Styles - More Specific */
+.bn-side-menu {
+  @apply absolute z-50;
+}
+
+.bn-side-menu__button {
+  @apply bg-blue-600 text-white hover:bg-blue-700 rounded-full p-2 shadow-lg border-2 border-white dark:border-gray-800;
+}
+
+.bn-side-menu__button--comment {
+  @apply bg-green-600 text-white hover:bg-green-700;
+}
+
+/* Ensure side menu appears on text selection */
+.bn-side-menu {
+  @apply opacity-100 transition-opacity duration-200;
+}
+
+/* Force side menu visibility */
+.bn-side-menu {
+  @apply !block !visible;
+}
+
+/* Side menu positioning */
+.bn-side-menu {
+  @apply left-0 transform -translate-x-full;
+}
+
+/* Debug styles to make side menu more visible */
+.bn-side-menu {
+  @apply border-2 border-red-500;
 }

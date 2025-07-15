@@ -1,5 +1,3 @@
-// liveblocks.config.ts
-
 import { LiveObject, LiveList } from "@liveblocks/client";
 
 // Define Liveblocks types for your application
@@ -71,10 +69,12 @@ declare global {
       | { type: "SAVE_TRIGGERED" };
 
     // Custom metadata set on threads, for useThreads, useCreateThread, etc.
-    ThreadMetadata: {
-      bloqId: string;
-      resolved: boolean;
-    };
+    // ThreadMetadata: {
+    //   bloqId: string;
+    //   selectedText: string;
+    //   timestamp: number;
+    // };
+    ThreadMetadata: Record<string, never>;
     // Custom room info set with resolveRoomsInfo, for useRoomInfo
     RoomInfo: {
       title: string;

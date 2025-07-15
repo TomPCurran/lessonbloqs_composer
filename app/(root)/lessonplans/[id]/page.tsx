@@ -17,7 +17,6 @@ const Page = async ({ params }: PageProps) => {
   const documentId = resolvedParams?.id;
 
   if (!documentId) {
-    // Handle the case where id is not present, though this is unlikely in a dynamic route
     return <div>Document ID not found.</div>;
   }
 
@@ -58,13 +57,15 @@ const Page = async ({ params }: PageProps) => {
     };
 
     return (
-      <main className="flex-1 flex flex-col items-center justify-center w-full pt-16 px-4 sm:px-6 lg:px-8">
-        <Room
-          documentId={documentId}
-          initialDocument={room}
-          user={currentUserData}
-          collaborators={collaborators}
-        />
+      <main className="flex-1 flex flex-row items-start justify-center w-full pt-16">
+        <div className="flex-1 px-4 sm:px-6 lg:px-8">
+          <Room
+            documentId={documentId}
+            initialDocument={room}
+            user={currentUserData}
+            collaborators={collaborators}
+          />
+        </div>
       </main>
     );
   } catch (error) {

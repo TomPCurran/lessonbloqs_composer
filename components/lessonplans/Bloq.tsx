@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback } from "react";
+import React, { useCallback } from "react";
 import { X } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -10,17 +10,18 @@ import { useLessonPlanMutations } from "@/lib/hooks/useLessonplanHooks";
 import { Editor } from "@/components/editor/Editor";
 import { getUserColor } from "@/lib/utils";
 import { Bloq as BloqType, UserData } from "@/types";
+import { useUser } from "@clerk/nextjs";
 
 interface BloqProps {
   bloq: BloqType;
   currentUser: UserData;
 }
 
-export default function Bloq({ bloq, currentUser }: BloqProps) {
-  const [isFocused, setIsFocused] = useState(false);
+// Use React.memo to prevent unnecessary re-renders
+const Bloq = React.memo(function Bloq({ bloq, currentUser }: BloqProps) {
   const { updateBloq, removeBloq } = useLessonPlanMutations();
+  const { user } = useUser();
 
-  // Memoize the user details to prevent unnecessary recalculations
   const userName = React.useMemo(
     () => `${currentUser.firstName} ${currentUser.lastName}`,
     [currentUser.firstName, currentUser.lastName]
@@ -30,7 +31,6 @@ export default function Bloq({ bloq, currentUser }: BloqProps) {
     [currentUser.id]
   );
 
-  // Use useCallback for event handlers to prevent re-creation on re-renders
   const handleTitleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       updateBloq(bloq.id, { title: e.target.value });
@@ -42,23 +42,15 @@ export default function Bloq({ bloq, currentUser }: BloqProps) {
     removeBloq(bloq.id);
   }, [bloq.id, removeBloq]);
 
-  const handleFocus = useCallback(() => setIsFocused(true), []);
-  const handleBlur = useCallback((e: React.FocusEvent<HTMLDivElement>) => {
-    if (!e.currentTarget.contains(e.relatedTarget as Node)) {
-      setIsFocused(false);
-    }
-  }, []);
-
   return (
     <Card
       id={`bloq-${bloq.id}`}
+      // We now use `focus-within` to apply styles, which doesn't cause a re-render.
       className={cn(
         "group relative w-full rounded-2xl bg-card shadow-lg transition-shadow duration-200",
         "border border-border hover:border-primary/30",
-        isFocused && "ring-2 ring-primary/20 border-primary/50 shadow-xl"
+        "focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary/50 focus-within:shadow-xl"
       )}
-      onFocusCapture={handleFocus}
-      onBlurCapture={handleBlur}
     >
       <Button
         variant="ghost"
@@ -82,16 +74,20 @@ export default function Bloq({ bloq, currentUser }: BloqProps) {
           )}
         />
 
-        <div className="min-h-[200px] border-t border-border/20 pt-4">
-          <Editor
-            key={bloq.id} // Ensure editor re-mounts if bloqId changes unexpectedly
-            bloqId={bloq.id}
-            userName={userName}
-            userColor={userColor}
-            initialContent={bloq.content}
-          />
+        <div className="w-full h-full">
+          {user && (
+            <Editor
+              key={bloq.id}
+              bloqId={bloq.id}
+              userName={userName}
+              userColor={userColor}
+              initialContent={bloq.content}
+            />
+          )}
         </div>
       </div>
     </Card>
   );
-}
+});
+
+export default Bloq;

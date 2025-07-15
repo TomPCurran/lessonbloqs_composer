@@ -10,13 +10,12 @@ import React, {
 import { useRoom } from "@liveblocks/react";
 import * as Y from "yjs";
 import { LiveblocksYjsProvider } from "@liveblocks/yjs";
-import { Awareness } from "y-protocols/awareness";
 
 // Define the shape of the context value
 interface YjsContextValue {
   doc: Y.Doc;
   provider: LiveblocksYjsProvider;
-  awareness: Awareness;
+  awareness: LiveblocksYjsProvider["awareness"];
 }
 
 const YjsContext = createContext<YjsContextValue | null>(null);

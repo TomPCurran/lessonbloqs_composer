@@ -14,14 +14,23 @@ const Provider = ({ children }: { children: React.ReactNode }) => {
       authEndpoint="/api/liveblocks/auth"
       resolveUsers={async ({ userIds }) => {
         const users = await getClerkUsers({ userIds });
-        return users;
+
+        return users.map((user) => ({
+          id: user.id,
+          name: `${user.firstName} ${user.lastName}`,
+          email: user.email,
+          avatar: user.imageUrl,
+          color: "#6B4CE6", // You can generate this dynamically
+          userType: "editor" as const, // You can determine this based on room permissions
+        }));
       }}
       resolveMentionSuggestions={async ({ text, roomId }) => {
         const roomUsers = await getDocumentUsers({
           roomId,
-          currentUser: clerkUser?.emailAddresses[0]?.emailAddress,
+          currentUser: clerkUser?.emailAddresses[0]?.emailAddress || "",
           text,
         });
+
         return roomUsers;
       }}
     >

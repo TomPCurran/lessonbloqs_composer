@@ -2,170 +2,179 @@
 
 import React from "react";
 import { useEditorContentOrSelectionChange } from "@blocknote/react";
-import { BlockNoteEditor } from "@blocknote/core"; // Import the type
+import { BlockNoteEditor } from "@blocknote/core";
+import {
+  RiBold,
+  RiItalic,
+  RiUnderline,
+  RiStrikethrough,
+  RiCodeFill,
+  RiH1,
+  RiH2,
+  RiH3,
+  RiListOrdered,
+  RiListUnordered,
+  RiChatQuoteLine,
+} from "react-icons/ri";
+import { cn } from "@/lib/utils";
 
 interface EditorToolbarProps {
-  editor: BlockNoteEditor | null; // Use the specific type instead of 'any'
+  editor: BlockNoteEditor | null;
 }
 
 export function EditorToolbar({ editor }: EditorToolbarProps) {
-  const [currentBlock, setCurrentBlock] = React.useState<any>(null);
-  const [activeStyles, setActiveStyles] = React.useState<any>({});
+  const [activeStyles, setActiveStyles] = React.useState<
+    ReturnType<BlockNoteEditor["getActiveStyles"]>
+  >({});
+  const [activeBlock, setActiveBlock] = React.useState<
+    ReturnType<BlockNoteEditor["getTextCursorPosition"]>["block"] | null
+  >(null);
+  const [hasSelection, setHasSelection] = React.useState<boolean>(false);
 
-  // Update active states when editor content changes
+  // Updates the toolbar state based on the editor's content or selection.
   useEditorContentOrSelectionChange(() => {
     if (editor) {
-      const block = editor.getTextCursorPosition().block;
-      const styles = editor.getActiveStyles();
-      setCurrentBlock(block);
-      setActiveStyles(styles);
+      setActiveStyles(editor.getActiveStyles());
+      setActiveBlock(editor.getTextCursorPosition().block);
+      const selection = editor.getSelection();
+      setHasSelection(!!selection && selection.from !== selection.to);
     }
-  }, editor ?? undefined);
-  
-  if (!editor) return null;
+  }, editor);
 
-  const toggleBold = () => editor.toggleStyles({ bold: true });
-  const toggleItalic = () => editor.toggleStyles({ italic: true });
-  const toggleUnderline = () => editor.toggleStyles({ underline: true });
+  if (!editor) {
+    return null;
+  }
 
-  const setHeading = (level: 1 | 2 | 3) => {
-    editor.updateBlock(editor.getTextCursorPosition().block, {
-      type: "heading",
-      props: { level },
-    });
-  };
-
-  const setParagraph = () => {
-    editor.updateBlock(editor.getTextCursorPosition().block, {
-      type: "paragraph",
-    });
-  };
-
-  // Fixed list methods
-  const setBulletList = () => {
-    const currentBlock = editor.getTextCursorPosition().block;
-
-    if (currentBlock.type === "bulletListItem") {
-      // If already a bullet list, convert to paragraph
-      editor.updateBlock(currentBlock, {
-        type: "paragraph",
-      });
-    } else {
-      // Convert to bullet list
-      editor.updateBlock(currentBlock, {
-        type: "bulletListItem",
-      });
-    }
-  };
-
-  const setNumberedList = () => {
-    const currentBlock = editor.getTextCursorPosition().block;
-
-    if (currentBlock.type === "numberedListItem") {
-      // If already a numbered list, convert to paragraph
-      editor.updateBlock(currentBlock, {
-        type: "paragraph",
-      });
-    } else {
-      // Convert to numbered list
-      editor.updateBlock(currentBlock, {
-        type: "numberedListItem",
-      });
-    }
-  };
-
-  // Helper function for button styling
-  const getButtonClass = (isActive: boolean) => {
-    return `px-3 py-1 text-sm font-medium rounded border transition-colors ${
+  // Helper function to style the toolbar buttons.
+  const getButtonClass = (isActive: boolean) =>
+    cn(
+      "p-2 rounded-md transition-colors border",
       isActive
-        ? "bg-accent/20 text-accent border-accent/30"
-        : "bg-transparent hover:bg-muted/80 border-border"
-    }`;
-  };
-
-  const currentBlockType = currentBlock?.type || "paragraph";
-  const currentLevel = currentBlock?.props?.level;
+        ? "bg-primary/10 text-primary border-primary/20"
+        : "bg-transparent hover:bg-muted/80 border-border text-foreground"
+    );
 
   return (
-    <div className="flex items-center gap-2 p-2 border-b border-border bg-surface rounded-t-lg overflow-x-auto">
+    <div className="flex items-center gap-2 p-2 border-b border-border bg-surface rounded-t-lg overflow-x-auto flex-wrap">
       {/* Text Styles */}
-      <div className="flex items-center gap-1 border-r border-border pr-2 mr-1">
+      <div className="flex items-center gap-1">
         <button
-          onClick={toggleBold}
-          className={getButtonClass(activeStyles.bold)}
+          onClick={() => editor.toggleStyles({ bold: true })}
+          className={getButtonClass(activeStyles["bold"])}
           title="Bold"
         >
-          <strong>B</strong>
+          <RiBold />
         </button>
         <button
-          onClick={toggleItalic}
-          className={getButtonClass(activeStyles.italic)}
+          onClick={() => editor.toggleStyles({ italic: true })}
+          className={getButtonClass(activeStyles["italic"])}
           title="Italic"
         >
-          <em>I</em>
+          <RiItalic />
         </button>
         <button
-          onClick={toggleUnderline}
-          className={getButtonClass(activeStyles.underline)}
+          onClick={() => editor.toggleStyles({ underline: true })}
+          className={getButtonClass(activeStyles["underline"])}
           title="Underline"
         >
-          <u>U</u>
+          <RiUnderline />
+        </button>
+        <button
+          onClick={() => editor.toggleStyles({ strikethrough: true })}
+          className={getButtonClass(activeStyles["strikethrough"])}
+          title="Strikethrough"
+        >
+          <RiStrikethrough />
+        </button>
+        <button
+          onClick={() => editor.toggleStyles({ code: true })}
+          className={getButtonClass(activeStyles["code"])}
+          title="Code"
+        >
+          <RiCodeFill />
         </button>
       </div>
 
+      <div className="h-5 w-px bg-border mx-1" />
+
       {/* Block Types */}
-      <div className="flex items-center gap-1 border-r border-border pr-2 mr-1">
+      <div className="flex items-center gap-1">
         <button
-          onClick={setParagraph}
-          className={getButtonClass(currentBlockType === "paragraph")}
-          title="Paragraph"
-        >
-          ¶
-        </button>
-        <button
-          onClick={() => setHeading(1)}
+          onClick={() =>
+            editor.updateBlock(activeBlock!, {
+              type: "heading",
+              props: { level: 1 },
+            })
+          }
           className={getButtonClass(
-            currentBlockType === "heading" && currentLevel === 1
+            activeBlock?.type === "heading" && activeBlock.props.level === "1"
           )}
           title="Heading 1"
         >
-          H1
+          <RiH1 />
         </button>
         <button
-          onClick={() => setHeading(2)}
+          onClick={() =>
+            editor.updateBlock(activeBlock!, {
+              type: "heading",
+              props: { level: 2 },
+            })
+          }
           className={getButtonClass(
-            currentBlockType === "heading" && currentLevel === 2
+            activeBlock?.type === "heading" && activeBlock.props.level === "2"
           )}
           title="Heading 2"
         >
-          H2
+          <RiH2 />
         </button>
         <button
-          onClick={() => setHeading(3)}
+          onClick={() =>
+            editor.updateBlock(activeBlock!, {
+              type: "heading",
+              props: { level: 3 },
+            })
+          }
           className={getButtonClass(
-            currentBlockType === "heading" && currentLevel === 3
+            activeBlock?.type === "heading" && activeBlock.props.level === "3"
           )}
           title="Heading 3"
         >
-          H3
+          <RiH3 />
+        </button>
+        <button
+          onClick={() =>
+            editor.updateBlock(activeBlock!, { type: "bulletListItem" })
+          }
+          className={getButtonClass(activeBlock?.type === "bulletListItem")}
+          title="Bullet List"
+        >
+          <RiListUnordered />
+        </button>
+        <button
+          onClick={() =>
+            editor.updateBlock(activeBlock!, { type: "numberedListItem" })
+          }
+          className={getButtonClass(activeBlock?.type === "numberedListItem")}
+          title="Numbered List"
+        >
+          <RiListOrdered />
         </button>
       </div>
 
-      {/* Lists */}
-      <div className="flex items-center gap-1">
+      <div className="h-5 w-px bg-border mx-1" />
+
+      {/* Comment Button */}
+      <div className="flex items-center">
         <button
-          onClick={setBulletList}
-          className={getButtonClass(currentBlockType === "bulletListItem")}
-          title="Bullet List"
+          onClick={() => editor.comments.startPendingComment()}
+          disabled={!hasSelection}
+          className={cn(
+            getButtonClass(false),
+            "disabled:opacity-50 disabled:cursor-not-allowed"
+          )}
+          title="Add Comment"
         >
-          • List
-        </button>
-        <button
-          onClick={setNumberedList}
-          className={getButtonClass(currentBlockType === "numberedListItem")}
-          title="Numbered List"
-        >
-          1. List
+          <RiChatQuoteLine />
         </button>
       </div>
     </div>
