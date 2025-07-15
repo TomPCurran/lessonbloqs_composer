@@ -27,6 +27,22 @@ export default function Canvas({
   const status = useStatus();
   const isReady = status === "connected";
 
+  // Debug logging for Canvas component
+  React.useEffect(() => {
+    console.log("=== CANVAS DEBUG ===");
+    console.log("Document ID:", documentId);
+    console.log("Current User:", currentUser);
+    console.log("Room Metadata:", roomMetadata);
+    console.log("Collaborators:", collaborators);
+    console.log("Connection Status:", status);
+    console.log("Is Ready:", isReady);
+    console.log(
+      "User Type:",
+      roomMetadata.creatorId === currentUser.id ? "creator" : "editor"
+    );
+    console.log("===================");
+  }, [documentId, currentUser, roomMetadata, collaborators, status, isReady]);
+
   if (!isReady) {
     return (
       <div className="flex items-center justify-center h-full w-full py-16">
