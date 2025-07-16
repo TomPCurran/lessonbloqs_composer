@@ -66,18 +66,33 @@ declare global {
       | { type: "BLOQ_REMOVED"; bloqId: string }
       | {
           type: "BLOQ_MOVED";
-          bloqId: string;
+          bloqId: string;+
           fromIndex: number;
           toIndex: number;
         }
       | { type: "USER_JOINED"; userId: string; userName: string }
       | { type: "USER_LEFT"; userId: string; userName: string }
       | { type: "SAVE_TRIGGERED" };
+      | { type: "BLOQ_ADDED"; bloqId: string; position: number }
+      | { type: "BLOQ_REMOVED"; bloqId: string }
+      | {
+          type: "BLOQ_MOVED";
+          bloqId: string;
+          fromIndex: number;
+          toIndex: number;
+        }
+      | { type: "USER_JOINED"; userId: string; userName: string }
+      | { type: "USER_LEFT"; userId: string; userName: string }
+      | { type: "SAVE_TRIGGERED" }
+      | { type: "COMMENT_ADDED"; bloqId: string; threadId: string }
+      | { type: "COMMENT_RESOLVED"; bloqId: string; threadId: string };
 
     // Custom metadata set on threads, for useThreads, useCreateThread, etc.
     ThreadMetadata: {
       bloqId: string;
-      position: { x: number; y: number };
+      position?: { x: number; y: number };
+      type: "comment" | "suggestion"; // Add different comment types
+      resolved?: boolean;
     };
 
     // Custom room info set with resolveRoomsInfo, for useRoomInfo

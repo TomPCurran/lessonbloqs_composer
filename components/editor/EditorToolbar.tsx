@@ -21,7 +21,7 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
       setActiveStyles(styles);
     }
   }, editor ?? undefined);
-  
+
   if (!editor) return null;
 
   const toggleBold = () => editor.toggleStyles({ bold: true });
