@@ -482,6 +482,34 @@
   box-shadow: var(--elevation-2) !important;
 }
 
+/* Custom Modal Styling for ShareModal */
+[data-radix-dialog-content] {
+  max-width: 42rem !important; /* 672px - wider than max-w-2xl */
+  width: 95vw !important;
+}
+
+@media (max-width: 640px) {
+  [data-radix-dialog-content] {
+    width: 98vw !important;
+    margin: 1rem !important;
+  }
+}
+
+/* Ensure proper spacing for ShareModal layout */
+.share-modal-content {
+  @apply space-y-6;
+}
+
+.share-modal-row {
+  @apply flex items-center gap-4;
+}
+
+@media (max-width: 640px) {
+  .share-modal-row {
+    @apply flex-col items-stretch gap-3;
+  }
+}
+
 .lb-thread-header {
   @apply !border-b !border-border !p-4 !bg-surface-variant;
 }

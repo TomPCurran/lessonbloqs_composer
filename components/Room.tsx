@@ -8,6 +8,8 @@ import Link from "next/link";
 import { RoomProps, UserData } from "@/types";
 import { getUserColor } from "@/lib/utils";
 import React from "react";
+import DocumentHeader from "@/components/composer/DocumentHeader";
+import { FloatingToolbar } from "@/components/composer/FloatingToolbar";
 
 // A fallback component to show while the room is loading
 const RoomLoader = () => (
@@ -21,12 +23,10 @@ const RoomError = ({ error }: { error: string }) => (
   <div className="flex flex-col items-center justify-center h-full w-full py-16 space-y-4">
     <div className="text-center">
       <h2 className="text-2xl font-bold text-foreground mb-2">
-        {error === "You do not have access to this document"
-          ? "Access Denied"
-          : "Document Not Found"}
+        {error === "ACCESS_DENIED" ? "Access Denied" : "Document Not Found"}
       </h2>
       <p className="text-muted-foreground mb-4">
-        {error === "You do not have access to this document"
+        {error === "ACCESS_DENIED"
           ? "You don't have permission to access this document."
           : "The document you're looking for doesn't exist or has been deleted."}
       </p>
@@ -44,13 +44,7 @@ interface RoomPropsFixed extends Omit<RoomProps, "collaborators"> {
   collaborators?: UserData[];
 }
 
-const Room = ({
-  documentId,
-  initialDocument,
-  user,
-  error,
-  collaborators = [],
-}: RoomPropsFixed) => {
+const Room = ({ documentId, initialDocument, user, error }: RoomPropsFixed) => {
   if (error) {
     return <RoomError error={error} />;
   }
@@ -87,6 +81,31 @@ const Room = ({
     },
   };
 
+  // Compute currentUserType based on user's access
+  const currentUserType = (() => {
+    // Check if user is the creator
+    if (initialDocument?.metadata?.creatorId === user.id) {
+      return "creator";
+    }
+
+    // Check user's access permissions from Liveblocks
+    const userAccess = initialDocument?.usersAccesses?.[user.email];
+
+    if (userAccess) {
+      // If user has room:write access, they're an editor
+      if (userAccess.includes("room:write")) {
+        return "editor";
+      }
+      // If user has room:read access, they're a viewer
+      if (userAccess.includes("room:read")) {
+        return "viewer";
+      }
+    }
+
+    // Default to viewer if no access found
+    return "viewer";
+  })();
+
   return (
     <RoomProvider
       id={documentId}
@@ -94,11 +113,27 @@ const Room = ({
       initialPresence={initialPresence}
     >
       <ClientSideSuspense fallback={<RoomLoader />}>
+        {/* --- Always show the editable header at the top --- */}
+        <DocumentHeader
+          documentId={documentId}
+          initialTitle={initialDocument.metadata?.title}
+          currentUserType={currentUserType}
+        />
+
+        {/* Floating Toolbar - scrolls with content */}
+        <div className="flex justify-center mb-grid-4">
+          <FloatingToolbar
+            roomId={documentId}
+            currentUserType={currentUserType}
+            roomMetadata={initialDocument.metadata}
+            currentUser={user as UserData}
+          />
+        </div>
+
         <Canvas
           documentId={documentId}
-          currentUser={user as UserData} // Pass the full user object
-          roomMetadata={initialDocument.metadata} // Pass metadata
-          collaborators={collaborators}
+          currentUser={user as UserData}
+          currentUserType={currentUserType}
         />
       </ClientSideSuspense>
     </RoomProvider>

@@ -3,9 +3,10 @@ import Image from "next/image";
 
 const ActiveCollaborators = () => {
   const others = useOthers();
+  console.log(others);
 
   return (
-    <ul className="collaborators-list">
+    <ul className="flex justify-center items-center gap-2 mt-2">
       {others.map((other) => {
         const info = other.info;
         if (!info) return null;
