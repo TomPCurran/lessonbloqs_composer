@@ -39,7 +39,6 @@ export function useLessonPlanMutations(roomId?: string) {
       order: bloqs.length,
       content: "",
     });
-    console.log("[addBloq] Adding new bloq:", newBloq.toObject());
     bloqs.push(newBloq);
   }, []);
 
@@ -81,14 +80,10 @@ export function useLessonPlanMutations(roomId?: string) {
   // Separate function to update document metadata
   const updateDocumentMetadata = async (title: string) => {
     if (roomId) {
-      console.log("Updating document metadata:", { roomId, title });
       try {
         await updateDocument(roomId, title);
-        console.log("Document metadata updated successfully");
       } catch (error) {
         console.error("Failed to update document metadata:", error);
-        // You might want to show a toast notification here
-        // toast.error("Failed to save title to server");
       }
     }
   };
@@ -96,10 +91,8 @@ export function useLessonPlanMutations(roomId?: string) {
   // Function to delete the current document
   const deleteCurrentDocument = async (userId: string) => {
     if (roomId) {
-      console.log("Deleting document:", roomId);
       try {
         await deleteDocument(roomId, userId);
-        console.log("Document deleted successfully");
       } catch (error) {
         console.error("Failed to delete document:", error);
         throw error; // Re-throw so the UI can handle it
@@ -124,13 +117,9 @@ export function useLessonPlanList() {
   const deleteDocumentFromList = useCallback(
     async (roomId: string, userId: string) => {
       try {
-        console.log("Deleting document from list:", roomId);
-        await deleteDocument(roomId, userId);
-
-        // Remove the document from the local state
+        await deleteDocument(roomId, userId);    
         setDocuments((prev) => prev.filter((doc) => doc.id !== roomId));
 
-        console.log("Document deleted from list successfully");
         return true;
       } catch (error) {
         console.error("Failed to delete document from list:", error);

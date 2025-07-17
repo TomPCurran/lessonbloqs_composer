@@ -8,7 +8,7 @@ import BloqContainer from "@/components/lessonplans/BloqContainer";
 import { YjsProvider } from "@/lib/providers/yjsProvider";
 import LessonbloqsLogoAnimated from "@/components/AnimatedLogo";
 import { UserData } from "@/types";
-import { FileText } from "lucide-react";
+import { CommentPanelProvider } from "@/components/lessonplans/BloqComment";
 
 interface CanvasProps {
   documentId: string;
@@ -78,61 +78,21 @@ export default function Canvas({
             {/* Editor content */}
             <div className="relative z-10 p-grid-6 min-h-[650px]">
               <div className="h-full">
-                <BloqContainer
-                  currentUser={currentUser}
-                  currentUserType={currentUserType}
-                  roomId={documentId}
-                />
+                <CommentPanelProvider>
+                  <BloqContainer
+                    currentUser={currentUser}
+                    currentUserType={currentUserType}
+                    roomId={documentId}
+                  />
+                </CommentPanelProvider>
               </div>
             </div>
 
             {/* Status indicators */}
             <div className="absolute top-grid-3 right-grid-3 z-20">
-              <div className="flex items-center gap-grid-2">
-                {/* Auto-save indicator */}
-                <div className="google-surface rounded-full p-2 text-success elevation-1">
-                  <svg
-                    className="w-3 h-3"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                </div>
-
-                {/* User type indicator */}
-                <div
-                  className={cn(
-                    "px-2 py-1 rounded-md text-xs font-medium",
-                    "google-surface elevation-1",
-                    currentUserType === "creator" && "text-primary",
-                    currentUserType === "editor" && "text-secondary",
-                    currentUserType === "viewer" && "text-muted-foreground"
-                  )}
-                >
-                  {currentUserType}
-                </div>
-              </div>
+              <div className="flex items-center gap-grid-2"></div>
             </div>
           </Card>
-        </div>
-
-        {/* Footer info */}
-        <div className="flex items-center justify-between text-body-small text-muted-foreground pt-grid-2">
-          <div className="flex items-center gap-grid-4">
-            <span>Document ID: {documentId.slice(-8)}</span>
-            <span>•</span>
-            <span>Version: Live</span>
-          </div>
-
-          <div className="flex items-center gap-grid-2">
-            <span>Powered by</span>
-            <span className="text-primary font-medium">Liveblocks</span>
-          </div>
         </div>
       </div>
     </YjsProvider>

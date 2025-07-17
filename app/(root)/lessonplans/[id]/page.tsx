@@ -12,7 +12,6 @@ interface PageProps {
   };
 }
 
-// Google Material Design Error Component
 const DocumentErrorState = ({
   title = "Something went wrong",
   message = "We encountered an error while loading your document. Please try again later.",
@@ -68,7 +67,6 @@ const Page = async ({ params }: PageProps) => {
   const resolvedParams = await params;
   const documentId = resolvedParams?.id;
 
-  // Early return with proper Material Design styling
   if (!documentId) {
     return (
       <DocumentErrorState
@@ -89,7 +87,7 @@ const Page = async ({ params }: PageProps) => {
   try {
     const room = await getDocument({
       documentId,
-      userId: clerkUser.emailAddresses[0].emailAddress,
+      userId: clerkUser.id,
     });
 
     if (!room) {
@@ -105,7 +103,7 @@ const Page = async ({ params }: PageProps) => {
       )
       .map((user) => ({
         ...user,
-        userType: room.usersAccesses[user.email as string]?.[0],
+        userType: room.usersAccesses[user.id]?.[0],
       }));
 
     const currentUserData: UserData = {
@@ -135,12 +133,10 @@ const Page = async ({ params }: PageProps) => {
   } catch (error) {
     console.error("Error fetching document:", error);
 
-    // Check if the error is specifically an access denied error
     if (error instanceof Error && error.message === "ACCESS_DENIED") {
       redirect("/lessonplans");
     }
 
-    // For other errors, show the error state
     return (
       <DocumentErrorState
         title="Failed to load document"

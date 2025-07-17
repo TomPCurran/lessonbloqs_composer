@@ -17,7 +17,7 @@ async function DocumentsData() {
   const user = await currentUser();
   if (!user) redirect("/sign-in");
 
-  const documents = await getDocuments(user.emailAddresses[0].emailAddress);
+  const documents = await getDocuments(user.id);
   const ownerIds = documents.map(
     (doc: { metadata: { creatorId: string } }) => doc.metadata.creatorId
   );
@@ -43,8 +43,7 @@ async function DocumentsData() {
         currentUserType:
           doc.metadata.creatorId === user.id
             ? "creator"
-            : doc.usersAccesses?.[user.emailAddresses[0].emailAddress]?.[0] ===
-              "room:write"
+            : doc.usersAccesses?.[user.id]?.[0] === "room:write"
             ? "editor"
             : "viewer",
         currentUser: {

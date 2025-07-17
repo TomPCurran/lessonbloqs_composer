@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useCallback } from "react";
-import { X, MessageSquare, Grip } from "lucide-react";
+import React, { useState, useCallback, useRef } from "react";
+import { X, Grip } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -25,11 +25,9 @@ export default function Bloq({
 }: BloqProps) {
   const [isFocused, setIsFocused] = useState(false);
   const { updateBloq, removeBloq } = useLessonPlanMutations();
-
-  // Check if user can edit (creators and editors can edit, viewers cannot)
+  const bloqRef = useRef<HTMLDivElement>(null);
   const canEdit = currentUserType === "creator" || currentUserType === "editor";
 
-  // Memoize the user details to prevent unnecessary recalculations
   const userName = React.useMemo(
     () => `${currentUser.firstName} ${currentUser.lastName}`,
     [currentUser.firstName, currentUser.lastName]
@@ -66,6 +64,7 @@ export default function Bloq({
 
   return (
     <Card
+      ref={bloqRef}
       id={`bloq-${bloq.id}`}
       className={cn(
         "group relative w-full google-card transition-all duration-200",
@@ -79,18 +78,7 @@ export default function Bloq({
     >
       {/* Action buttons */}
       <div className="absolute top-grid-2 right-grid-2 flex items-center gap-grid-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-20">
-        <BloqComments
-          bloqId={bloq.id}
-          trigger={
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-8 w-8 p-0 hover:bg-accent/10 hover:text-accent"
-            >
-              <MessageSquare className="w-4 h-4" />
-            </Button>
-          }
-        />
+        <BloqComments bloqId={bloq.id} bloqRef={bloqRef} />
 
         {canEdit && (
           <Button
@@ -182,44 +170,6 @@ export default function Bloq({
               initialContent={bloq.content}
               canEdit={canEdit}
             />
-          </div>
-        </div>
-
-        {/* Bloq footer */}
-        <div className="flex items-center justify-between text-body-small text-muted-foreground pt-grid-2 border-t border-border/20">
-          <div className="flex items-center gap-grid-2">
-            <div
-              className="w-2 h-2 rounded-full"
-              style={{ backgroundColor: userColor }}
-            />
-            <span>
-              {canEdit ? `Edited by ${userName}` : `Viewing as ${userName}`}
-            </span>
-            {!canEdit && (
-              <span className="text-xs px-2 py-0.5 rounded-full bg-muted/50">
-                Read-only
-              </span>
-            )}
-          </div>
-
-          <div className="flex items-center gap-grid-2">
-            <span
-              className={cn(
-                "text-xs px-2 py-0.5 rounded-full font-medium",
-                currentUserType === "creator" && "bg-primary/10 text-primary",
-                currentUserType === "editor" &&
-                  "bg-secondary/10 text-secondary",
-                currentUserType === "viewer" && "bg-muted text-muted-foreground"
-              )}
-            >
-              {currentUserType}
-            </span>
-
-            {canEdit && (
-              <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                ID: {bloq.id.slice(-6)}
-              </span>
-            )}
           </div>
         </div>
       </div>

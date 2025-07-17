@@ -52,7 +52,7 @@ const EditableTitle = ({
           disabled={!canEdit}
           className={cn(
             "w-full text-center bg-transparent border-none p-grid-2 h-auto",
-            "text-display-medium font-normal text-foreground",
+            "text-display-large font-normal text-foreground",
             "placeholder:text-muted-foreground/60",
             "focus-visible:outline-none focus-visible:ring-0",
             "transition-all duration-200",

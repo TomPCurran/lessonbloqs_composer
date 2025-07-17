@@ -43,20 +43,6 @@ const EmptyState = ({ currentUserType }: { currentUserType: string }) => (
       <div className="w-16 h-16 mx-auto rounded-full bg-primary/10 flex items-center justify-center">
         <FileText className="w-8 h-8 text-primary" />
       </div>
-
-      <div className="space-grid-1">
-        <h3 className="text-headline-medium text-foreground">
-          {currentUserType === "viewer"
-            ? "No content blocks yet"
-            : "Start building your lesson plan"}
-        </h3>
-        <p className="text-body-medium text-muted-foreground max-w-md mx-auto">
-          {currentUserType === "viewer"
-            ? "This lesson plan doesn't have any content blocks yet."
-            : "Add content blocks to structure your lesson. Click the Bloqs button to get started."}
-        </p>
-      </div>
-
       {currentUserType !== "viewer" && (
         <div className="flex items-center justify-center gap-grid-1 text-body-small text-muted-foreground">
           <Plus className="w-4 h-4" />
@@ -97,25 +83,6 @@ const BloqContainer = ({
       {/* Title Section */}
       <div className="space-grid-2">
         <div className="relative group">
-          <Input
-            type="text"
-            value={lessonPlan.title}
-            onChange={handleTitleChange}
-            placeholder="Enter Lesson Plan Title"
-            disabled={currentUserType === "viewer"}
-            className={cn(
-              "w-full text-display-medium font-normal bg-transparent border-none p-0 h-auto",
-              "text-foreground placeholder:text-muted-foreground/60",
-              "focus-visible:outline-none focus-visible:ring-0",
-              "transition-all duration-200",
-              currentUserType !== "viewer" &&
-                "hover:bg-surface-variant/50 focus:bg-surface-variant/50",
-              "rounded-lg px-grid-2 py-grid-1",
-              currentUserType === "viewer" && "opacity-60 cursor-not-allowed"
-            )}
-          />
-
-          {/* Focus indicator */}
           {currentUserType !== "viewer" && (
             <div
               className={cn(
@@ -140,20 +107,6 @@ const BloqContainer = ({
       {/* Content Section */}
       {bloqs.length > 0 ? (
         <div className="space-grid-4">
-          {/* Bloqs counter */}
-          <div className="flex items-center gap-grid-2 text-body-small text-muted-foreground">
-            <div className="w-1 h-1 rounded-full bg-primary" />
-            <span>
-              {bloqs.length} content block{bloqs.length !== 1 ? "s" : ""}
-            </span>
-            {currentUserType === "viewer" && (
-              <span className="px-2 py-0.5 rounded-full bg-muted/50 text-xs">
-                View Only
-              </span>
-            )}
-          </div>
-
-          {/* Bloqs list */}
           <div className="space-grid-4">
             {bloqs.map((bloq, index) => {
               const bloqData =
@@ -184,32 +137,6 @@ const BloqContainer = ({
       ) : (
         <EmptyState currentUserType={currentUserType} />
       )}
-
-      {/* Document stats footer */}
-      <div className="flex items-center justify-between text-body-small text-muted-foreground pt-grid-4 border-t border-border/30">
-        <div className="flex items-center gap-grid-4">
-          <span>
-            Last edited by {currentUser.firstName} {currentUser.lastName}
-          </span>
-          <span>•</span>
-          <span>{new Date().toLocaleDateString()}</span>
-        </div>
-
-        <div className="flex items-center gap-grid-2">
-          <div className="w-2 h-2 rounded-full bg-success animate-pulse" />
-          <span>Auto-saved</span>
-          <span
-            className={cn(
-              "px-2 py-0.5 rounded-full text-xs font-medium ml-2",
-              currentUserType === "creator" && "bg-primary/10 text-primary",
-              currentUserType === "editor" && "bg-secondary/10 text-secondary",
-              currentUserType === "viewer" && "bg-muted text-muted-foreground"
-            )}
-          >
-            {currentUserType}
-          </span>
-        </div>
-      </div>
     </div>
   );
 };

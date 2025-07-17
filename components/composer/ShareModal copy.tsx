@@ -19,7 +19,6 @@ import {
   removeCollaborator,
   getRoomUsers,
 } from "@/lib/actions/room.actions";
-import { getClerkUsers } from "@/lib/actions/user.actions";
 import { ShareDocumentDialogProps, UserType, User } from "@/types";
 import { getUserColor, cn } from "@/lib/utils";
 import {
@@ -38,7 +37,7 @@ const ShareModal = ({
   creatorId,
   currentUserType,
   currentUser,
-  trigger,
+  trigger, // Accept custom trigger
 }: Omit<ShareDocumentDialogProps, "collaborators"> & {
   trigger?: React.ReactNode;
 }) => {
@@ -50,7 +49,9 @@ const ShareModal = ({
     useState<UserType>("viewer");
   const [email, setEmail] = useState("");
   const [permission, setPermission] = useState<UserType>("viewer");
-  const [roomUsers, setRoomUsers] = useState<User[]>([]);
+  const [roomUsers, setRoomUsers] = useState<
+    { email: string; access: string[] }[]
+  >([]);
   const [loadingUsers, setLoadingUsers] = useState(false);
 
   // Fetch all users with access to the room
@@ -60,43 +61,28 @@ const ShareModal = ({
     setLoadingUsers(true);
     try {
       const roomData = await getRoomUsers(roomId);
-      const userIds = Object.keys(roomData.usersAccesses);
-
-      // Get user data from Clerk
-      const clerkUsers = await getClerkUsers({ userIds });
-
-      // Combine with access info
-      const usersWithAccess = clerkUsers.map((clerkUser) => {
-        const access = roomData.usersAccesses[clerkUser.id] || [];
-        const userType = getAccessTypeToUserType(access);
-
-        return {
-          id: clerkUser.id,
-          name: `${clerkUser.firstName || ""} ${
-            clerkUser.lastName || ""
-          }`.trim(),
-          email: clerkUser.email,
-          avatar: clerkUser.imageUrl,
-          color: getUserColor(clerkUser.id),
-          userType,
-        };
-      });
-
-      setRoomUsers(usersWithAccess);
+      const users = Object.entries(roomData.usersAccesses).map(
+        ([email, access]) => ({
+          email,
+          access: access as string[],
+        })
+      );
+      setRoomUsers(users);
     } catch (error) {
       console.error("Failed to fetch room users:", error);
-      setRoomUsers([]);
     } finally {
       setLoadingUsers(false);
     }
   };
 
+  // Fetch users when modal opens
   useEffect(() => {
     if (open) {
       fetchRoomUsers();
     }
   }, [open, roomId]);
 
+  // Convert access type to user type
   const getAccessTypeToUserType = (access: string[]): UserType => {
     if (access.includes("room:write")) {
       return "editor";
@@ -106,8 +92,11 @@ const ShareModal = ({
     return "viewer";
   };
 
-  // Get all users including current user
+  // Create user objects for display
   const getAllUsersWithAccess = (): User[] => {
+    const users: User[] = [];
+
+    // Add current user first with proper user type determination
     const currentUserObj = {
       id: currentUser.id,
       name: `${currentUser.firstName || ""} ${
@@ -116,64 +105,35 @@ const ShareModal = ({
       email: currentUser.email,
       avatar: currentUser.imageUrl,
       color: getUserColor(currentUser.id),
-      userType: getActualUserType({
-        id: currentUser.id,
-        email: currentUser.email,
-      } as User),
+      userType: currentUserType,
     };
 
-    // Add current user if not already in room users
-    const allUsers = [...roomUsers];
-    if (!allUsers.find((user) => user.id === currentUser.id)) {
-      allUsers.unshift(currentUserObj);
-    }
+    // Use getActualUserType to determine if current user is actually the creator
+    currentUserObj.userType = getActualUserType(currentUserObj);
+    users.push(currentUserObj);
 
-    return allUsers;
+    // Add other users from room access
+    roomUsers.forEach(({ email, access }) => {
+      if (email !== currentUser.email) {
+        const userType = getAccessTypeToUserType(access);
+        users.push({
+          id: email, // Use email as ID for now
+          name: email.split("@")[0], // Use email prefix as name
+          email: email,
+          avatar: "", // No avatar for now
+          color: getUserColor(email),
+          userType: userType,
+        });
+      }
+    });
+
+    return users;
   };
 
   const shareDocumentHandler = async () => {
     if (!currentUser || !email.trim()) return;
 
     setLoading(true);
-    try {
-      // For now, we'll need to find user by email
-      // In a real app, you'd have an email->userId lookup service
-      const updatedBy: User = {
-        id: currentUser.id,
-        name: `${currentUser.firstName || ""} ${
-          currentUser.lastName || ""
-        }`.trim(),
-        email: currentUser.email,
-        avatar: currentUser.imageUrl,
-        color: getUserColor(currentUser.id),
-        userType: currentUserType,
-      };
-
-      await updateDocumentAccess({
-        roomId,
-        email: email.trim().toLowerCase(),
-        userType: permission,
-        updatedBy,
-      });
-
-      setEmail("");
-      setPermission("viewer");
-      await fetchRoomUsers();
-    } catch (error) {
-      console.error("Failed to share document:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const updateUserPermissionHandler = async (
-    userId: string,
-    newPermission: UserType
-  ) => {
-    if (!currentUser || !userId) return;
-
-    const userToUpdate = roomUsers.find((u) => u.id === userId);
-    if (!userToUpdate) return;
 
     const updatedBy: User = {
       id: currentUser.id,
@@ -189,10 +149,47 @@ const ShareModal = ({
     try {
       await updateDocumentAccess({
         roomId,
-        email: userToUpdate.email, // Still need email for the API
+        email: email.trim().toLowerCase(),
+        userType: permission,
+        updatedBy,
+      });
+
+      setEmail("");
+      setPermission("viewer");
+      // Refresh the room users after adding someone
+      await fetchRoomUsers();
+    } catch (error) {
+      console.error("Failed to share document:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updateUserPermissionHandler = async (
+    userEmail: string,
+    newPermission: UserType
+  ) => {
+    if (!currentUser || !userEmail) return;
+
+    const updatedBy: User = {
+      id: currentUser.id,
+      name: `${currentUser.firstName || ""} ${
+        currentUser.lastName || ""
+      }`.trim(),
+      email: currentUser.email,
+      avatar: currentUser.imageUrl,
+      color: getUserColor(currentUser.id),
+      userType: currentUserType,
+    };
+
+    try {
+      await updateDocumentAccess({
+        roomId,
+        email: userEmail.toLowerCase(),
         userType: newPermission,
         updatedBy,
       });
+      // Refresh the room users after updating permissions
       await fetchRoomUsers();
       setEditingUser(null);
     } catch (error) {
@@ -200,13 +197,10 @@ const ShareModal = ({
     }
   };
 
-  const removeUserHandler = async (userId: string) => {
-    if (!userId || userId === currentUser.id) return;
+  const removeUserHandler = async (email: string) => {
+    if (!email || email === currentUser.email) return;
 
-    const userToRemove = roomUsers.find((u) => u.id === userId);
-    if (!userToRemove) return;
-
-    setRemovingUser(userId);
+    setRemovingUser(email);
 
     try {
       const removedBy: User = {
@@ -222,12 +216,14 @@ const ShareModal = ({
 
       await removeCollaborator({
         roomId,
-        email: userToRemove.email, // Still need email for the API
+        email: email.toLowerCase(),
         removedBy,
       });
+      // Refresh the room users after removing someone
       await fetchRoomUsers();
     } catch (error) {
       console.error("Failed to remove collaborator:", error);
+      // You might want to show an error message to the user here
     } finally {
       setRemovingUser(null);
     }
@@ -259,23 +255,35 @@ const ShareModal = ({
     }
   };
 
-  const getActualUserType = (user: User): UserType => {
-    if (user.id === creatorId) {
+  // Determine actual user type based on creatorId and user permissions
+  const getActualUserType = (collaborator: User): UserType => {
+    if (collaborator.id === creatorId) {
       return "creator";
     }
-    return user.userType || "viewer";
+    return collaborator.userType || "viewer";
   };
 
+  // Check if current user can edit permissions
   const canEditPermissions = (targetUser: User): boolean => {
     const targetUserType = getActualUserType(targetUser);
 
+    // Viewers cannot edit any permissions
     if (currentUserType === "viewer") return false;
-    if (targetUser.id === currentUser.id) return false;
+
+    // Cannot edit your own permissions
+    if (targetUser.email === currentUser.email) return false;
+
+    // Cannot edit creator permissions
     if (targetUserType === "creator") return false;
+
+    // Creators and editors can edit viewer permissions
     if (targetUserType === "viewer") return true;
+
+    // Only creators can edit editor permissions
     if (targetUserType === "editor") {
       return currentUserType === "creator";
     }
+
     return false;
   };
 
@@ -304,6 +312,7 @@ const ShareModal = ({
           "elevation-4 border-border/50"
         )}
       >
+        {/* Header */}
         <DialogHeader className="p-grid-4 pb-grid-3 border-b border-border/50">
           <div className="flex items-center gap-grid-2 mb-grid-1">
             <div className="p-2 rounded-lg bg-primary/10">
@@ -318,6 +327,7 @@ const ShareModal = ({
           </DialogDescription>
         </DialogHeader>
 
+        {/* Content */}
         <div className="share-modal-content p-grid-4">
           {/* Invite Section */}
           <div className="space-grid-3">
@@ -394,13 +404,13 @@ const ShareModal = ({
                 const actualUserType = getActualUserType(user);
                 const canRemove =
                   currentUserType !== "viewer" &&
-                  user.id !== currentUser.id &&
+                  user.email !== currentUser.email &&
                   actualUserType !== "creator";
                 const canEdit = canEditPermissions(user);
 
                 return (
                   <div
-                    key={user.id}
+                    key={user.email}
                     className={cn(
                       "google-surface p-grid-3 rounded-lg",
                       "flex items-center gap-grid-3",
@@ -421,7 +431,9 @@ const ShareModal = ({
                         ) : (
                           <div
                             className="w-full h-full flex items-center justify-center text-white text-sm font-medium"
-                            style={{ backgroundColor: user.color || "#888" }}
+                            style={{
+                              backgroundColor: user.color || "#888",
+                            }}
                           >
                             {user.name?.charAt(0)?.toUpperCase() || "U"}
                           </div>
@@ -446,20 +458,20 @@ const ShareModal = ({
 
                     {/* Role Badge or Permission Selector */}
                     <div className="flex items-center gap-2">
-                      {editingUser === user.id ? (
+                      {editingUser === user.email ? (
                         <div className="flex items-center gap-2">
                           <UserTypeSelector
                             userType={editingPermission}
                             setUserType={setEditingPermission}
                             onClickHandler={(newType) =>
                               updateUserPermissionHandler(
-                                user.id,
+                                user.email,
                                 newType as UserType
                               )
                             }
                             disabled={false}
                           />
-                          {editingUser === user.id && (
+                          {editingUser === user.email && (
                             <Loader2 className="w-3 h-3 animate-spin" />
                           )}
                         </div>
@@ -478,12 +490,13 @@ const ShareModal = ({
 
                     {/* Action Buttons */}
                     <div className="flex items-center gap-1">
-                      {canEdit && editingUser !== user.id && (
+                      {/* Edit Permission Button */}
+                      {canEdit && editingUser !== user.email && (
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => {
-                            setEditingUser(user.id);
+                            setEditingUser(user.email);
                             setEditingPermission(actualUserType);
                           }}
                           className="h-8 w-8 p-0 text-secondary hover:text-secondary hover:bg-secondary/10"
@@ -492,15 +505,16 @@ const ShareModal = ({
                         </Button>
                       )}
 
+                      {/* Remove Button */}
                       {canRemove && (
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => removeUserHandler(user.id)}
-                          disabled={removingUser === user.id}
+                          onClick={() => removeUserHandler(user.email)}
+                          disabled={removingUser === user.email}
                           className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
                         >
-                          {removingUser === user.id ? (
+                          {removingUser === user.email ? (
                             <Loader2 className="w-3 h-3 animate-spin" />
                           ) : (
                             <Trash2 className="w-3 h-3" />
@@ -514,6 +528,7 @@ const ShareModal = ({
             </div>
           </div>
 
+          {/* Viewer Notice */}
           {currentUserType === "viewer" && (
             <div
               className={cn(

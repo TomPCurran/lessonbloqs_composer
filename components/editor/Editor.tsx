@@ -126,8 +126,8 @@ export function Editor({
               !canEdit && "[&_.bn-editor]:cursor-default",
               !canEdit && "select-text"
             )}
-            sideMenu={canEdit}
-            slashMenu={canEdit}
+            sideMenu={false}
+            slashMenu={false}
             formattingToolbar={false} // We use custom toolbar
           />
         </div>

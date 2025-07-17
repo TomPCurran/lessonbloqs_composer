@@ -125,7 +125,7 @@ const Room = ({ documentId, initialDocument, user, error }: RoomPropsFixed) => {
     }
 
     // Check user's access permissions from Liveblocks
-    const userAccess = initialDocument?.usersAccesses?.[user.email];
+    const userAccess = initialDocument?.usersAccesses?.[user.id];
 
     if (userAccess) {
       // If user has room:write access, they're an editor

@@ -45,29 +45,48 @@ export const getDocumentUsers = async ({
   text,
 }: {
   roomId: string;
-  currentUser: string;
+  currentUser: string; // Now expects userId
   text: string;
 }) => {
-  try {
-    const room = await liveblocks.getRoom(roomId);
+  const room = await liveblocks.getRoom(roomId);
+  const userIds = Object.keys(room.usersAccesses).filter(
+    (id) => id !== currentUser
+  );
 
-    const users = Object.keys(room.usersAccesses).filter(
-      (email) => email !== currentUser
-    );
-
-    if (text.length) {
-      const lowerCaseText = text.toLowerCase();
-
-      const filteredUsers = users.filter((email: string) =>
-        email.toLowerCase().includes(lowerCaseText)
-      );
-
-      return filteredUsers;
-    }
-
-    return users;
-  } catch (error) {
-    console.error(`Error fetching document users: ${error}`);
-    return [];
-  }
+  return userIds.filter((id) =>
+    text.length ? id.toLowerCase().includes(text.toLowerCase()) : true
+  );
 };
+
+// export const getDocumentUsers = async ({
+//   roomId,
+//   currentUser,
+//   text,
+// }: {
+//   roomId: string;
+//   currentUser: string;
+//   text: string;
+// }) => {
+//   try {
+//     const room = await liveblocks.getRoom(roomId);
+
+//     const users = Object.keys(room.usersAccesses).filter(
+//       (email) => email !== currentUser
+//     );
+
+//     if (text.length) {
+//       const lowerCaseText = text.toLowerCase();
+
+//       const filteredUsers = users.filter((email: string) =>
+//         email.toLowerCase().includes(lowerCaseText)
+//       );
+
+//       return filteredUsers;
+//     }
+
+//     return users;
+//   } catch (error) {
+//     console.error(`Error fetching document users: ${error}`);
+//     return [];
+//   }
+// };

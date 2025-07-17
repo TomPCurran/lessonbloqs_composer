@@ -5,7 +5,6 @@ import { cn } from "@/lib/utils";
 
 const ActiveCollaborators = () => {
   const others = useOthers();
-  console.log(others);
 
   return (
     <div className="flex items-center gap-grid-2">

@@ -27,7 +27,7 @@ export const createDocument = async ({
     };
 
     const usersAccesses: RoomAccesses = {
-      [email]: ["room:write"],
+      [userId]: ["room:write"],
     };
 
     const room = await liveblocks.createRoom(roomId, {
@@ -79,17 +79,12 @@ export const checkRoomExists = async (roomId: string) => {
 
 export const updateDocument = async (roomId: string, title: string) => {
   try {
-    console.log("Server: Updating document", { roomId, title });
-
     const updatedRoom = await liveblocks.updateRoom(roomId, {
       metadata: {
         title,
       },
     });
 
-    console.log("Server: Document updated successfully");
-
-    // Revalidate the lessonplans page since that's where the document list is shown
     revalidatePath("/lessonplans");
     revalidatePath(`/lessonplans/${roomId}`);
 

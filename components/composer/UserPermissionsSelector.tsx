@@ -24,7 +24,6 @@ const UserTypeSelector = ({
   onClickHandler,
   disabled = false,
 }: UserTypeSelectorParams) => {
-  console.log("[UserPermissionsSelector] render", { userType, disabled });
   const handleTypeChange = (type: UserType) => {
     if (disabled) return;
     setUserType(type);
