@@ -63,19 +63,21 @@ export default function Bloq({
       setIsFocused(false);
     }
   }, []);
+
   return (
     <Card
       id={`bloq-${bloq.id}`}
       className={cn(
         "group relative w-full google-card transition-all duration-200",
-        "hover:elevation-2 focus-within:elevation-3",
+        canEdit && "hover:elevation-2 focus-within:elevation-3",
         "border-2 border-border/30",
-        isFocused && "border-primary/50 elevation-3"
+        isFocused && canEdit && "border-primary/50 elevation-3",
+        !canEdit && "opacity-90"
       )}
       onFocusCapture={handleFocus}
       onBlurCapture={handleBlur}
     >
-      {/* Action buttons - Material Design */}
+      {/* Action buttons */}
       <div className="absolute top-grid-2 right-grid-2 flex items-center gap-grid-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-20">
         <BloqComments
           bloqId={bloq.id}
@@ -90,37 +92,43 @@ export default function Bloq({
           }
         />
 
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleRemove}
-          className="h-8 w-8 p-0 hover:bg-destructive/10 hover:text-destructive"
-          aria-label="Remove bloq"
-        >
-          <X className="w-4 h-4" />
-        </Button>
+        {canEdit && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleRemove}
+            className="h-8 w-8 p-0 hover:bg-destructive/10 hover:text-destructive"
+            aria-label="Remove bloq"
+          >
+            <X className="w-4 h-4" />
+          </Button>
+        )}
       </div>
 
       {/* Drag handle */}
-      <div className="absolute top-grid-2 left-grid-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-20">
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-8 w-8 p-0 hover:bg-muted cursor-grab active:cursor-grabbing"
-          aria-label="Drag to reorder"
-        >
-          <Grip className="w-4 h-4 text-muted-foreground" />
-        </Button>
-      </div>
+      {canEdit && (
+        <div className="absolute top-grid-2 left-grid-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-20">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-8 w-8 p-0 hover:bg-muted cursor-grab active:cursor-grabbing"
+            aria-label="Drag to reorder"
+          >
+            <Grip className="w-4 h-4 text-muted-foreground" />
+          </Button>
+        </div>
+      )}
 
       {/* Focus indicator */}
-      <div
-        className={cn(
-          "absolute inset-0 rounded-lg pointer-events-none transition-opacity duration-200",
-          "bg-gradient-to-r from-primary/5 via-transparent to-primary/5",
-          isFocused ? "opacity-100" : "opacity-0"
-        )}
-      />
+      {canEdit && (
+        <div
+          className={cn(
+            "absolute inset-0 rounded-lg pointer-events-none transition-opacity duration-200",
+            "bg-gradient-to-r from-primary/5 via-transparent to-primary/5",
+            isFocused ? "opacity-100" : "opacity-0"
+          )}
+        />
+      )}
 
       {/* Content */}
       <div className="relative p-grid-4 space-grid-3">
@@ -130,23 +138,28 @@ export default function Bloq({
             <Input
               value={bloq.title}
               onChange={handleTitleChange}
-              placeholder="Block title..."
+              placeholder={canEdit ? "Block title..." : "Untitled Block"}
+              disabled={!canEdit}
               className={cn(
                 "w-full text-headline-medium font-medium bg-transparent border-none px-0 py-1 h-auto",
                 "text-foreground placeholder:text-muted-foreground/60",
                 "focus-visible:ring-0 focus-visible:ring-offset-0",
-                "hover:bg-surface-variant/30 focus:bg-surface-variant/50",
-                "rounded-md px-grid-1 transition-all duration-200"
+                canEdit &&
+                  "hover:bg-surface-variant/30 focus:bg-surface-variant/50",
+                canEdit && "rounded-md px-grid-1 transition-all duration-200",
+                !canEdit && "cursor-default opacity-80"
               )}
             />
 
             {/* Title focus indicator */}
-            <div
-              className={cn(
-                "absolute bottom-0 left-0 right-0 h-0.5 bg-primary transition-all duration-200",
-                "scale-x-0 group-focus-within/title:scale-x-100"
-              )}
-            />
+            {canEdit && (
+              <div
+                className={cn(
+                  "absolute bottom-0 left-0 right-0 h-0.5 bg-primary transition-all duration-200",
+                  "scale-x-0 group-focus-within/title:scale-x-100"
+                )}
+              />
+            )}
           </div>
         </div>
 
@@ -155,13 +168,19 @@ export default function Bloq({
 
         {/* Editor section */}
         <div className="min-h-[200px] relative">
-          <div className="google-surface rounded-lg p-grid-3 min-h-[180px]">
+          <div
+            className={cn(
+              "google-surface rounded-lg p-grid-3 min-h-[180px]",
+              !canEdit && "bg-surface-variant/30"
+            )}
+          >
             <Editor
               key={bloq.id}
               bloqId={bloq.id}
               userName={userName}
               userColor={userColor}
               initialContent={bloq.content}
+              canEdit={canEdit}
             />
           </div>
         </div>
@@ -173,11 +192,34 @@ export default function Bloq({
               className="w-2 h-2 rounded-full"
               style={{ backgroundColor: userColor }}
             />
-            <span>Edited by {userName}</span>
+            <span>
+              {canEdit ? `Edited by ${userName}` : `Viewing as ${userName}`}
+            </span>
+            {!canEdit && (
+              <span className="text-xs px-2 py-0.5 rounded-full bg-muted/50">
+                Read-only
+              </span>
+            )}
           </div>
 
-          <div className="flex items-center gap-grid-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-            <span>Block ID: {bloq.id.slice(-6)}</span>
+          <div className="flex items-center gap-grid-2">
+            <span
+              className={cn(
+                "text-xs px-2 py-0.5 rounded-full font-medium",
+                currentUserType === "creator" && "bg-primary/10 text-primary",
+                currentUserType === "editor" &&
+                  "bg-secondary/10 text-secondary",
+                currentUserType === "viewer" && "bg-muted text-muted-foreground"
+              )}
+            >
+              {currentUserType}
+            </span>
+
+            {canEdit && (
+              <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                ID: {bloq.id.slice(-6)}
+              </span>
+            )}
           </div>
         </div>
       </div>

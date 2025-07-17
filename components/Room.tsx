@@ -10,32 +10,68 @@ import { getUserColor } from "@/lib/utils";
 import React from "react";
 import DocumentHeader from "@/components/composer/DocumentHeader";
 import { FloatingToolbar } from "@/components/composer/FloatingToolbar";
+import { AlertCircle, FileX } from "lucide-react";
 
-// A fallback component to show while the room is loading
+// Material Design loading component
 const RoomLoader = () => (
-  <div className="flex items-center justify-center h-full w-full py-16">
-    <Loader /> Connecting to collaboration room...
+  <div className="main-layout">
+    <div className="content-area">
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="google-card p-grid-6 max-w-md w-full text-center space-grid-3">
+          <div className="animate-pulse">
+            <div className="w-12 h-12 mx-auto rounded-lg bg-primary/10 flex items-center justify-center mb-grid-3">
+              <Loader />
+            </div>
+            <div className="h-3 bg-muted rounded-full w-3/4 mx-auto mb-grid-2"></div>
+            <div className="h-3 bg-muted rounded-full w-1/2 mx-auto mb-grid-3"></div>
+            <div className="h-2 bg-muted rounded-full w-full mb-2"></div>
+            <div className="h-2 bg-muted rounded-full w-5/6"></div>
+          </div>
+          <p className="text-body-medium text-muted-foreground">
+            Connecting to collaboration room...
+          </p>
+        </div>
+      </div>
+    </div>
   </div>
 );
 
-// An error component to show when access is denied or the document is not found
+// Material Design error component
 const RoomError = ({ error }: { error: string }) => (
-  <div className="flex flex-col items-center justify-center h-full w-full py-16 space-y-4">
-    <div className="text-center">
-      <h2 className="text-2xl font-bold text-foreground mb-2">
-        {error === "ACCESS_DENIED" ? "Access Denied" : "Document Not Found"}
-      </h2>
-      <p className="text-muted-foreground mb-4">
-        {error === "ACCESS_DENIED"
-          ? "You don't have permission to access this document."
-          : "The document you're looking for doesn't exist or has been deleted."}
-      </p>
-      <Link
-        href="/lessonplans"
-        className="inline-flex items-center px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
-      >
-        Back to Documents
-      </Link>
+  <div className="main-layout">
+    <div className="content-area">
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="google-card p-grid-6 max-w-lg w-full text-center space-grid-4">
+          {/* Error Icon */}
+          <div className="w-16 h-16 mx-auto mb-grid-4 rounded-full bg-destructive/10 flex items-center justify-center">
+            {error === "ACCESS_DENIED" ? (
+              <AlertCircle className="w-8 h-8 text-destructive" />
+            ) : (
+              <FileX className="w-8 h-8 text-destructive" />
+            )}
+          </div>
+
+          <div className="space-grid-2">
+            <h2 className="text-headline-large text-foreground">
+              {error === "ACCESS_DENIED"
+                ? "Access Denied"
+                : "Document Not Found"}
+            </h2>
+            <p className="text-body-large text-muted-foreground">
+              {error === "ACCESS_DENIED"
+                ? "You don't have permission to access this document."
+                : "The document you're looking for doesn't exist or has been deleted."}
+            </p>
+          </div>
+
+          <Link
+            href="/lessonplans"
+            className="google-button-primary inline-flex mt-grid-2"
+          >
+            Back to Documents
+          </Link>
+        </div>
+      </div>
     </div>
   </div>
 );
@@ -113,28 +149,38 @@ const Room = ({ documentId, initialDocument, user, error }: RoomPropsFixed) => {
       initialPresence={initialPresence}
     >
       <ClientSideSuspense fallback={<RoomLoader />}>
-        {/* --- Always show the editable header at the top --- */}
-        <DocumentHeader
-          documentId={documentId}
-          initialTitle={initialDocument.metadata?.title}
-          currentUserType={currentUserType}
-        />
-
-        {/* Floating Toolbar - scrolls with content */}
-        <div className="flex justify-center mb-grid-4">
-          <FloatingToolbar
-            roomId={documentId}
+        <div className="main-layout min-h-screen animate-fade-in">
+          {/* Document Header - Fixed at top */}
+          <DocumentHeader
+            documentId={documentId}
+            initialTitle={initialDocument.metadata?.title}
             currentUserType={currentUserType}
-            roomMetadata={initialDocument.metadata}
-            currentUser={user as UserData}
           />
-        </div>
 
-        <Canvas
-          documentId={documentId}
-          currentUser={user as UserData}
-          currentUserType={currentUserType}
-        />
+          {/* Main Content Area */}
+          <div className="content-area">
+            <div className="mx-auto max-w-6xl px-grid-2 py-grid-3 sm:px-grid-3 lg:px-grid-4 space-grid-4">
+              {/* Floating Toolbar */}
+              <div className="flex justify-center">
+                <FloatingToolbar
+                  roomId={documentId}
+                  currentUserType={currentUserType}
+                  roomMetadata={initialDocument.metadata}
+                  currentUser={user as UserData}
+                />
+              </div>
+
+              {/* Canvas Container */}
+              <div className="google-card p-0 overflow-hidden">
+                <Canvas
+                  documentId={documentId}
+                  currentUser={user as UserData}
+                  currentUserType={currentUserType}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
       </ClientSideSuspense>
     </RoomProvider>
   );

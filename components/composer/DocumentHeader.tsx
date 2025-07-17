@@ -16,15 +16,22 @@ const DocumentHeader = ({
   currentUserType,
 }: DocumentHeaderProps) => {
   return (
-    <div className="sticky top-0 z-50 w-full flex flex-col items-center mb-grid-4 bg-background/95 backdrop-blur-sm border-b border-border/50 py-4">
-      {/* Title and collaboration info - centered */}
-      <div className="w-full flex flex-col items-center animate-fade-in">
-        <EditableTitle
-          roomId={documentId}
-          initialTitle={initialTitle}
-          currentUserType={currentUserType}
-        />
-        <ActiveCollaborators />
+    <div className="sticky top-0 z-50 w-full glass border-b border-border/50 py-grid-3">
+      {/* Content container */}
+      <div className="w-full flex flex-col items-center space-grid-3 animate-fade-in">
+        {/* Title section */}
+        <div className="w-full">
+          <EditableTitle
+            roomId={documentId}
+            initialTitle={initialTitle}
+            currentUserType={currentUserType}
+          />
+        </div>
+
+        {/* Collaboration section */}
+        <div className="flex items-center justify-center">
+          <ActiveCollaborators />
+        </div>
       </div>
     </div>
   );

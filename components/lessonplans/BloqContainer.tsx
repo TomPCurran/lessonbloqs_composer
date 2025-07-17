@@ -8,7 +8,7 @@ import { useStorage } from "@liveblocks/react";
 import { useLessonPlanMutations } from "@/lib/hooks/useLessonplanHooks";
 import { LiveObject } from "@liveblocks/client";
 import { Bloq as BloqType, UserData } from "@/types";
-import { FileText, Plus } from "lucide-react";
+import { FileText, Plus, Eye } from "lucide-react";
 
 interface BloqContainerProps {
   currentUser: UserData;
@@ -37,7 +37,7 @@ const LoadingState = () => (
 );
 
 // Material Design Empty State
-const EmptyState = () => (
+const EmptyState = ({ currentUserType }: { currentUserType: string }) => (
   <div className="google-card p-grid-6 text-center animate-fade-in">
     <div className="space-grid-4">
       <div className="w-16 h-16 mx-auto rounded-full bg-primary/10 flex items-center justify-center">
@@ -46,20 +46,25 @@ const EmptyState = () => (
 
       <div className="space-grid-1">
         <h3 className="text-headline-medium text-foreground">
-          Start building your lesson plan
+          {currentUserType === "viewer"
+            ? "No content blocks yet"
+            : "Start building your lesson plan"}
         </h3>
         <p className="text-body-medium text-muted-foreground max-w-md mx-auto">
-          Add content blocks to structure your lesson. Click the Bloqs button to
-          get started.
+          {currentUserType === "viewer"
+            ? "This lesson plan doesn't have any content blocks yet."
+            : "Add content blocks to structure your lesson. Click the Bloqs button to get started."}
         </p>
       </div>
 
-      <div className="flex items-center justify-center gap-grid-1 text-body-small text-muted-foreground">
-        <Plus className="w-4 h-4" />
-        <span>
-          Click <strong>Bloqs</strong> to add your first block
-        </span>
-      </div>
+      {currentUserType !== "viewer" && (
+        <div className="flex items-center justify-center gap-grid-1 text-body-small text-muted-foreground">
+          <Plus className="w-4 h-4" />
+          <span>
+            Click <strong>Bloqs</strong> to add your first block
+          </span>
+        </div>
+      )}
     </div>
   </div>
 );
@@ -89,7 +94,7 @@ const BloqContainer = ({
 
   return (
     <div className="space-grid-6 animate-fade-in">
-      {/* Title Section - Material Design Enhanced */}
+      {/* Title Section */}
       <div className="space-grid-2">
         <div className="relative group">
           <Input
@@ -103,22 +108,32 @@ const BloqContainer = ({
               "text-foreground placeholder:text-muted-foreground/60",
               "focus-visible:outline-none focus-visible:ring-0",
               "transition-all duration-200",
-              "hover:bg-surface-variant/50 focus:bg-surface-variant/50",
+              currentUserType !== "viewer" &&
+                "hover:bg-surface-variant/50 focus:bg-surface-variant/50",
               "rounded-lg px-grid-2 py-grid-1",
               currentUserType === "viewer" && "opacity-60 cursor-not-allowed"
             )}
           />
 
           {/* Focus indicator */}
-          <div
-            className={cn(
-              "absolute bottom-0 left-0 right-0 h-0.5 bg-primary transition-all duration-200",
-              "scale-x-0 group-focus-within:scale-x-100"
-            )}
-          />
+          {currentUserType !== "viewer" && (
+            <div
+              className={cn(
+                "absolute bottom-0 left-0 right-0 h-0.5 bg-primary transition-all duration-200",
+                "scale-x-0 group-focus-within:scale-x-100"
+              )}
+            />
+          )}
+
+          {/* View-only indicator */}
+          {currentUserType === "viewer" && (
+            <div className="absolute top-2 right-2 flex items-center gap-1 px-2 py-1 rounded-md bg-muted/80 text-muted-foreground">
+              <Eye className="w-3 h-3" />
+              <span className="text-xs font-medium">Read Only</span>
+            </div>
+          )}
         </div>
 
-        {/* Subtle divider */}
         <div className="h-px bg-gradient-to-r from-transparent via-border/50 to-transparent" />
       </div>
 
@@ -131,6 +146,11 @@ const BloqContainer = ({
             <span>
               {bloqs.length} content block{bloqs.length !== 1 ? "s" : ""}
             </span>
+            {currentUserType === "viewer" && (
+              <span className="px-2 py-0.5 rounded-full bg-muted/50 text-xs">
+                View Only
+              </span>
+            )}
           </div>
 
           {/* Bloqs list */}
@@ -162,7 +182,7 @@ const BloqContainer = ({
           </div>
         </div>
       ) : (
-        <EmptyState />
+        <EmptyState currentUserType={currentUserType} />
       )}
 
       {/* Document stats footer */}
@@ -175,9 +195,19 @@ const BloqContainer = ({
           <span>{new Date().toLocaleDateString()}</span>
         </div>
 
-        <div className="flex items-center gap-grid-1">
+        <div className="flex items-center gap-grid-2">
           <div className="w-2 h-2 rounded-full bg-success animate-pulse" />
           <span>Auto-saved</span>
+          <span
+            className={cn(
+              "px-2 py-0.5 rounded-full text-xs font-medium ml-2",
+              currentUserType === "creator" && "bg-primary/10 text-primary",
+              currentUserType === "editor" && "bg-secondary/10 text-secondary",
+              currentUserType === "viewer" && "bg-muted text-muted-foreground"
+            )}
+          >
+            {currentUserType}
+          </span>
         </div>
       </div>
     </div>

@@ -1,30 +1,64 @@
 import { useOthers } from "@liveblocks/react/suspense";
 import Image from "next/image";
+import { Users } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const ActiveCollaborators = () => {
   const others = useOthers();
   console.log(others);
 
   return (
-    <ul className="flex justify-center items-center gap-2 mt-2">
-      {others.map((other) => {
-        const info = other.info;
-        if (!info) return null;
+    <div className="flex items-center gap-grid-2">
+      {/* Collaborators label */}
+      <div className="flex items-center gap-grid-1 text-body-small text-muted-foreground">
+        <Users className="w-4 h-4" />
+        <span>Active:</span>
+      </div>
 
-        return (
-          <li key={other.connectionId}>
-            <Image
-              src={info.avatar || "/default-avatar.png"}
-              alt={info.name || "Unknown"}
-              width={100}
-              height={100}
-              className="inline-block size-8 rounded-full ring-2 ring-dark-100"
-              style={{ border: `3px solid ${info.color || "#6B4CE6"}` }}
-            />
+      {/* Collaborators list */}
+      <ul className="flex items-center gap-grid-1">
+        {others.map((other, index) => {
+          const info = other.info;
+          if (!info) return null;
+
+          return (
+            <li
+              key={other.connectionId}
+              className="animate-fade-in"
+              style={{ animationDelay: `${index * 100}ms` }}
+            >
+              <div className="relative">
+                <Image
+                  src={info.avatar || "/default-avatar.png"}
+                  alt={info.name || "Unknown"}
+                  width={32}
+                  height={32}
+                  className={cn(
+                    "w-8 h-8 rounded-full ring-2 ring-background",
+                    "elevation-1 hover:elevation-2 transition-all duration-200",
+                    "hover:scale-110"
+                  )}
+                  style={{
+                    border: `2px solid ${info.color || "#6B4CE6"}`,
+                    backgroundColor: info.color || "#6B4CE6",
+                  }}
+                />
+
+                {/* Active indicator */}
+                <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-success rounded-full ring-2 ring-background animate-pulse" />
+              </div>
+            </li>
+          );
+        })}
+
+        {/* Show message when no other collaborators */}
+        {others.length === 0 && (
+          <li className="text-body-small text-muted-foreground">
+            No other users online
           </li>
-        );
-      })}
-    </ul>
+        )}
+      </ul>
+    </div>
   );
 };
 

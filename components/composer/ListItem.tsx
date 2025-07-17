@@ -11,24 +11,25 @@ const ListItem = React.forwardRef<HTMLDivElement, ListItemProps>(
     <div
       ref={ref}
       className={cn(
-        "group flex select-none items-start gap-3 rounded-lg border border-transparent",
-        "bg-surface p-4 transition hover:bg-accent/5 hover:border-accent/20",
-        "focus:outline-none focus-visible:ring-2 focus-visible:ring-accent",
-        "active:scale-95",
+        "group flex select-none items-start gap-grid-3 rounded-lg border border-border/30",
+        "google-surface p-grid-3 transition-all duration-200",
+        "hover:elevation-1 hover:bg-accent/5 hover:border-accent/20",
+        "focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/30",
+        "active:scale-95 cursor-pointer",
         className
       )}
       {...props}
     >
       {Icon && (
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent/10 transition-colors group-hover:bg-accent/20">
-          <Icon className="h-5 w-5 text-accent" />
+        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent/10 transition-colors duration-200 group-hover:bg-accent/20 group-focus:bg-accent/20">
+          <Icon className="h-4 w-4 text-accent" />
         </div>
       )}
-      <div className="flex-1 min-w-0 space-y-1">
-        <div className="text-sm font-medium text-foreground transition-colors group-hover:text-accent">
+      <div className="flex-1 min-w-0 space-grid-1">
+        <div className="text-label-large text-foreground transition-colors duration-200 group-hover:text-accent">
           {title}
         </div>
-        <p className="text-xs text-muted-foreground transition-colors group-hover:text-foreground">
+        <p className="text-body-small text-muted-foreground transition-colors duration-200 group-hover:text-foreground/80">
           {children}
         </p>
       </div>
