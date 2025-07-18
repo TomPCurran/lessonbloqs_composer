@@ -81,7 +81,7 @@ const BloqRenderer = memo(
         style={{ animationDelay: `${index * 50}ms` }}
       >
         {/* Bloq number indicator */}
-        <div className="absolute -left-8 top-grid-2 hidden lg:flex items-center justify-center w-6 h-6 rounded-full bg-surface border border-border text-body-small text-muted-foreground font-medium">
+        <div className="absolute -left-10 top-grid-2 hidden xl:flex items-center justify-center w-6 h-6 rounded-full bg-surface border border-border text-body-small text-muted-foreground font-medium">
           {index + 1}
         </div>
 
@@ -158,7 +158,7 @@ const BloqContainer = ({
   });
 
   return (
-    <div className="space-grid-6 animate-fade-in">
+    <div className="space-grid-6 animate-fade-in w-full">
       {/* Title Section */}
       <div className="space-grid-2">
         <div className="relative group">
@@ -185,8 +185,8 @@ const BloqContainer = ({
 
       {/* Content Section */}
       {sortedBloqs.length > 0 ? (
-        <div className="space-grid-4">
-          <div className="space-grid-4">
+        <div className="space-grid-4 w-full">
+          <div className="space-grid-4 w-full">
             {sortedBloqs.map((bloq, index) => (
               <BloqRenderer
                 key={bloq instanceof LiveObject ? bloq.get("id") : bloq.id}

@@ -63,6 +63,9 @@ export function Editor({
       (!provider || !doc) && initialContent
         ? JSON.parse(initialContent)
         : undefined,
+    placeholders: {
+      paragraph: "",
+    },
   });
 
   // Disable editing for viewers

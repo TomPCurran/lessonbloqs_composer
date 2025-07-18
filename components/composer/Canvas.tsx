@@ -89,7 +89,7 @@ const Canvas = React.memo(function Canvas({
               "relative google-card overflow-hidden transition-all duration-300",
               "min-h-[700px] border-2 border-border/30",
               "hover:elevation-3 focus-within:border-ring focus-within:elevation-4",
-              "bg-surface"
+              "bg-surface w-full"
             )}
           >
             {/* Gradient border effect on focus/hover */}
@@ -103,7 +103,7 @@ const Canvas = React.memo(function Canvas({
             />
 
             {/* Editor content */}
-            <div className="relative z-10 p-grid-6 min-h-[650px]">
+            <div className="relative z-10 p-grid-4 lg:p-grid-6 min-h-[650px]">
               <div className="h-full">
                 <CommentPanelProvider>
                   <BloqContainer
