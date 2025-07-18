@@ -1,0 +1,87 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <style>
+    /* Hide lightbulb initially */
+    .lightbulb {
+      opacity: 0;
+      transform-origin: center;
+      transition: opacity 0.3s ease-out, transform 0.5s ease-out;
+    }
+    
+    /* Hide rays initially */
+    .ray {
+      opacity: 0;
+      transform-origin: center;
+      transition: opacity 0.3s ease-out, transform 0.5s ease-out;
+    }
+    
+    /* Show lightbulb and rays on hover */
+    .container:hover .lightbulb {
+      opacity: 1;
+      transform: scale(1);
+    }
+    
+    /* Show and animate rays on hover */
+    .container:hover .ray {
+      opacity: 1;
+      animation: pulse 1.5s infinite ease-in-out;
+    }
+    
+    /* Teacher's head slightly bounces when having an idea */
+    .container:hover .teacher-head {
+      animation: headBounce 0.5s ease-out;
+    }
+    
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.2); }
+      100% { transform: scale(1); }
+    }
+    
+    @keyframes headBounce {
+      0% { transform: translateY(0); }
+      25% { transform: translateY(-5px); }
+      50% { transform: translateY(0); }
+      75% { transform: translateY(-3px); }
+      100% { transform: translateY(0); }
+    }
+  </style>
+  
+  <!-- Main Container -->
+  <g class="container">
+    <!-- Background Square -->
+    <rect x="20" y="20" width="160" height="160" rx="30" fill="#4A90E2" opacity="0.9"/>
+    
+    <!-- Teacher Body (Shoulders) -->
+    <rect x="50" y="140" width="100" height="30" rx="15" fill="#6B4CE6" opacity="0.9" class="teacher-body"/>
+    
+    <!-- Teacher Head -->
+    <circle cx="100" cy="100" r="35" fill="#34D399" opacity="0.9" class="teacher-head"/>
+    
+    <!-- Idea Elements (Shown on Hover) -->
+    <!-- Small Lightbulb further above the head -->
+    <g class="lightbulb">
+      <path d="M92 40 C92 33 108 33 108 40 C108 47 103 50 103 54 L97 54 C97 50 92 47 92 40Z" fill="#FFF200"/>
+      <rect x="97" y="54" width="6" height="2" fill="#FFF200"/>
+      <rect x="97.5" y="56" width="5" height="1.5" fill="#E0E0E0"/>
+      <rect x="98" y="57.5" width="4" height="1.5" fill="#E0E0E0"/>
+    </g>
+    
+    <!-- Rays around the lightbulb in perfect semi-circle -->
+    <g class="ray">
+      <!-- Left side rays -->
+      <line x1="77" y1="43" x2="67" y2="38" stroke="#FFF200" stroke-width="2" stroke-linecap="round"/>
+      <line x1="85" y1="32" x2="77" y2="23" stroke="#FFF200" stroke-width="2" stroke-linecap="round"/>
+      
+      <!-- Center ray -->
+      <line x1="100" y1="28" x2="100" y2="18" stroke="#FFF200" stroke-width="2" stroke-linecap="round"/>
+      
+      <!-- Right side rays -->
+      <line x1="115" y1="32" x2="123" y2="23" stroke="#FFF200" stroke-width="2" stroke-linecap="round"/>
+      <line x1="123" y1="43" x2="133" y2="38" stroke="#FFF200" stroke-width="2" stroke-linecap="round"/>
+      
+      <!-- Additional rays for more even distribution -->
+      <line x1="92" y1="30" x2="87" y2="20" stroke="#FFF200" stroke-width="2" stroke-linecap="round"/>
+      <line x1="108" y1="30" x2="113" y2="20" stroke="#FFF200" stroke-width="2" stroke-linecap="round"/>
+    </g>
+  </g>
+</svg>
