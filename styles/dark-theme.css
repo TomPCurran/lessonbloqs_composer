@@ -1,226 +1,434 @@
 /* ========================
-dark-theme.css
-======================== */
+   dark-theme.css - Editor Specific Overrides
+   ======================== */
 
-.dark-theme {
---background: 235 11% 12%;      / #202124 /
---surface: 235 11% 18%;         / #303134 /
---foreground: 0 0% 93%;         / #ededed /
---muted: 0 0% 69%;              / #b0b0b0 /
---border: 0 0% 42%;             / #6b6b6b /
---accent: 220 90% 66%;          / blue-400 /
---success: 142 62% 58%;         / green-500 /
---warning: 42 100% 66%;         / yellow-400 /
---error: 4 90% 68%;             / red-400 */
+/* Note: Main theming is now handled in globals.css */
+/* This file contains only editor-specific dark theme customizations */
+
+/* Dark theme specific CSS variables for editor components */
+.dark {
+  /* Editor syntax highlighting - Dark mode */
+  --code-bg: 15 23 42; /* slate-800 */
+  --code-border: 51 65 85; /* slate-600 */
+  --code-text: 248 250 252; /* slate-50 */
+  --code-comment: 148 163 184; /* slate-400 */
+  --code-keyword: 96 165 250; /* blue-400 */
+  --code-string: 74 222 128; /* green-400 */
+  --code-number: 196 181 253; /* violet-300 */
+  --code-function: 168 85 247; /* violet-500 */
 }
 
-body {
-margin: 0;
-background: hsl(var(--background));
-color: hsl(var(--foreground));
-font-family: "Inter", sans-serif;
-font-weight: 500;
--webkit-font-smoothing: antialiased;
--moz-osx-font-smoothing: grayscale;
+/* Dark theme specific editor styles */
+.dark .editor-container {
+  background: hsl(var(--surface));
+  border: 1px solid hsl(var(--border));
+  box-shadow: var(--elevation-1);
+  transition: box-shadow 0.2s ease;
 }
 
-/* CLERK Styles Overrides */
-.cl-avatarBox {
-width: 36px;
-height: 36px;
-border: 2px solid hsl(var(--accent));
-border-radius: 50%;
+.dark .editor-container:focus-within {
+  box-shadow: var(--elevation-2);
+  border-color: hsl(var(--ring));
 }
 
-/* Lexical Editor - Dark Theme */
-.editor-container {
-background: hsl(var(--surface));
-border: 1px solid hsl(var(--border));
-border-radius: 0.5rem;
-color: hsl(var(--foreground));
-line-height: 1.5;
-font-weight: 400;
+.dark .toolbar {
+  background: hsl(var(--surface-variant));
+  border-bottom: 1px solid hsl(var(--border));
+  border-radius: 0.75rem 0.75rem 0 0;
 }
 
-.toolbar {
-display: flex;
-gap: 0.5rem;
-background: hsl(var(--surface));
-padding: 0.5rem;
-border-radius: 0.5rem 0.5rem 0 0;
-border: 1px solid hsl(var(--border));
-border-bottom: none;
+.dark .toolbar button.toolbar-item {
+  color: hsl(var(--foreground));
+  transition: all 0.2s ease;
+  border-radius: 0.5rem;
+  background: transparent;
+  border: none;
+  padding: 0.5rem;
+  cursor: pointer;
 }
 
-.toolbar button.toolbar-item {
-background: transparent;
-color: hsl(var(--foreground));
-border: none;
-border-radius: 0.375rem;
-padding: 0.5rem;
-cursor: pointer;
-transition: background-color 0.2s;
+.dark .toolbar button.toolbar-item:hover:not([disabled]) {
+  background: hsl(var(--muted));
+  transform: translateY(-1px);
+  box-shadow: var(--elevation-1);
 }
 
-.toolbar button.toolbar-item:hover:not([disabled]) {
-background: hsl(var(--foreground) / 0.1);
+.dark .toolbar button.toolbar-item.active {
+  background: hsl(var(--primary-subtle));
+  color: hsl(var(--primary));
 }
 
-.toolbar button.toolbar-item:disabled {
-opacity: 0.5;
-cursor: not-allowed;
+.dark .toolbar button.toolbar-item:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
-.toolbar .divider {
-width: 1px;
-background: hsl(var(--border));
-margin: 0 0.5rem;
-opacity: 0.6;
+.dark .toolbar .divider {
+  background: hsl(var(--border));
+  opacity: 0.6;
+  width: 1px;
+  margin: 0 0.5rem;
 }
 
-.editor-inner {
-background: hsl(var(--surface));
-border: 1px solid hsl(var(--border));
-border-radius: 0 0 0.5rem 0.5rem;
-position: relative;
+.dark .editor-inner {
+  background: hsl(var(--surface));
+  border: 1px solid hsl(var(--border));
+  border-radius: 0 0 0.75rem 0.75rem;
+  position: relative;
 }
 
-.editor-input {
-width: 100%;
-min-height: 400px;
-padding: 2.5rem;
-font-size: 1rem;
-color: hsl(var(--foreground));
-caret-color: hsl(var(--accent));
-background: transparent;
-border: none;
-outline: none;
-resize: none;
+.dark .editor-input {
+  width: 100%;
+  min-height: 400px;
+  padding: 2.5rem;
+  font-size: 1rem;
+  color: hsl(var(--foreground));
+  caret-color: hsl(var(--primary));
+  background: transparent;
+  border: none;
+  outline: none;
+  resize: none;
+  line-height: 1.7;
 }
 
-.editor-placeholder {
-color: hsl(var(--muted));
-position: absolute;
-top: 2.5rem;
-left: 2.5rem;
-font-size: 1rem;
-user-select: none;
-pointer-events: none;
+.dark .editor-placeholder {
+  color: hsl(var(--muted-foreground));
+  position: absolute;
+  top: 2.5rem;
+  left: 2.5rem;
+  font-size: 1rem;
+  user-select: none;
+  pointer-events: none;
 }
 
-/* Inline code */
-.editor-text-code {
-background: hsl(var(--border));
-padding: 0.125rem 0.5rem;
-border-radius: 0.25rem;
-font-family: Menlo, Consolas, Monaco, monospace;
-font-size: 0.875rem;
-color: hsl(var(--foreground));
+/* Code styling - Dark theme */
+.dark .editor-text-code {
+  background: hsl(var(--code-bg));
+  padding: 0.125rem 0.5rem;
+  border-radius: 0.25rem;
+  font-family: "JetBrains Mono", "Menlo", "Monaco", "Consolas", monospace;
+  font-size: 0.875rem;
+  color: hsl(var(--code-text));
+  border: 1px solid hsl(var(--code-border));
 }
 
-/* Code Block */
-.editor-code {
-background: hsl(var(--surface));
-color: hsl(var(--foreground));
-font-family: Menlo, Consolas, Monaco, monospace;
-padding: 1rem;
-margin: 0.5rem 0;
-border-radius: 0.375rem;
-border: 1px solid hsl(var(--border));
-overflow-x: auto;
-position: relative;
+.dark .editor-code {
+  background: hsl(var(--code-bg));
+  color: hsl(var(--code-text));
+  font-family: "JetBrains Mono", "Menlo", "Monaco", "Consolas", monospace;
+  padding: 1rem;
+  margin: 0.5rem 0;
+  border-radius: 0.375rem;
+  border: 1px solid hsl(var(--code-border));
+  overflow-x: auto;
+  position: relative;
+  box-shadow: var(--elevation-1);
 }
 
-.editor-code:before {
-content: attr(data-gutter);
-position: absolute;
-top: 0;
-left: 0;
-bottom: 0;
-width: 3rem;
-background: hsl(var(--border));
-color: hsl(var(--muted));
-padding: 0.75rem 0.5rem;
-text-align: right;
-font-size: 0.75rem;
+.dark .editor-code:before {
+  content: attr(data-gutter);
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 3rem;
+  background: hsl(var(--code-border));
+  color: hsl(var(--muted-foreground));
+  padding: 0.75rem 0.5rem;
+  text-align: right;
+  font-size: 0.75rem;
+  border-right: 1px solid hsl(var(--border));
 }
 
-.editor-code:after {
-content: attr(data-highlight-language);
-position: absolute;
-top: 0.5rem;
-right: 0.5rem;
-background: hsl(var(--border));
-color: hsl(var(--muted));
-padding: 0.25rem 0.5rem;
-font-size: 0.75rem;
-border-radius: 0.25rem;
+.dark .editor-code:after {
+  content: attr(data-highlight-language);
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  background: hsl(var(--muted));
+  color: hsl(var(--muted-foreground));
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  border-radius: 0.25rem;
+  border: 1px solid hsl(var(--border));
 }
 
-.tree-view-output {
-background: hsl(var(--border));
-color: hsl(var(--foreground));
-padding: 0.5rem;
-font-size: 0.75rem;
-border-radius: 0 0 0.5rem 0.5rem;
-border: 1px solid hsl(var(--border));
-border-top: none;
-max-height: 250px;
-overflow: auto;
+/* Syntax highlighting tokens - Dark theme */
+.dark .editor-tokenComment {
+  color: hsl(var(--code-comment));
+  font-style: italic;
 }
 
-/* Syntax Highlighting */
-.editor-tokenComment { color: hsl(var(--muted)); }
-.editor-tokenPunctuation { color: hsl(var(--foreground)); }
-.editor-tokenProperty { color: hsl(var(--accent)); }
-.editor-tokenSelector { color: hsl(var(--success)); }
-.editor-tokenOperator { color: hsl(var(--accent)); }
-.editor-tokenAttr { color: hsl(var(--accent)); }
-.editor-tokenVariable { color: hsl(var(--warning)); }
-.editor-tokenFunction { color: hsl(var(--accent)); }
-
-/* Scrollbars */
-pre::-webkit-scrollbar { width: 8px; height: 8px; }
-pre::-webkit-scrollbar-thumb { background: hsl(var(--border)); border-radius: 4px; }
-pre::-webkit-scrollbar-thumb:hover { background: hsl(var(--muted)); }
-
-/* Timetravel Panel */
-.debug-timetravel-panel {
-display: flex;
-overflow: hidden;
-border: 1px solid hsl(var(--border));
-border-radius: 0.5rem;
-background: hsl(var(--surface));
-padding: 0.5rem;
+.dark .editor-tokenPunctuation {
+  color: hsl(var(--foreground));
 }
 
-.debug-timetravel-panel-button {
-flex: 1;
-background: transparent;
-border: none;
-color: hsl(var(--foreground));
-font-size: 0.875rem;
-cursor: pointer;
-transition: background-color 0.2s;
+.dark .editor-tokenProperty {
+  color: hsl(var(--code-keyword));
+  font-weight: 500;
 }
 
-.debug-timetravel-panel-button:hover {
-background: hsl(var(--border));
+.dark .editor-tokenSelector {
+  color: hsl(var(--code-string));
+  font-weight: 500;
 }
 
-.debug-timetravel-button {
-position: absolute;
-top: 1rem;
-right: 1rem;
-background: transparent;
-border: none;
-padding: 0.5rem;
-color: hsl(var(--foreground));
-border-radius: 0.375rem;
-transition: background-color 0.2s;
+.dark .editor-tokenOperator {
+  color: hsl(var(--code-keyword));
 }
 
-.debug-timetravel-button:hover {
-background: hsl(var(--border));
+.dark .editor-tokenAttr {
+  color: hsl(var(--code-keyword));
 }
 
+.dark .editor-tokenVariable {
+  color: hsl(var(--code-number));
+}
+
+.dark .editor-tokenFunction {
+  color: hsl(var(--code-function));
+  font-weight: 500;
+}
+
+.dark .editor-tokenKeyword {
+  color: hsl(var(--code-keyword));
+  font-weight: 600;
+}
+
+.dark .editor-tokenString {
+  color: hsl(var(--code-string));
+}
+
+.dark .editor-tokenNumber {
+  color: hsl(var(--code-number));
+  font-weight: 500;
+}
+
+/* Enhanced headings - Dark theme */
+.dark .editor-heading-h1 {
+  border-bottom: 2px solid hsl(var(--border));
+  padding-bottom: 0.5rem;
+  margin-bottom: 1.5rem;
+  color: hsl(var(--foreground));
+}
+
+.dark .editor-heading-h2 {
+  color: hsl(var(--foreground));
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+}
+
+.dark .editor-heading-h3 {
+  color: hsl(var(--foreground));
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+}
+
+/* Enhanced quote styling - Dark theme */
+.dark .editor-quote {
+  background: hsl(var(--muted) / 0.2);
+  border-left: 4px solid hsl(var(--primary));
+  border-radius: 0 0.5rem 0.5rem 0;
+  padding: 1rem 1.5rem;
+  margin: 1.5rem 0;
+  position: relative;
+}
+
+.dark .editor-quote::before {
+  content: '"';
+  font-size: 3rem;
+  color: hsl(var(--primary) / 0.4);
+  position: absolute;
+  top: -0.5rem;
+  left: 1rem;
+  font-family: Georgia, serif;
+}
+
+/* Lists - Dark theme */
+.dark .editor-list-ol,
+.dark .editor-list-ul {
+  padding-left: 1.5rem;
+  margin: 1rem 0;
+}
+
+.dark .editor-listitem {
+  margin: 0.5rem 0;
+  line-height: 1.6;
+  color: hsl(var(--foreground));
+}
+
+.dark .editor-list-ul .editor-listitem::marker {
+  color: hsl(var(--primary));
+}
+
+.dark .editor-list-ol .editor-listitem::marker {
+  color: hsl(var(--primary));
+  font-weight: 600;
+}
+
+.dark .tree-view-output {
+  background: hsl(var(--muted));
+  color: hsl(var(--foreground));
+  padding: 0.5rem;
+  font-size: 0.75rem;
+  border-radius: 0 0 0.5rem 0.5rem;
+  border: 1px solid hsl(var(--border));
+  border-top: none;
+  max-height: 250px;
+  overflow: auto;
+  font-family: "JetBrains Mono", monospace;
+  line-height: 1.4;
+}
+
+/* Scrollbars - Dark theme */
+.dark .editor-inner::-webkit-scrollbar,
+.dark pre::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.dark .editor-inner::-webkit-scrollbar-track,
+.dark pre::-webkit-scrollbar-track {
+  background: hsl(var(--muted) / 0.1);
+  border-radius: 4px;
+}
+
+.dark .editor-inner::-webkit-scrollbar-thumb,
+.dark pre::-webkit-scrollbar-thumb {
+  background: hsl(var(--border));
+  border-radius: 4px;
+  transition: background 0.2s ease;
+}
+
+.dark .editor-inner::-webkit-scrollbar-thumb:hover,
+.dark pre::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.6);
+}
+
+/* CLERK Styles Overrides - Dark theme */
+.dark .cl-avatarBox {
+  width: 36px;
+  height: 36px;
+  border: 2px solid hsl(var(--primary));
+  border-radius: 50%;
+  box-shadow: var(--elevation-1);
+  transition: all 0.2s ease;
+}
+
+.dark .cl-avatarBox:hover {
+  box-shadow: var(--elevation-2);
+  transform: scale(1.05);
+}
+
+/* Timetravel Panel - Dark theme */
+.dark .debug-timetravel-panel {
+  display: flex;
+  overflow: hidden;
+  border: 1px solid hsl(var(--border));
+  border-radius: 0.5rem;
+  background: hsl(var(--surface));
+  padding: 0.5rem;
+  box-shadow: var(--elevation-1);
+}
+
+.dark .debug-timetravel-panel-button {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: hsl(var(--foreground));
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 0.5rem;
+  border-radius: 0.25rem;
+}
+
+.dark .debug-timetravel-panel-button:hover {
+  background: hsl(var(--muted));
+  transform: translateY(-1px);
+}
+
+.dark .debug-timetravel-button {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: hsl(var(--surface));
+  border: 1px solid hsl(var(--border));
+  padding: 0.5rem;
+  color: hsl(var(--foreground));
+  border-radius: 0.375rem;
+  transition: all 0.2s ease;
+  box-shadow: var(--elevation-1);
+}
+
+.dark .debug-timetravel-button:hover {
+  background: hsl(var(--muted));
+  box-shadow: var(--elevation-2);
+  transform: translateY(-1px);
+}
+
+/* BlockNote dark theme overrides */
+.dark .bn-editor {
+  background: hsl(var(--surface)) !important;
+  color: hsl(var(--foreground)) !important;
+}
+
+.dark .bn-editor * {
+  color: hsl(var(--foreground)) !important;
+}
+
+.dark [data-bn-type="editor"] {
+  background: hsl(var(--surface)) !important;
+  color: hsl(var(--foreground)) !important;
+}
+
+.dark .bn-editor-content {
+  background: hsl(var(--surface)) !important;
+  color: hsl(var(--foreground)) !important;
+}
+
+/* Ensure all BlockNote elements use dark theme tokens */
+.dark .bn-editor,
+.dark .bn-editor *,
+.dark [data-bn-type],
+.dark [data-bn-type] *,
+.dark .bn-block,
+.dark .bn-block *,
+.dark .bn-inline,
+.dark .bn-inline *,
+.dark .bn-editor-content,
+.dark .bn-editor-content *,
+.dark .bn-block-content,
+.dark .bn-block-content *,
+.dark .bn-inline-content,
+.dark .bn-inline-content * {
+  background: hsl(var(--surface)) !important;
+  color: hsl(var(--foreground)) !important;
+}
+
+/* Force dark theme for BlockNote placeholders */
+.dark .bn-editor [data-placeholder] {
+  color: hsl(var(--muted-foreground)) !important;
+}
+
+/* Selection styling - Dark theme */
+.dark .editor-input::selection {
+  background: hsl(var(--primary) / 0.3);
+  color: hsl(var(--foreground));
+}
+
+/* Focus improvements - Dark theme */
+.dark .editor-inner:focus-within .editor-input {
+  outline: none;
+}
+
+/* Body styling for dark theme */
+.dark body {
+  margin: 0;
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-family: "Inter", sans-serif;
+  font-weight: 500;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
