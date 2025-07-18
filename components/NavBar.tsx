@@ -14,14 +14,22 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { useUIStore } from "@/lib/stores/uiStore";
 
 export default function Navbar() {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isSignInOpen, setIsSignInOpen] = useState(false);
-  const [isSignUpOpen, setIsSignUpOpen] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
   const { isSignedIn, isLoaded } = useUser();
   const { signOut } = useClerk();
+
+  // Zustand store for UI state
+  const {
+    isMobileMenuOpen,
+    isSignInModalOpen,
+    isSignUpModalOpen,
+    setMobileMenuOpen,
+    setSignInModalOpen,
+    setSignUpModalOpen,
+  } = useUIStore();
 
   // Prevent hydration mismatch by only rendering auth-dependent content after mount
   useEffect(() => {
@@ -101,14 +109,14 @@ export default function Navbar() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => setIsSignInOpen(true)}
+                  onClick={() => setSignInModalOpen(true)}
                   className="text-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
                 >
                   Sign In
                 </Button>
                 <Button
                   size="sm"
-                  onClick={() => setIsSignUpOpen(true)}
+                  onClick={() => setSignUpModalOpen(true)}
                   className="bg-primary hover:bg-primary/90 text-primary-foreground transition-colors"
                 >
                   Sign Up
@@ -129,7 +137,7 @@ export default function Navbar() {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              onClick={() => setMobileMenuOpen(!isMobileMenuOpen)}
               className="p-2 text-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
               aria-label="Toggle mobile menu"
             >
@@ -151,7 +159,7 @@ export default function Navbar() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => setIsMobileMenuOpen(false)}
+                        onClick={() => setMobileMenuOpen(false)}
                         className="flex w-full items-center gap-2 justify-start text-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
                       >
                         <User className="h-4 w-4" />
@@ -163,7 +171,7 @@ export default function Navbar() {
                       size="sm"
                       onClick={() => {
                         handleSignOut();
-                        setIsMobileMenuOpen(false);
+                        setMobileMenuOpen(false);
                       }}
                       className="flex w-full items-center gap-2 justify-start text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
                     >
@@ -173,7 +181,7 @@ export default function Navbar() {
                     <Link href="/lessonplans">
                       <Button
                         size="sm"
-                        onClick={() => setIsMobileMenuOpen(false)}
+                        onClick={() => setMobileMenuOpen(false)}
                         className="flex w-full items-center gap-2 justify-start bg-primary hover:bg-primary/90 text-primary-foreground transition-colors"
                       >
                         <BookOpen className="h-4 w-4" />
@@ -187,8 +195,8 @@ export default function Navbar() {
                       variant="ghost"
                       size="sm"
                       onClick={() => {
-                        setIsSignInOpen(true);
-                        setIsMobileMenuOpen(false);
+                        setSignInModalOpen(true);
+                        setMobileMenuOpen(false);
                       }}
                       className="flex w-full items-center gap-2 justify-start text-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
                     >
@@ -197,8 +205,8 @@ export default function Navbar() {
                     <Button
                       size="sm"
                       onClick={() => {
-                        setIsSignUpOpen(true);
-                        setIsMobileMenuOpen(false);
+                        setSignUpModalOpen(true);
+                        setMobileMenuOpen(false);
                       }}
                       className="flex w-full items-center gap-2 justify-start bg-primary hover:bg-primary/90 text-primary-foreground transition-colors"
                     >
@@ -219,7 +227,7 @@ export default function Navbar() {
       </nav>
 
       {/* Sign In Modal */}
-      <Dialog open={isSignInOpen} onOpenChange={setIsSignInOpen}>
+      <Dialog open={isSignInModalOpen} onOpenChange={setSignInModalOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Sign In</DialogTitle>
@@ -231,7 +239,7 @@ export default function Navbar() {
       </Dialog>
 
       {/* Sign Up Modal */}
-      <Dialog open={isSignUpOpen} onOpenChange={setIsSignUpOpen}>
+      <Dialog open={isSignUpModalOpen} onOpenChange={setSignUpModalOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Sign Up</DialogTitle>
