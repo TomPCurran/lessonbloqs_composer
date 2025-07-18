@@ -40,24 +40,29 @@ export function Editor({
   initialContent,
   canEdit,
 }: EditorProps) {
-  const { doc, provider } = useYjs();
+  const yjsContext = useYjs();
+  const doc = yjsContext?.doc;
+  const provider = yjsContext?.provider;
 
   const editor = useCreateBlockNote({
-    collaboration: provider
-      ? {
-          provider,
-          // Attach the editor to a specific XML fragment for this bloq
-          fragment: doc.getXmlFragment(`blocknote-${bloqId}`),
-          // User details for collaboration cursors
-          user: {
-            name: userName,
-            color: userColor,
-          },
-        }
-      : undefined,
+    collaboration:
+      provider && doc
+        ? {
+            provider,
+            // Attach the editor to a specific XML fragment for this bloq
+            fragment: doc.getXmlFragment(`blocknote-${bloqId}`),
+            // User details for collaboration cursors
+            user: {
+              name: userName,
+              color: userColor,
+            },
+          }
+        : undefined,
     initialContent:
       // Only use initialContent if collaboration is not yet ready and content exists
-      !provider && initialContent ? JSON.parse(initialContent) : undefined,
+      (!provider || !doc) && initialContent
+        ? JSON.parse(initialContent)
+        : undefined,
   });
 
   // Disable editing for viewers

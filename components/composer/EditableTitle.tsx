@@ -1,10 +1,14 @@
 "use client";
 
-import React, { useCallback } from "react";
+import React, { useCallback, useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { useStorage } from "@liveblocks/react";
-import { useLessonPlanMutations } from "@/lib/hooks/useLessonplanHooks";
+import {
+  useLessonPlanMutations,
+  useDocumentActions,
+} from "@/lib/hooks/useLessonplanHooks";
+import { useDebounce } from "@/lib/hooks/use-debounce";
 import { Eye } from "lucide-react";
 
 interface EditableTitleProps {
@@ -19,25 +23,47 @@ const EditableTitle = ({
   currentUserType,
 }: EditableTitleProps) => {
   const lessonPlan = useStorage((root) => root.lessonPlan);
-  const { updateLessonplan, updateDocumentMetadata } =
-    useLessonPlanMutations(roomId);
+  const { updateLessonplan } = useLessonPlanMutations();
+  const { updateDocumentMetadata } = useDocumentActions(roomId);
 
-  // Check if user can edit (creators and editors can edit, viewers cannot)
+  // Local state for the input field to provide a responsive UI
+  const [title, setTitle] = useState(initialTitle ?? "");
+
+  // Debounce the title to avoid excessive updates
+  const debouncedTitle = useDebounce(title, 500); // 500ms delay
+
   const canEdit = currentUserType === "creator" || currentUserType === "editor";
+
+  // Effect to sync Liveblocks storage with local state on initial load
+  // This runs when the component mounts and `lessonPlan` becomes available.
+  useEffect(() => {
+    if (lessonPlan?.title) {
+      setTitle(lessonPlan.title);
+    }
+  }, [lessonPlan]);
+
+  // Effect to update Liveblocks storage and database when debounced title changes
+  useEffect(() => {
+    // **FIX**: Add a guard to ensure lessonPlan (storage) is loaded before mutating.
+    if (lessonPlan && canEdit && debouncedTitle !== lessonPlan.title) {
+      updateLessonplan({ title: debouncedTitle });
+      updateDocumentMetadata(debouncedTitle);
+    }
+  }, [
+    debouncedTitle,
+    canEdit,
+    updateLessonplan,
+    updateDocumentMetadata,
+    lessonPlan,
+  ]);
 
   const handleTitleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
-      if (!canEdit) return; // Prevent editing if user is viewer
-      const newTitle = e.target.value;
-      updateLessonplan({ title: newTitle });
-      // Also update the document metadata in the database
-      updateDocumentMetadata(newTitle);
+      if (!canEdit) return;
+      setTitle(e.target.value);
     },
-    [updateLessonplan, updateDocumentMetadata, canEdit]
+    [canEdit]
   );
-
-  // Use the title from Liveblocks storage if available, otherwise fall back to initial title (but allow empty string)
-  const title = lessonPlan?.title ?? initialTitle ?? "";
 
   return (
     <div className="w-full flex flex-col items-center space-grid-2">
@@ -63,7 +89,6 @@ const EditableTitle = ({
           )}
         />
 
-        {/* Focus indicator - only for editable */}
         {canEdit && (
           <div
             className={cn(
@@ -73,7 +98,6 @@ const EditableTitle = ({
           />
         )}
 
-        {/* Read-only indicator */}
         {!canEdit && (
           <div className="absolute top-2 right-2 flex items-center gap-1 px-2 py-1 rounded-md bg-muted/80 text-muted-foreground">
             <Eye className="w-3 h-3" />

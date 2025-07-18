@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { useStatus } from "@liveblocks/react";
@@ -11,7 +11,6 @@ import { UserData } from "@/types";
 import { CommentPanelProvider } from "@/components/lessonplans/BloqComment";
 
 interface CanvasProps {
-  documentId: string;
   currentUser: UserData;
   currentUserType: "creator" | "editor" | "viewer";
 }
@@ -36,21 +35,49 @@ const CanvasLoadingState = () => (
   </div>
 );
 
-export default function Canvas({
-  documentId,
+const Canvas = React.memo(function Canvas({
   currentUser,
   currentUserType,
 }: CanvasProps) {
+  console.log("🎨 [Canvas] Rendering Canvas", {
+    userId: currentUser.id,
+    currentUserType,
+    timestamp: new Date().toISOString(),
+  });
+
   const status = useStatus();
   const isReady = status === "connected";
 
+  // Monitor status changes
+  useEffect(() => {
+    console.log("🎨 [Canvas] Status changed:", {
+      status,
+      isReady,
+      timestamp: new Date().toISOString(),
+    });
+  }, [status, isReady]);
+
+  console.log(
+    "🎨 [Canvas] Status:",
+    status,
+    "isReady:",
+    isReady,
+    "Status type:",
+    typeof status,
+    "Timestamp:",
+    new Date().toISOString()
+  );
+
   if (!isReady) {
+    console.log("🎨 [Canvas] Showing loading state - Status:", status);
     return (
       <div className="google-card min-h-[600px] animate-fade-in">
         <CanvasLoadingState />
       </div>
     );
   }
+
+  console.log("🎨 [Canvas] Rendering main content with YjsProvider");
 
   return (
     <YjsProvider>
@@ -82,7 +109,6 @@ export default function Canvas({
                   <BloqContainer
                     currentUser={currentUser}
                     currentUserType={currentUserType}
-                    roomId={documentId}
                   />
                 </CommentPanelProvider>
               </div>
@@ -97,4 +123,6 @@ export default function Canvas({
       </div>
     </YjsProvider>
   );
-}
+});
+
+export default Canvas;

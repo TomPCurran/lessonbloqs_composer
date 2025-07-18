@@ -66,17 +66,6 @@ declare global {
       | { type: "BLOQ_REMOVED"; bloqId: string }
       | {
           type: "BLOQ_MOVED";
-          bloqId: string;+
-          fromIndex: number;
-          toIndex: number;
-        }
-      | { type: "USER_JOINED"; userId: string; userName: string }
-      | { type: "USER_LEFT"; userId: string; userName: string }
-      | { type: "SAVE_TRIGGERED" };
-      | { type: "BLOQ_ADDED"; bloqId: string; position: number }
-      | { type: "BLOQ_REMOVED"; bloqId: string }
-      | {
-          type: "BLOQ_MOVED";
           bloqId: string;
           fromIndex: number;
           toIndex: number;

@@ -52,18 +52,30 @@ export const getDocument = async ({
   documentId: string;
   userId: string;
 }) => {
+  console.log("🏢 [room.actions] getDocument called", { documentId, userId });
+
   try {
     const document = await liveblocks.getRoom(documentId);
+    console.log("🏢 [room.actions] Room fetched", {
+      roomId: document.id,
+      hasMetadata: !!document.metadata,
+      userCount: Object.keys(document.usersAccesses).length,
+    });
 
     const hasAccess = Object.keys(document.usersAccesses).includes(userId);
+    console.log("🏢 [room.actions] Access check", { hasAccess, userId });
 
     if (!hasAccess) {
+      console.log("🏢 [room.actions] Access denied");
       throw new Error("ACCESS_DENIED");
     }
 
+    console.log("🏢 [room.actions] Returning document");
     return parseStringify(document);
   } catch (error) {
-    console.log(`Error happened while getting a room: ${error}`);
+    console.log(
+      `🏢 [room.actions] Error happened while getting a room: ${error}`
+    );
     // Re-throw the error so we can handle it properly in the calling component
     throw error;
   }

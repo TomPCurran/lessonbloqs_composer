@@ -9,9 +9,14 @@ export const getClerkUsers = async ({
 }: {
   userIds: string[];
 }): Promise<UserData[]> => {
+  console.log("👥 [user.actions] getClerkUsers called", { userIds });
+
   try {
     // Check if userIds is empty or undefined
     if (!userIds || userIds.length === 0) {
+      console.log(
+        "👥 [user.actions] No userIds provided, returning empty array"
+      );
       return [];
     }
 
@@ -19,6 +24,10 @@ export const getClerkUsers = async ({
     const clerk = await clerkClient();
     const { data } = await clerk.users.getUserList({
       userId: userIds,
+    });
+
+    console.log("👥 [user.actions] Clerk users fetched", {
+      userCount: data.length,
     });
 
     const users = data.map((user) => ({
@@ -32,9 +41,14 @@ export const getClerkUsers = async ({
     }));
 
     // Filter out any users who couldn't be mapped properly
-    return users.filter((u) => u.email) as UserData[];
+    const filteredUsers = users.filter((u) => u.email) as UserData[];
+    console.log("👥 [user.actions] Returning filtered users", {
+      originalCount: users.length,
+      filteredCount: filteredUsers.length,
+    });
+    return filteredUsers;
   } catch (error) {
-    console.error(`Error fetching users: ${error}`);
+    console.error(`👥 [user.actions] Error fetching users: ${error}`);
     return [];
   }
 };

@@ -390,127 +390,128 @@ const ShareModal = ({
             </div>
 
             <div className="space-grid-1 max-h-48 overflow-y-auto">
-              {allUsers.map((user) => {
-                const actualUserType = getActualUserType(user);
-                const canRemove =
-                  currentUserType !== "viewer" &&
-                  user.id !== currentUser.id &&
-                  actualUserType !== "creator";
-                const canEdit = canEditPermissions(user);
+              {!loadingUsers &&
+                allUsers.map((user) => {
+                  const actualUserType = getActualUserType(user);
+                  const canRemove =
+                    currentUserType !== "viewer" &&
+                    user.id !== currentUser.id &&
+                    actualUserType !== "creator";
+                  const canEdit = canEditPermissions(user);
 
-                return (
-                  <div
-                    key={user.id}
-                    className={cn(
-                      "google-surface p-grid-3 rounded-lg",
-                      "flex items-center gap-grid-3",
-                      "border border-border/30"
-                    )}
-                  >
-                    {/* Avatar */}
-                    <div className="relative">
-                      <div className="w-8 h-8 rounded-full overflow-hidden ring-2 ring-background">
-                        {user.avatar ? (
-                          <Image
-                            src={user.avatar}
-                            alt={user.name}
-                            width={32}
-                            height={32}
-                            className="w-full h-full object-cover"
-                          />
+                  return (
+                    <div
+                      key={user.id}
+                      className={cn(
+                        "google-surface p-grid-3 rounded-lg",
+                        "flex items-center gap-grid-3",
+                        "border border-border/30"
+                      )}
+                    >
+                      {/* Avatar */}
+                      <div className="relative">
+                        <div className="w-8 h-8 rounded-full overflow-hidden ring-2 ring-background">
+                          {user.avatar ? (
+                            <Image
+                              src={user.avatar}
+                              alt={user.name}
+                              width={32}
+                              height={32}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div
+                              className="w-full h-full flex items-center justify-center text-white text-sm font-medium"
+                              style={{ backgroundColor: user.color || "#888" }}
+                            >
+                              {user.name?.charAt(0)?.toUpperCase() || "U"}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* User Info */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-grid-1 mb-1">
+                          <p className="text-body-medium font-medium text-foreground truncate">
+                            {user.name}
+                          </p>
+                          {actualUserType === "creator" && (
+                            <Crown className="w-3 h-3 text-primary" />
+                          )}
+                        </div>
+                        <p className="text-body-small text-muted-foreground truncate">
+                          {user.email}
+                        </p>
+                      </div>
+
+                      {/* Role Badge or Permission Selector */}
+                      <div className="flex items-center gap-2">
+                        {editingUser === user.id ? (
+                          <div className="flex items-center gap-2">
+                            <UserTypeSelector
+                              userType={editingPermission}
+                              setUserType={setEditingPermission}
+                              onClickHandler={(newType) =>
+                                updateUserPermissionHandler(
+                                  user.id,
+                                  newType as UserType
+                                )
+                              }
+                              disabled={false}
+                            />
+                            {editingUser === user.id && (
+                              <Loader2 className="w-3 h-3 animate-spin" />
+                            )}
+                          </div>
                         ) : (
                           <div
-                            className="w-full h-full flex items-center justify-center text-white text-sm font-medium"
-                            style={{ backgroundColor: user.color || "#888" }}
+                            className={cn(
+                              "flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium",
+                              getUserTypeColor(actualUserType)
+                            )}
                           >
-                            {user.name?.charAt(0)?.toUpperCase() || "U"}
+                            {getUserTypeIcon(actualUserType)}
+                            <span className="capitalize">{actualUserType}</span>
                           </div>
                         )}
                       </div>
-                    </div>
 
-                    {/* User Info */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-grid-1 mb-1">
-                        <p className="text-body-medium font-medium text-foreground truncate">
-                          {user.name}
-                        </p>
-                        {actualUserType === "creator" && (
-                          <Crown className="w-3 h-3 text-primary" />
+                      {/* Action Buttons */}
+                      <div className="flex items-center gap-1">
+                        {canEdit && editingUser !== user.id && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              setEditingUser(user.id);
+                              setEditingPermission(actualUserType);
+                            }}
+                            className="h-8 w-8 p-0 text-secondary hover:text-secondary hover:bg-secondary/10"
+                          >
+                            <Edit className="w-3 h-3" />
+                          </Button>
+                        )}
+
+                        {canRemove && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => removeUserHandler(user.id)}
+                            disabled={removingUser === user.id}
+                            className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
+                          >
+                            {removingUser === user.id ? (
+                              <Loader2 className="w-3 h-3 animate-spin" />
+                            ) : (
+                              <Trash2 className="w-3 h-3" />
+                            )}
+                          </Button>
                         )}
                       </div>
-                      <p className="text-body-small text-muted-foreground truncate">
-                        {user.email}
-                      </p>
                     </div>
-
-                    {/* Role Badge or Permission Selector */}
-                    <div className="flex items-center gap-2">
-                      {editingUser === user.id ? (
-                        <div className="flex items-center gap-2">
-                          <UserTypeSelector
-                            userType={editingPermission}
-                            setUserType={setEditingPermission}
-                            onClickHandler={(newType) =>
-                              updateUserPermissionHandler(
-                                user.id,
-                                newType as UserType
-                              )
-                            }
-                            disabled={false}
-                          />
-                          {editingUser === user.id && (
-                            <Loader2 className="w-3 h-3 animate-spin" />
-                          )}
-                        </div>
-                      ) : (
-                        <div
-                          className={cn(
-                            "flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium",
-                            getUserTypeColor(actualUserType)
-                          )}
-                        >
-                          {getUserTypeIcon(actualUserType)}
-                          <span className="capitalize">{actualUserType}</span>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Action Buttons */}
-                    <div className="flex items-center gap-1">
-                      {canEdit && editingUser !== user.id && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => {
-                            setEditingUser(user.id);
-                            setEditingPermission(actualUserType);
-                          }}
-                          className="h-8 w-8 p-0 text-secondary hover:text-secondary hover:bg-secondary/10"
-                        >
-                          <Edit className="w-3 h-3" />
-                        </Button>
-                      )}
-
-                      {canRemove && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => removeUserHandler(user.id)}
-                          disabled={removingUser === user.id}
-                          className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
-                        >
-                          {removingUser === user.id ? (
-                            <Loader2 className="w-3 h-3 animate-spin" />
-                          ) : (
-                            <Trash2 className="w-3 h-3" />
-                          )}
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
             </div>
           </div>
 

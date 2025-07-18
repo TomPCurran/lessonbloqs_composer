@@ -43,16 +43,24 @@ export const CommentPanelProvider = ({
 
 interface BloqCommentsProps {
   bloqId: string;
-  bloqRef: React.RefObject<HTMLDivElement>;
+  bloqRef: React.RefObject<HTMLDivElement | null>;
 }
 
 export function BloqComments({ bloqId, bloqRef }: BloqCommentsProps) {
+  console.log("💬 [BloqComment] Rendering BloqComments", { bloqId });
+
   const { openBloqId, setOpenBloqId } = useCommentPanel();
   const isOpen = openBloqId === bloqId;
   const [isCreating, setIsCreating] = useState(false);
   const [commentText, setCommentText] = useState("");
   const commentsRef = useRef<HTMLDivElement>(null);
   const { user } = useUser();
+
+  console.log("💬 [BloqComment] State", {
+    isOpen,
+    isCreating,
+    hasUser: !!user,
+  });
 
   const [panelPosition, setPanelPosition] = useState<{
     top: number;
@@ -68,8 +76,6 @@ export function BloqComments({ bloqId, bloqRef }: BloqCommentsProps) {
       },
     },
   });
-  console.log("[BloqComment] Threads:", threads);
-  console.log("[BloqComment] BloqRef:", bloqRef);
   const createThread = useCreateThread();
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -164,6 +170,7 @@ export function BloqComments({ bloqId, bloqRef }: BloqCommentsProps) {
   };
 
   const toggleComments = () => {
+    console.log("💬 [BloqComment] Toggle comments", { bloqId, isOpen });
     if (isOpen) {
       setOpenBloqId(null);
       if (isCreating) {

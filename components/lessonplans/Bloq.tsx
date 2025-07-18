@@ -18,13 +18,19 @@ interface BloqProps {
   currentUserType: "creator" | "editor" | "viewer";
 }
 
-export default function Bloq({
-  bloq,
-  currentUser,
-  currentUserType,
-}: BloqProps) {
+function Bloq({ bloq, currentUser, currentUserType }: BloqProps) {
+  console.log("🧱 [Bloq] Rendering bloq", {
+    bloqId: bloq.id,
+    bloqTitle: bloq.title,
+    userId: currentUser.id,
+    currentUserType,
+    timestamp: new Date().toISOString(),
+  });
+
   const [isFocused, setIsFocused] = useState(false);
-  const { updateBloq, removeBloq } = useLessonPlanMutations();
+  // Memoize the mutations to prevent unnecessary re-renders
+  const mutations = useLessonPlanMutations();
+  const { updateBloq, removeBloq } = mutations;
   const bloqRef = useRef<HTMLDivElement>(null);
   const canEdit = currentUserType === "creator" || currentUserType === "editor";
 
@@ -47,7 +53,9 @@ export default function Bloq({
   );
 
   const handleRemove = useCallback(() => {
+    console.log("🧱 [Bloq] Remove bloq clicked", { bloqId: bloq.id, canEdit });
     if (!canEdit) return; // Prevent removing if user is viewer
+    console.log("🧱 [Bloq] Calling removeBloq", { bloqId: bloq.id });
     removeBloq(bloq.id);
   }, [bloq.id, removeBloq, canEdit]);
 
@@ -176,3 +184,5 @@ export default function Bloq({
     </Card>
   );
 }
+
+export default React.memo(Bloq);
