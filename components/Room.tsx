@@ -8,6 +8,7 @@ import Link from "next/link";
 import { RoomProps, UserData } from "@/types";
 import { getUserColor } from "@/lib/utils";
 import React from "react";
+import DocumentHeader from "@/components/composer/DocumentHeader";
 
 import { FloatingToolbar } from "@/components/composer/FloatingToolbar";
 import { AlertCircle, FileX } from "lucide-react";
@@ -176,13 +177,11 @@ const Room = React.memo(function Room({
       initialPresence={initialPresence}
     >
       <div className="main-layout min-h-screen animate-fade-in">
-        {/* <DocumentHeader
+        <DocumentHeader
           documentId={documentId}
           initialTitle={initialDocument.metadata?.title}
           currentUserType={currentUserType}
-        /> */}
-
-        {/* Main Content Area */}
+        />
         <div className="content-area">
           <div className="mx-auto max-w-6xl px-grid-2 py-grid-3 sm:px-grid-3 lg:px-grid-4 space-grid-4">
             {/* Floating Toolbar */}

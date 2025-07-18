@@ -7,6 +7,7 @@ import { EditorToolbar } from "@/components/editor/EditorToolbar";
 import { cn } from "@/lib/utils";
 import React from "react";
 import { FileText, Eye } from "lucide-react";
+import { useTheme } from "@/app/theme-provider"; // Import your theme hook
 
 interface EditorProps {
   bloqId: string;
@@ -43,15 +44,14 @@ export function Editor({
   const yjsContext = useYjs();
   const doc = yjsContext?.doc;
   const provider = yjsContext?.provider;
+  const { theme } = useTheme();
 
   const editor = useCreateBlockNote({
     collaboration:
       provider && doc
         ? {
             provider,
-            // Attach the editor to a specific XML fragment for this bloq
             fragment: doc.getXmlFragment(`blocknote-${bloqId}`),
-            // User details for collaboration cursors
             user: {
               name: userName,
               color: userColor,
@@ -59,13 +59,13 @@ export function Editor({
           }
         : undefined,
     initialContent:
-      // Only use initialContent if collaboration is not yet ready and content exists
       (!provider || !doc) && initialContent
         ? JSON.parse(initialContent)
         : undefined,
     placeholders: {
       paragraph: "",
     },
+    theme: theme === "dark" ? "dark" : "light", // Force BlockNote to use correct theme
   });
 
   // Disable editing for viewers
@@ -88,6 +88,8 @@ export function Editor({
         "group relative",
         !canEdit && "opacity-90"
       )}
+      // Add data attribute for theme targeting
+      data-theme={theme}
     >
       {/* Toolbar - only show for editable editors */}
       {canEdit && (
@@ -122,21 +124,26 @@ export function Editor({
         <div className="relative p-grid-3">
           <BlockNoteView
             editor={editor}
+            theme={theme === "dark" ? "dark" : "light"} // Explicitly set theme
             className={cn(
-              "editor-container bg-transparent",
+              "editor-container",
               "prose prose-sm max-w-none",
               "text-body-large text-foreground",
-              "[&_.bn-editor]:bg-transparent",
+              // More specific background override
+              "!bg-surface",
+              "[&_.bn-editor]:!bg-surface",
               "[&_.bn-editor]:border-none",
               "[&_.bn-editor]:shadow-none",
               "[&_.bn-editor]:outline-none",
-              // Read-only styling
+              "[&_.bn-editor]:!text-foreground",
+              "[&_.bn-editor_*]:!text-foreground",
+              "[&_.bn-editor_*]:!bg-transparent",
               !canEdit && "[&_.bn-editor]:cursor-default",
               !canEdit && "select-text"
             )}
             sideMenu={false}
             slashMenu={false}
-            formattingToolbar={false} // We use custom toolbar
+            formattingToolbar={false}
           />
         </div>
 

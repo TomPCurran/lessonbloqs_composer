@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { ClientSideSuspense } from "@liveblocks/react/suspense";
 import EditableTitle from "@/components/composer/EditableTitle";
 import ActiveCollaborators from "@/components/lessonplans/ActiveCollaborators";
 
@@ -30,7 +31,15 @@ const DocumentHeader = ({
 
         {/* Collaboration section */}
         <div className="flex items-center justify-center">
-          <ActiveCollaborators />
+          <ClientSideSuspense
+            fallback={
+              <div className="text-body-small text-muted-foreground">
+                Loading collaborators...
+              </div>
+            }
+          >
+            {() => <ActiveCollaborators />}
+          </ClientSideSuspense>
         </div>
       </div>
     </div>

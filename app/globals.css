@@ -1,4 +1,5 @@
 @import "@liveblocks/react-ui/styles.css";
+@import "../styles/light-theme.css";
 
 * {
   font-family: "Inter", sans-serif;
@@ -13,7 +14,7 @@
     /* Base Colors - Aligned with Brand */
     --background: 0 0% 99%; /* Pure white base */
     --foreground: 210 11% 15%; /* Rich dark text */
-    --surface: 0 0% 100%; /* Card/surface white */
+    --surface: 0 0% 98%; /* Off-white surface */
     --surface-variant: 210 17% 96%; /* Subtle surface variation */
     --muted: 210 14% 89%; /* Light gray backgrounds */
     --muted-foreground: 210 9% 53%; /* Muted text */

@@ -1,169 +1,245 @@
 /* ========================
-   dark-theme.css - Editor Specific Overrides
+   light-theme.css - Editor Specific Overrides
    ======================== */
 
 /* Note: Main theming is now handled in globals.css */
-/* This file contains only editor-specific dark theme customizations */
+/* This file contains only editor-specific light theme customizations */
 
-.dark-theme {
-  /* Editor syntax highlighting - Dark mode */
-  --code-bg: 15 23 42; /* slate-900 */
-  --code-border: 30 41 59; /* slate-800 */
-  --code-text: 226 232 240; /* slate-200 */
+/* Light theme variables - these are already defined in globals.css */
+/* This section is for any light-specific overrides if needed */
+
+/* Light theme specific CSS variables for editor components */
+.light {
+  /* Editor syntax highlighting - Light mode */
+  --code-bg: 248 250 252; /* slate-50 */
+  --code-border: 226 232 240; /* slate-200 */
+  --code-text: 15 23 42; /* slate-900 */
   --code-comment: 100 116 139; /* slate-500 */
-  --code-keyword: 96 165 250; /* blue-400 */
-  --code-string: 74 222 128; /* green-400 */
-  --code-number: 196 181 253; /* violet-300 */
-  --code-function: 232 121 249; /* fuchsia-400 */
+  --code-keyword: 59 130 246; /* blue-500 */
+  --code-string: 34 197 94; /* green-500 */
+  --code-number: 147 51 234; /* violet-600 */
+  --code-function: 168 85 247; /* violet-500 */
 }
 
-/* Lexical Editor - Dark Theme Enhancements */
-.dark .editor-container {
+/* Light theme specific editor styles */
+.light .editor-container {
   background: hsl(var(--surface));
   border: 1px solid hsl(var(--border));
-  box-shadow: var(--elevation-2);
+  box-shadow: var(--elevation-1);
   transition: box-shadow 0.2s ease;
 }
 
-.dark .editor-container:focus-within {
-  box-shadow: var(--elevation-3);
+/* BlockNote editor background and text color for light mode */
+.light .bn-editor {
+  background: hsl(var(--surface)) !important;
+  color: hsl(var(--foreground)) !important;
+}
+
+.light .bn-editor * {
+  color: hsl(var(--foreground)) !important;
+}
+
+.light .editor-container:focus-within {
+  box-shadow: var(--elevation-2);
   border-color: hsl(var(--ring));
 }
 
-.dark .toolbar {
+.light .toolbar {
   background: hsl(var(--surface-variant));
   border-bottom: 1px solid hsl(var(--border));
   border-radius: 0.75rem 0.75rem 0 0;
 }
 
-.dark .toolbar button.toolbar-item {
+.light .toolbar button.toolbar-item {
   color: hsl(var(--foreground));
   transition: all 0.2s ease;
   border-radius: 0.5rem;
 }
 
-.dark .toolbar button.toolbar-item:hover:not([disabled]) {
+.light .toolbar button.toolbar-item:hover:not([disabled]) {
   background: hsl(var(--muted));
   transform: translateY(-1px);
   box-shadow: var(--elevation-1);
 }
 
-.dark .toolbar button.toolbar-item.active {
+.light .toolbar button.toolbar-item.active {
   background: hsl(var(--primary-subtle));
   color: hsl(var(--primary));
 }
 
-.dark .toolbar .divider {
+.light .toolbar .divider {
   background: hsl(var(--border));
   opacity: 0.8;
 }
 
-.dark .editor-inner {
+.light .editor-inner {
   background: hsl(var(--surface));
   border-radius: 0 0 0.75rem 0.75rem;
 }
 
-.dark .editor-input {
+/* Ensure the editor content area has the correct background */
+.light .bn-editor-content {
+  background: hsl(var(--surface)) !important;
+  color: hsl(var(--foreground)) !important;
+}
+
+.light .editor-input {
   color: hsl(var(--foreground));
   caret-color: hsl(var(--primary));
   line-height: 1.7;
 }
 
-.dark .editor-placeholder {
+.light .editor-placeholder {
   color: hsl(var(--muted-foreground));
 }
 
-/* Code styling - Dark theme */
-.dark .editor-code {
+/* Lexical Editor - Light Theme Enhancements */
+.editor-container {
+  background: hsl(var(--surface));
+  border: 1px solid hsl(var(--border));
+  box-shadow: var(--elevation-1);
+  transition: box-shadow 0.2s ease;
+}
+
+.editor-container:focus-within {
+  box-shadow: var(--elevation-2);
+  border-color: hsl(var(--ring));
+}
+
+.toolbar {
+  background: hsl(var(--surface-variant));
+  border-bottom: 1px solid hsl(var(--border));
+  border-radius: 0.75rem 0.75rem 0 0;
+}
+
+.toolbar button.toolbar-item {
+  color: hsl(var(--foreground));
+  transition: all 0.2s ease;
+  border-radius: 0.5rem;
+}
+
+.toolbar button.toolbar-item:hover:not([disabled]) {
+  background: hsl(var(--muted));
+  transform: translateY(-1px);
+  box-shadow: var(--elevation-1);
+}
+
+.toolbar button.toolbar-item.active {
+  background: hsl(var(--primary-subtle));
+  color: hsl(var(--primary));
+}
+
+.toolbar .divider {
+  background: hsl(var(--border));
+  opacity: 0.8;
+}
+
+.editor-inner {
+  background: hsl(var(--surface));
+  border-radius: 0 0 0.75rem 0.75rem;
+}
+
+.editor-input {
+  color: hsl(var(--foreground));
+  caret-color: hsl(var(--primary));
+  line-height: 1.7;
+}
+
+.editor-placeholder {
+  color: hsl(var(--muted-foreground));
+}
+
+/* Code styling - Light theme */
+.light .editor-code {
   background: hsl(var(--code-bg));
   border: 1px solid hsl(var(--code-border));
   color: hsl(var(--code-text));
   font-family: "JetBrains Mono", "Menlo", "Monaco", "Consolas", monospace;
   position: relative;
-  box-shadow: var(--elevation-2);
+  box-shadow: var(--elevation-1);
 }
 
-.dark .editor-text-code {
+.light .editor-text-code {
   background: hsl(var(--muted));
   color: hsl(var(--foreground));
   border: 1px solid hsl(var(--border));
-  box-shadow: 0 2px 4px 0 rgb(0 0 0 / 0.2);
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
 }
 
-/* Syntax highlighting tokens - Dark theme */
-.dark .editor-tokenComment {
+/* Syntax highlighting tokens - Light theme */
+.light .editor-tokenComment {
   color: hsl(var(--code-comment));
   font-style: italic;
 }
 
-.dark .editor-tokenPunctuation {
+.light .editor-tokenPunctuation {
   color: hsl(var(--foreground));
 }
 
-.dark .editor-tokenProperty {
+.light .editor-tokenProperty {
   color: hsl(var(--code-keyword));
   font-weight: 500;
 }
 
-.dark .editor-tokenSelector {
+.light .editor-tokenSelector {
   color: hsl(var(--code-string));
   font-weight: 500;
 }
 
-.dark .editor-tokenOperator {
+.light .editor-tokenOperator {
   color: hsl(var(--code-keyword));
 }
 
-.dark .editor-tokenAttr {
+.light .editor-tokenAttr {
   color: hsl(var(--code-keyword));
 }
 
-.dark .editor-tokenVariable {
+.light .editor-tokenVariable {
   color: hsl(var(--code-number));
 }
 
-.dark .editor-tokenFunction {
+.light .editor-tokenFunction {
   color: hsl(var(--code-function));
   font-weight: 500;
 }
 
-.dark .editor-tokenKeyword {
+.light .editor-tokenKeyword {
   color: hsl(var(--code-keyword));
   font-weight: 600;
 }
 
-.dark .editor-tokenString {
+.light .editor-tokenString {
   color: hsl(var(--code-string));
 }
 
-.dark .editor-tokenNumber {
+.light .editor-tokenNumber {
   color: hsl(var(--code-number));
   font-weight: 500;
 }
 
-/* Enhanced headings with better spacing - Dark theme */
-.dark .editor-heading-h1 {
+/* Enhanced headings with better spacing - Light theme */
+.light .editor-heading-h1 {
   border-bottom: 2px solid hsl(var(--border));
   padding-bottom: 0.5rem;
   margin-bottom: 1.5rem;
   color: hsl(var(--foreground));
 }
 
-.dark .editor-heading-h2 {
+.light .editor-heading-h2 {
   color: hsl(var(--foreground));
   margin-top: 2rem;
   margin-bottom: 1rem;
 }
 
-.dark .editor-heading-h3 {
+.light .editor-heading-h3 {
   color: hsl(var(--foreground));
   margin-top: 1.5rem;
   margin-bottom: 0.75rem;
 }
 
-/* Enhanced quote styling - Dark theme */
-.dark .editor-quote {
-  background: hsl(var(--muted) / 0.2);
+/* Enhanced quote styling - Light theme */
+.light .editor-quote {
+  background: hsl(var(--muted) / 0.3);
   border-left: 4px solid hsl(var(--primary));
   border-radius: 0 0.5rem 0.5rem 0;
   padding: 1rem 1.5rem;
@@ -171,7 +247,7 @@
   position: relative;
 }
 
-.dark .editor-quote::before {
+.light .editor-quote::before {
   content: '"';
   font-size: 3rem;
   color: hsl(var(--primary) / 0.4);
@@ -181,29 +257,29 @@
   font-family: Georgia, serif;
 }
 
-/* Lists with better styling - Dark theme */
-.dark .editor-list-ol,
-.dark .editor-list-ul {
+/* Lists with better styling - Light theme */
+.light .editor-list-ol,
+.light .editor-list-ul {
   padding-left: 1.5rem;
   margin: 1rem 0;
 }
 
-.dark .editor-listitem {
+.light .editor-listitem {
   margin: 0.5rem 0;
   line-height: 1.6;
 }
 
-.dark .editor-list-ul .editor-listitem::marker {
+.light .editor-list-ul .editor-listitem::marker {
   color: hsl(var(--primary));
 }
 
-.dark .editor-list-ol .editor-listitem::marker {
+.light .editor-list-ol .editor-listitem::marker {
   color: hsl(var(--primary));
   font-weight: 600;
 }
 
-/* Tree view for debugging - Dark theme */
-.dark .tree-view-output {
+/* Tree view for debugging - Light theme */
+.light .tree-view-output {
   background: hsl(var(--muted));
   color: hsl(var(--foreground));
   border: 1px solid hsl(var(--border));
@@ -212,20 +288,20 @@
   line-height: 1.4;
 }
 
-/* Clerk overrides for dark theme */
-.dark .cl-avatarBox {
+/* Clerk overrides for light theme */
+.light .cl-avatarBox {
   border: 2px solid hsl(var(--primary));
-  box-shadow: var(--elevation-2);
+  box-shadow: var(--elevation-1);
   transition: all 0.2s ease;
 }
 
-.dark .cl-avatarBox:hover {
-  box-shadow: var(--elevation-3);
+.light .cl-avatarBox:hover {
+  box-shadow: var(--elevation-2);
   transform: scale(1.05);
 }
 
-/* Code block enhancements for dark theme */
-.dark .editor-code:before {
+/* Code block enhancements for light theme */
+.light .editor-code:before {
   content: attr(data-gutter);
   position: absolute;
   top: 0;
@@ -240,7 +316,7 @@
   border-right: 1px solid hsl(var(--border));
 }
 
-.dark .editor-code:after {
+.light .editor-code:after {
   content: attr(data-highlight-language);
   position: absolute;
   top: 0.5rem;
@@ -253,60 +329,268 @@
   border: 1px solid hsl(var(--border));
 }
 
-/* Improved scrollbars for dark theme */
-.dark .editor-inner::-webkit-scrollbar,
-.dark pre::-webkit-scrollbar {
+/* Improved scrollbars for light theme */
+.light .editor-inner::-webkit-scrollbar,
+.light pre::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 
-.dark .editor-inner::-webkit-scrollbar-track,
-.dark pre::-webkit-scrollbar-track {
+.light .editor-inner::-webkit-scrollbar-track,
+.light pre::-webkit-scrollbar-track {
   background: hsl(var(--muted) / 0.2);
   border-radius: 4px;
 }
 
-.dark .editor-inner::-webkit-scrollbar-thumb,
-.dark pre::-webkit-scrollbar-thumb {
+.light .editor-inner::-webkit-scrollbar-thumb,
+.light pre::-webkit-scrollbar-thumb {
   background: hsl(var(--border));
   border-radius: 4px;
   transition: background 0.2s ease;
 }
 
-.dark .editor-inner::-webkit-scrollbar-thumb:hover,
-.dark pre::-webkit-scrollbar-thumb:hover {
+.light .editor-inner::-webkit-scrollbar-thumb:hover,
+.light pre::-webkit-scrollbar-thumb:hover {
   background: hsl(var(--muted-foreground) / 0.6);
 }
 
-/* Focus improvements - Dark theme */
-.dark .editor-inner:focus-within .editor-input {
+/* Focus improvements - Light theme */
+.light .editor-inner:focus-within .editor-input {
   outline: none;
 }
 
-/* Selection styling - Dark theme */
-.dark .editor-input::selection {
-  background: hsl(var(--primary) / 0.3);
+/* Selection styling - Light theme */
+.light .editor-input::selection {
+  background: hsl(var(--primary) / 0.2);
   color: hsl(var(--foreground));
 }
 
-/* Additional dark theme specific improvements */
-.dark .debug-timetravel-panel {
-  background: hsl(var(--surface));
-  border: 1px solid hsl(var(--border));
-  box-shadow: var(--elevation-2);
+/* BlockNote specific overrides for light theme */
+.light [data-bn-type="editor"] {
+  background: hsl(var(--surface)) !important;
+  color: hsl(var(--foreground)) !important;
 }
 
-.dark .debug-timetravel-panel-button {
+.light [data-bn-type="editor"] * {
+  color: hsl(var(--foreground)) !important;
+}
+
+.light .bn-editor {
+  background: transparent !important;
+  color: hsl(var(--foreground)) !important;
+}
+
+.light .bn-editor * {
+  color: inherit !important;
+}
+
+.light .bn-inline-content {
+  color: hsl(var(--foreground)) !important;
+}
+
+.light .bn-block-content {
+  color: hsl(var(--foreground)) !important;
+}
+
+/* Additional BlockNote text visibility fixes */
+.light [data-bn-type="text"] {
+  color: hsl(var(--foreground)) !important;
+}
+
+.light [data-bn-type="paragraph"] {
+  color: hsl(var(--foreground)) !important;
+}
+
+.light [data-bn-type="heading"] {
+  color: hsl(var(--foreground)) !important;
+}
+
+.light [data-bn-type="list"] {
+  color: hsl(var(--foreground)) !important;
+}
+
+.light [data-bn-type="listitem"] {
+  color: hsl(var(--foreground)) !important;
+}
+
+.light [data-bn-type="quote"] {
+  color: hsl(var(--foreground)) !important;
+}
+
+.light [data-bn-type="code"] {
+  color: hsl(var(--foreground)) !important;
+}
+
+/* Ensure all text elements in the editor are visible */
+.light .bn-editor [contenteditable="true"] {
+  color: hsl(var(--foreground)) !important;
+  background: hsl(var(--surface)) !important;
+}
+
+.light .bn-editor [contenteditable="true"] * {
+  color: hsl(var(--foreground)) !important;
+  background: transparent !important;
+}
+
+/* Force text visibility in light mode for all BlockNote elements */
+.light .bn-editor,
+.light .bn-editor *,
+.light [data-bn-type],
+.light [data-bn-type] * {
+  color: hsl(var(--foreground)) !important;
+  background: hsl(var(--surface)) !important;
+}
+
+/* Specific overrides for common text elements */
+.light p,
+.light h1,
+.light h2,
+.light h3,
+.light h4,
+.light h5,
+.light h6,
+.light li,
+.light blockquote,
+.light code,
+.light pre {
+  color: hsl(var(--foreground)) !important;
+}
+
+/* Ensure placeholder text is visible but muted */
+.light .bn-editor [data-placeholder] {
+  color: hsl(var(--muted-foreground)) !important;
+}
+
+/* Override any remaining dark backgrounds in BlockNote */
+.light .bn-editor,
+.light .bn-editor-content,
+.light [data-bn-type="editor"],
+.light [data-bn-type="editor"] > *,
+.light .bn-block-content,
+.light .bn-inline-content {
+  background: hsl(var(--surface)) !important;
+  color: hsl(var(--foreground)) !important;
+}
+
+/* Ensure the editor container itself has the right background */
+.light .editor-container .bn-editor {
+  background: hsl(var(--surface)) !important;
+}
+
+/* More aggressive overrides for BlockNote dark backgrounds */
+.light .bn-editor,
+.light .bn-editor *,
+.light [data-bn-type],
+.light [data-bn-type] *,
+.light .bn-block,
+.light .bn-block *,
+.light .bn-inline,
+.light .bn-inline * {
+  background: hsl(var(--surface)) !important;
+  color: hsl(var(--foreground)) !important;
+}
+
+/* Override any inline styles that might be applied */
+.light .bn-editor[style*="background"],
+.light .bn-editor *[style*="background"] {
+  background: hsl(var(--surface)) !important;
+}
+
+.light .bn-editor[style*="color"],
+.light .bn-editor *[style*="color"] {
+  color: hsl(var(--foreground)) !important;
+}
+
+/* Force all BlockNote elements to use light theme */
+.light .bn-editor,
+.light .bn-editor *,
+.light [data-bn-type],
+.light [data-bn-type] *,
+.light .bn-block,
+.light .bn-block *,
+.light .bn-inline,
+.light .bn-inline *,
+.light .bn-editor-content,
+.light .bn-editor-content *,
+.light .bn-block-content,
+.light .bn-block-content *,
+.light .bn-inline-content,
+.light .bn-inline-content * {
+  background: hsl(var(--surface)) !important;
+  color: hsl(var(--foreground)) !important;
+}
+
+/* Override any remaining dark theme styles */
+.light .bn-editor[class*="dark"],
+.light .bn-editor *[class*="dark"] {
+  background: hsl(var(--surface)) !important;
+  color: hsl(var(--foreground)) !important;
+}
+
+/* Override BlockNote core styles for light mode */
+.light .bn-editor,
+.light .bn-editor *,
+.light [data-bn-type],
+.light [data-bn-type] *,
+.light .bn-block,
+.light .bn-block *,
+.light .bn-inline,
+.light .bn-inline *,
+.light .bn-editor-content,
+.light .bn-editor-content *,
+.light .bn-block-content,
+.light .bn-block-content *,
+.light .bn-inline-content,
+.light .bn-inline-content *,
+.light [contenteditable="true"],
+.light [contenteditable="true"] * {
+  background: hsl(var(--surface)) !important;
+  color: hsl(var(--foreground)) !important;
+}
+
+/* Override any BlockNote default styles */
+.light .bn-editor[style],
+.light .bn-editor *[style] {
+  background: hsl(var(--surface)) !important;
+  color: hsl(var(--foreground)) !important;
+}
+
+/* Target the specific BlockNote editor structure */
+.light .bn-editor,
+.light .bn-editor > div,
+.light .bn-editor > div > div,
+.light .bn-editor > div > div > div {
+  background: hsl(var(--surface)) !important;
+  color: hsl(var(--foreground)) !important;
+}
+
+/* Override any remaining dark backgrounds with maximum specificity */
+.light .editor-container .bn-editor,
+.light .editor-container .bn-editor *,
+.light .editor-container [data-bn-type],
+.light .editor-container [data-bn-type] * {
+  background: hsl(var(--surface)) !important;
+  color: hsl(var(--foreground)) !important;
+}
+
+/* Additional light theme specific improvements */
+.light .debug-timetravel-panel {
+  background: hsl(var(--surface));
+  border: 1px solid hsl(var(--border));
+  box-shadow: var(--elevation-1);
+}
+
+.light .debug-timetravel-panel-button {
   color: hsl(var(--foreground));
   transition: all 0.2s ease;
 }
 
-.dark .debug-timetravel-panel-button:hover {
+.light .debug-timetravel-panel-button:hover {
   background: hsl(var(--muted));
   transform: translateY(-1px);
 }
 
-.dark .debug-timetravel-button {
+.light .debug-timetravel-button {
   color: hsl(var(--foreground));
   background: hsl(var(--surface));
   border: 1px solid hsl(var(--border));
@@ -314,7 +598,7 @@
   transition: all 0.2s ease;
 }
 
-.dark .debug-timetravel-button:hover {
+.light .debug-timetravel-button:hover {
   background: hsl(var(--muted));
   box-shadow: var(--elevation-2);
   transform: translateY(-1px);

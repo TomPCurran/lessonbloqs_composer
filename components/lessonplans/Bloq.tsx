@@ -11,6 +11,7 @@ import { Editor } from "@/components/editor/Editor";
 import { getUserColor } from "@/lib/utils";
 import { Bloq as BloqType, UserData } from "@/types";
 import { BloqComments } from "@/components/lessonplans/BloqComment";
+import { ClientSideSuspense } from "@liveblocks/react/suspense";
 
 interface BloqProps {
   bloq: BloqType;
@@ -86,7 +87,9 @@ function Bloq({ bloq, currentUser, currentUserType }: BloqProps) {
     >
       {/* Action buttons */}
       <div className="absolute top-grid-2 right-grid-2 flex items-center gap-grid-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-20">
-        <BloqComments bloqId={bloq.id} bloqRef={bloqRef} />
+        <ClientSideSuspense fallback={<div className="w-8 h-8" />}>
+          {() => <BloqComments bloqId={bloq.id} bloqRef={bloqRef} />}
+        </ClientSideSuspense>
 
         {canEdit && (
           <Button
