@@ -12,33 +12,116 @@ interface PageProps {
   };
 }
 
+const DocumentErrorState = ({
+  title = "Something went wrong",
+  message = "We encountered an error while loading your document. Please try again later.",
+  actionLabel = "Go back",
+  onAction,
+}: {
+  title?: string;
+  message?: string;
+  actionLabel?: string;
+  onAction?: () => void;
+}) => (
+  <div className="main-layout">
+    <div className="content-area">
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="google-card p-grid-6 max-w-lg w-full text-center space-grid-4">
+          {/* Error Icon */}
+          <div className="w-16 h-16 mx-auto mb-grid-4 rounded-full bg-destructive/10 flex items-center justify-center">
+            <svg
+              className="w-8 h-8 text-destructive"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.464 0L4.35 16.5c-.77.833.192 2.5 1.732 2.5z"
+              />
+            </svg>
+          </div>
+
+          <div className="space-grid-2">
+            <h1 className="text-headline-large text-foreground">{title}</h1>
+            <p className="text-body-large text-muted-foreground">{message}</p>
+          </div>
+
+          {onAction && (
+            <button
+              onClick={onAction}
+              className="google-button-primary mt-grid-2"
+            >
+              {actionLabel}
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
 const Page = async ({ params }: PageProps) => {
+  console.log("📄 [Page] Starting page render", { params });
+
   const resolvedParams = await params;
   const documentId = resolvedParams?.id;
 
+  console.log("📄 [Page] Resolved params", { documentId });
+
   if (!documentId) {
-    // Handle the case where id is not present, though this is unlikely in a dynamic route
-    return <div>Document ID not found.</div>;
+    console.log("📄 [Page] No documentId, showing error state");
+    return (
+      <DocumentErrorState
+        title="Invalid Document"
+        message="The document identifier is missing. Please check the URL and try again."
+        actionLabel="Go to Documents"
+        onAction={() => redirect("/lessonplans")}
+      />
+    );
   }
 
   const clerkUser = await currentUser();
+
+  console.log("📄 [Page] Clerk user", {
+    userId: clerkUser?.id,
+    email: clerkUser?.emailAddresses[0]?.emailAddress,
+  });
 
   if (!clerkUser) {
     redirect("/sign-in");
   }
 
   try {
+    console.log("📄 [Page] Fetching document", {
+      documentId,
+      userId: clerkUser.id,
+    });
+
     const room = await getDocument({
       documentId,
-      userId: clerkUser.emailAddresses[0].emailAddress,
+      userId: clerkUser.id,
+    });
+
+    console.log("📄 [Page] Document fetched", {
+      roomId: room?.id,
+      hasMetadata: !!room?.metadata,
+      hasUsersAccesses: !!room?.usersAccesses,
     });
 
     if (!room) {
+      console.log("📄 [Page] No room found, redirecting to lessonplans");
       redirect("/lessonplans");
     }
 
     const userIds = Object.keys(room.usersAccesses);
+    console.log("📄 [Page] Getting users", { userIds });
+
     const users = await getClerkUsers({ userIds });
+
+    console.log("📄 [Page] Users fetched", { userCount: users.length });
 
     const collaborators = users
       .filter(
@@ -46,7 +129,7 @@ const Page = async ({ params }: PageProps) => {
       )
       .map((user) => ({
         ...user,
-        userType: room.usersAccesses[user.email as string]?.[0],
+        userType: room.usersAccesses[user.id]?.[0],
       }));
 
     const currentUserData: UserData = {
@@ -57,19 +140,46 @@ const Page = async ({ params }: PageProps) => {
       email: clerkUser.emailAddresses[0].emailAddress,
     };
 
+    console.log("📄 [Page] Rendering Room component", {
+      documentId,
+      currentUserData: {
+        id: currentUserData.id,
+        name: `${currentUserData.firstName} ${currentUserData.lastName}`,
+      },
+      collaboratorCount: collaborators.length,
+    });
+
     return (
-      <main className="flex-1 flex flex-col items-center justify-center w-full pt-16 px-4 sm:px-6 lg:px-8">
-        <Room
-          documentId={documentId}
-          initialDocument={room}
-          user={currentUserData}
-          collaborators={collaborators}
-        />
-      </main>
+      <div className="main-layout">
+        <main className="content-area min-h-screen">
+          <div className="mx-auto max-w-7xl px-grid-2 py-grid-3 sm:px-grid-3 lg:px-grid-4">
+            <div className="google-card p-0 overflow-hidden animate-fade-in">
+              <Room
+                documentId={documentId}
+                initialDocument={room}
+                user={currentUserData}
+                collaborators={collaborators}
+              />
+            </div>
+          </div>
+        </main>
+      </div>
     );
   } catch (error) {
     console.error("Error fetching document:", error);
-    return <div>Error loading document. Please try again later.</div>;
+
+    if (error instanceof Error && error.message === "ACCESS_DENIED") {
+      redirect("/lessonplans");
+    }
+
+    return (
+      <DocumentErrorState
+        title="Failed to load document"
+        message="We encountered an error while loading your document. This might be a temporary issue."
+        actionLabel="Try again"
+        onAction={() => window.location.reload()}
+      />
+    );
   }
 };
 

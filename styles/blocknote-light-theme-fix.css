@@ -1,0 +1,72 @@
+/* 
+BlockNote Light Theme Fix 
+Save this as: styles/blocknote-light-theme-fix.css
+Import it in layout.tsx AFTER BlockNote's CSS imports
+*/
+
+/* Force light theme on BlockNote editor with maximum specificity */
+.light .bn-editor,
+.light .bn-editor > div,
+.light .bn-editor > div > div,
+.light .bn-editor [contenteditable="true"],
+.light .bn-editor [data-bn-type="editor"],
+.light .bn-editor .bn-editor-content,
+.light .bn-editor .bn-block-group,
+.light .bn-editor .bn-block-content,
+.light .editor-container .bn-editor,
+html.light .bn-editor,
+html.light .bn-editor * {
+  background-color: hsl(var(--surface)) !important;
+  background: hsl(var(--surface)) !important;
+  color: hsl(var(--foreground)) !important;
+}
+
+/* Override any inline styles that BlockNote might apply */
+.light .bn-editor[style*="background"],
+.light .bn-editor *[style*="background"] {
+  background-color: hsl(var(--surface)) !important;
+  background: hsl(var(--surface)) !important;
+}
+
+.light .bn-editor[style*="color"],
+.light .bn-editor *[style*="color"] {
+  color: hsl(var(--foreground)) !important;
+}
+
+/* Target the specific dark background that's showing up */
+.light .bn-editor {
+  background-color: hsl(var(--surface)) !important;
+  background: hsl(var(--surface)) !important;
+}
+
+/* Override BlockNote's theme system */
+.light [data-theme="dark"] {
+  background: hsl(var(--surface)) !important;
+  color: hsl(var(--foreground)) !important;
+}
+
+/* Force all text elements to be visible */
+.light .bn-editor p,
+.light .bn-editor h1,
+.light .bn-editor h2,
+.light .bn-editor h3,
+.light .bn-editor h4,
+.light .bn-editor h5,
+.light .bn-editor h6,
+.light .bn-editor li,
+.light .bn-editor blockquote,
+.light .bn-editor pre,
+.light .bn-editor code {
+  color: hsl(var(--foreground)) !important;
+  background: transparent !important;
+}
+
+/* Override BlockNote's internal classes */
+.light .bn-editor .ProseMirror {
+  background: hsl(var(--surface)) !important;
+  color: hsl(var(--foreground)) !important;
+}
+
+.light .bn-editor .ProseMirror * {
+  color: hsl(var(--foreground)) !important;
+}

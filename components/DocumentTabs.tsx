@@ -81,11 +81,9 @@ export default function DocumentTabs({
   // Get current user ID from the first document (all docs have currentUser)
   const userId = documents[0]?.currentUser?.id || "";
 
-  // Filter for each tab
-  const myDocs = documents.filter((doc) => doc.metadata.creatorId === userId);
-  const sharedDocs = documents.filter(
-    (doc) => doc.metadata.creatorId !== userId
-  );
+  // Use the props directly instead of re-filtering
+  const myDocs = myDocuments;
+  const sharedDocs = sharedDocuments;
 
   const toggleMenu = useCallback(
     (id: string) => {

@@ -6,10 +6,15 @@ import { cn } from "@/lib/utils";
 import { ClerkProvider } from "@clerk/nextjs";
 import Provider from "@/lib/providers/Provider";
 
-// // Uncomment these BlockNote CSS imports - they're crucial for cursors
 import "@blocknote/core/fonts/inter.css";
-import "@blocknote/core/style.css";
-// import "@blocknote/mantine/style.css";
+import "@blocknote/core/style.css"; 
+import "@blocknote/mantine/style.css";
+import "./globals.css";
+import "../styles/blocknote-light-theme-fix.css"; // Add this line
+
+// // Uncomment these BlockNote CSS imports - they're crucial for cursors
+// import "@blocknote/core/fonts/inter.css";
+// import "@blocknote/core/style.css";
 
 import "./globals.css";
 

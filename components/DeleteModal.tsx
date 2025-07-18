@@ -30,8 +30,6 @@ export function DeleteModal({ roomId, onDelete, trigger }: DeleteModalProps) {
   const handleDelete = async () => {
     setLoading(true);
     try {
-      console.log("Deleting document", roomId);
-
       if (onDelete) {
         await onDelete(roomId);
       } else {

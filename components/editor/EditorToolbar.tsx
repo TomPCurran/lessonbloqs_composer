@@ -3,6 +3,8 @@
 import React from "react";
 import { useEditorContentOrSelectionChange } from "@blocknote/react";
 import { BlockNoteEditor } from "@blocknote/core"; // Import the type
+import { Bold, Italic, Underline, Type, List, ListOrdered } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface EditorToolbarProps {
   editor: BlockNoteEditor | null; // Use the specific type instead of 'any'
@@ -21,7 +23,7 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
       setActiveStyles(styles);
     }
   }, editor ?? undefined);
-  
+
   if (!editor) return null;
 
   const toggleBold = () => editor.toggleStyles({ bold: true });
@@ -74,58 +76,69 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
     }
   };
 
-  // Helper function for button styling
-  const getButtonClass = (isActive: boolean) => {
-    return `px-3 py-1 text-sm font-medium rounded border transition-colors ${
-      isActive
-        ? "bg-accent/20 text-accent border-accent/30"
-        : "bg-transparent hover:bg-muted/80 border-border"
-    }`;
-  };
-
   const currentBlockType = currentBlock?.type || "paragraph";
   const currentLevel = currentBlock?.props?.level;
 
   return (
-    <div className="flex items-center gap-2 p-2 border-b border-border bg-surface rounded-t-lg overflow-x-auto">
-      {/* Text Styles */}
-      <div className="flex items-center gap-1 border-r border-border pr-2 mr-1">
+    <div className="flex items-center gap-grid-1 p-grid-2 overflow-x-auto">
+      {/* Text Formatting Group */}
+      <div className="flex items-center rounded-lg border border-border/30 p-0.5 bg-surface-variant/30">
         <button
           onClick={toggleBold}
-          className={getButtonClass(activeStyles.bold)}
-          title="Bold"
+          className={cn(
+            "toolbar-button h-8 w-8 p-0 rounded-md transition-all duration-200",
+            "hover:bg-muted focus-visible:ring-2 focus-visible:ring-primary/20",
+            activeStyles.bold && "bg-primary/15 text-primary"
+          )}
+          title="Bold (Ctrl+B)"
         >
-          <strong>B</strong>
+          <Bold className="w-4 h-4" />
         </button>
         <button
           onClick={toggleItalic}
-          className={getButtonClass(activeStyles.italic)}
-          title="Italic"
+          className={cn(
+            "toolbar-button h-8 w-8 p-0 rounded-md transition-all duration-200",
+            "hover:bg-muted focus-visible:ring-2 focus-visible:ring-primary/20",
+            activeStyles.italic && "bg-primary/15 text-primary"
+          )}
+          title="Italic (Ctrl+I)"
         >
-          <em>I</em>
+          <Italic className="w-4 h-4" />
         </button>
         <button
           onClick={toggleUnderline}
-          className={getButtonClass(activeStyles.underline)}
-          title="Underline"
+          className={cn(
+            "toolbar-button h-8 w-8 p-0 rounded-md transition-all duration-200",
+            "hover:bg-muted focus-visible:ring-2 focus-visible:ring-primary/20",
+            activeStyles.underline && "bg-primary/15 text-primary"
+          )}
+          title="Underline (Ctrl+U)"
         >
-          <u>U</u>
+          <Underline className="w-4 h-4" />
         </button>
       </div>
 
-      {/* Block Types */}
-      <div className="flex items-center gap-1 border-r border-border pr-2 mr-1">
+      {/* Block Type Group */}
+      <div className="flex items-center rounded-lg border border-border/30 p-0.5 bg-surface-variant/30">
         <button
           onClick={setParagraph}
-          className={getButtonClass(currentBlockType === "paragraph")}
+          className={cn(
+            "toolbar-button h-8 px-2 text-body-small font-medium rounded-md transition-all duration-200",
+            "hover:bg-muted focus-visible:ring-2 focus-visible:ring-secondary/20",
+            currentBlockType === "paragraph" && "bg-secondary/15 text-secondary"
+          )}
           title="Paragraph"
         >
-          ¶
+          <Type className="w-3 h-3 mr-1" />P
         </button>
         <button
           onClick={() => setHeading(1)}
-          className={getButtonClass(
-            currentBlockType === "heading" && currentLevel === 1
+          className={cn(
+            "toolbar-button h-8 px-2 text-body-small font-bold rounded-md transition-all duration-200",
+            "hover:bg-muted focus-visible:ring-2 focus-visible:ring-secondary/20",
+            currentBlockType === "heading" &&
+              currentLevel === 1 &&
+              "bg-secondary/15 text-secondary"
           )}
           title="Heading 1"
         >
@@ -133,8 +146,12 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
         </button>
         <button
           onClick={() => setHeading(2)}
-          className={getButtonClass(
-            currentBlockType === "heading" && currentLevel === 2
+          className={cn(
+            "toolbar-button h-8 px-2 text-body-small font-semibold rounded-md transition-all duration-200",
+            "hover:bg-muted focus-visible:ring-2 focus-visible:ring-secondary/20",
+            currentBlockType === "heading" &&
+              currentLevel === 2 &&
+              "bg-secondary/15 text-secondary"
           )}
           title="Heading 2"
         >
@@ -142,8 +159,12 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
         </button>
         <button
           onClick={() => setHeading(3)}
-          className={getButtonClass(
-            currentBlockType === "heading" && currentLevel === 3
+          className={cn(
+            "toolbar-button h-8 px-2 text-body-small font-medium rounded-md transition-all duration-200",
+            "hover:bg-muted focus-visible:ring-2 focus-visible:ring-secondary/20",
+            currentBlockType === "heading" &&
+              currentLevel === 3 &&
+              "bg-secondary/15 text-secondary"
           )}
           title="Heading 3"
         >
@@ -151,21 +172,32 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
         </button>
       </div>
 
-      {/* Lists */}
-      <div className="flex items-center gap-1">
+      {/* List Group */}
+      <div className="flex items-center rounded-lg border border-border/30 p-0.5 bg-surface-variant/30">
         <button
           onClick={setBulletList}
-          className={getButtonClass(currentBlockType === "bulletListItem")}
+          className={cn(
+            "toolbar-button h-8 px-2 rounded-md transition-all duration-200",
+            "hover:bg-muted focus-visible:ring-2 focus-visible:ring-accent/20",
+            currentBlockType === "bulletListItem" && "bg-accent/15 text-accent"
+          )}
           title="Bullet List"
         >
-          • List
+          <List className="w-4 h-4 mr-1" />
+          <span className="text-body-small">List</span>
         </button>
         <button
           onClick={setNumberedList}
-          className={getButtonClass(currentBlockType === "numberedListItem")}
+          className={cn(
+            "toolbar-button h-8 px-2 rounded-md transition-all duration-200",
+            "hover:bg-muted focus-visible:ring-2 focus-visible:ring-accent/20",
+            currentBlockType === "numberedListItem" &&
+              "bg-accent/15 text-accent"
+          )}
           title="Numbered List"
         >
-          1. List
+          <ListOrdered className="w-4 h-4 mr-1" />
+          <span className="text-body-small">1,2,3</span>
         </button>
       </div>
     </div>

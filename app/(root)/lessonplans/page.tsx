@@ -17,16 +17,22 @@ async function DocumentsData() {
   const user = await currentUser();
   if (!user) redirect("/sign-in");
 
-  const documents = await getDocuments(user.emailAddresses[0].emailAddress);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const ownerIds = documents.map((doc: any) => doc.metadata.creatorId);
+  const documents = await getDocuments(user.id);
+  const ownerIds = documents.map(
+    (doc: { metadata: { creatorId: string } }) => doc.metadata.creatorId
+  );
   const owners = await getClerkUsers({
     userIds: [...new Set(ownerIds)] as string[],
   });
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const documentsWithOwner: DocumentDataWithOwner[] = documents.map(
-    (doc: any) => {
+    (doc: {
+      id: string;
+      metadata: { creatorId: string; title: string };
+      usersAccesses: Record<string, string[]>;
+      lastConnectionAt?: string;
+      createdAt?: string;
+    }) => {
       const owner = owners.find((o) => o.id === doc.metadata.creatorId);
       return {
         ...doc,
@@ -35,7 +41,11 @@ async function DocumentsData() {
           : "Unknown",
         collaborators: [], // This can be populated if needed for the share modal
         currentUserType:
-          doc.metadata.creatorId === user.id ? "creator" : "editor",
+          doc.metadata.creatorId === user.id
+            ? "creator"
+            : doc.usersAccesses?.[user.id]?.[0] === "room:write"
+            ? "editor"
+            : "viewer",
         currentUser: {
           id: user.id,
           firstName: user.firstName,

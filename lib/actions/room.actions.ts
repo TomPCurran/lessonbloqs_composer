@@ -5,11 +5,13 @@ import { v4 as uuidv4 } from "uuid";
 import { revalidatePath } from "next/cache";
 import { liveblocks } from "@/lib/auth/liveblocks";
 import { getAccessType, parseStringify } from "../utils";
+import { getUserByEmail } from "@/lib/actions/user.actions";
 import {
   CreateDocumentParams,
   RoomAccesses,
   ShareDocumentParams,
   AccessType,
+  User,
 } from "@/types";
 
 export const createDocument = async ({
@@ -26,7 +28,7 @@ export const createDocument = async ({
     };
 
     const usersAccesses: RoomAccesses = {
-      [email]: ["room:write"],
+      [userId]: ["room:write"],
     };
 
     const room = await liveblocks.createRoom(roomId, {
@@ -51,18 +53,32 @@ export const getDocument = async ({
   documentId: string;
   userId: string;
 }) => {
+  console.log("🏢 [room.actions] getDocument called", { documentId, userId });
+
   try {
     const document = await liveblocks.getRoom(documentId);
+    console.log("🏢 [room.actions] Room fetched", {
+      roomId: document.id,
+      hasMetadata: !!document.metadata,
+      userCount: Object.keys(document.usersAccesses).length,
+    });
 
     const hasAccess = Object.keys(document.usersAccesses).includes(userId);
+    console.log("🏢 [room.actions] Access check", { hasAccess, userId });
 
     if (!hasAccess) {
-      throw new Error("You do not have access to this document");
+      console.log("🏢 [room.actions] Access denied");
+      throw new Error("ACCESS_DENIED");
     }
 
+    console.log("🏢 [room.actions] Returning document");
     return parseStringify(document);
   } catch (error) {
-    console.log(`Error happened while getting a room: ${error}`);
+    console.log(
+      `🏢 [room.actions] Error happened while getting a room: ${error}`
+    );
+    // Re-throw the error so we can handle it properly in the calling component
+    throw error;
   }
 };
 export const checkRoomExists = async (roomId: string) => {
@@ -76,17 +92,12 @@ export const checkRoomExists = async (roomId: string) => {
 
 export const updateDocument = async (roomId: string, title: string) => {
   try {
-    console.log("Server: Updating document", { roomId, title });
-
     const updatedRoom = await liveblocks.updateRoom(roomId, {
       metadata: {
         title,
       },
     });
 
-    console.log("Server: Document updated successfully");
-
-    // Revalidate the lessonplans page since that's where the document list is shown
     revalidatePath("/lessonplans");
     revalidatePath(`/lessonplans/${roomId}`);
 
@@ -107,6 +118,19 @@ export const getDocuments = async (email: string) => {
   } catch (error) {
     console.log(`Error happened while getting rooms: ${error}`);
     throw error; // Re-throw the error so we can handle it properly
+  }
+};
+
+export const getRoomUsers = async (roomId: string) => {
+  try {
+    const room = await liveblocks.getRoom(roomId);
+    return {
+      usersAccesses: room.usersAccesses,
+      metadata: room.metadata,
+    };
+  } catch (error) {
+    console.log(`Error happened while getting room users: ${error}`);
+    throw error;
   }
 };
 
@@ -133,8 +157,17 @@ export const updateDocumentAccess = async ({
       throw new Error("You cannot change your own permissions.");
     }
 
+    // Get the user by email to get their userId
+    const targetUser = await getUserByEmail(email);
+    if (!targetUser) {
+      throw new Error(
+        "User not found. Please make sure the email address is correct and the user has an account."
+      );
+    }
+
+    // Use userId as the key instead of email
     const usersAccesses: RoomAccesses = {
-      [email]: getAccessType(userType) as AccessType,
+      [targetUser.id]: getAccessType(userType) as AccessType,
     };
 
     const updatedRoom = await liveblocks.updateRoom(roomId, {
@@ -159,7 +192,8 @@ export const updateDocumentAccess = async ({
       });
     }
 
-    revalidatePath(`/documents/${roomId}`);
+    revalidatePath(`/lessonplans/${roomId}`);
+    revalidatePath(`/lessonplans`);
     return parseStringify(updatedRoom);
   } catch (error) {
     console.log(`Error happened while updating a room access: ${error}`);
@@ -170,27 +204,83 @@ export const updateDocumentAccess = async ({
 export const removeCollaborator = async ({
   roomId,
   email,
+  removedBy,
 }: {
   roomId: string;
   email: string;
+  removedBy: User;
 }) => {
   try {
     const room = await liveblocks.getRoom(roomId);
 
-    if (room.metadata.email === email) {
+    // Get the user by email to get their userId
+    const targetUser = await getUserByEmail(email);
+    if (!targetUser) {
+      throw new Error(
+        "User not found. Please make sure the email address is correct."
+      );
+    }
+
+    // Check if the user exists in the room using userId
+    if (!room.usersAccesses[targetUser.id]) {
+      throw new Error("User does not have access to this document");
+    }
+
+    // Prevent removing the document creator
+    if (targetUser.id === room.metadata.creatorId) {
+      throw new Error("Cannot remove the document creator");
+    }
+
+    // Prevent removing yourself
+    if (email === removedBy.email) {
       throw new Error("You cannot remove yourself from the document");
     }
 
+    // Check if the user doing the removal has permission
+    const currentUserAccess = room.usersAccesses[removedBy.id];
+    if (
+      !currentUserAccess ||
+      !currentUserAccess.some((access) => access === "room:write")
+    ) {
+      throw new Error(
+        "You don't have permission to remove users from this document"
+      );
+    }
+
+    // Remove the user's access by setting it to null using userId
     const updatedRoom = await liveblocks.updateRoom(roomId, {
       usersAccesses: {
-        [email]: null,
+        [targetUser.id]: null,
       },
     });
 
-    revalidatePath(`/documents/${roomId}`);
+    // Send notification to the removed user
+    if (updatedRoom) {
+      const notificationId = nanoid();
+
+      await liveblocks.triggerInboxNotification({
+        userId: email,
+        kind: "$documentAccess",
+        subjectId: notificationId,
+        activityData: {
+          userType: "removed",
+          title: `You have been removed from the document by ${removedBy.name}`,
+          updatedBy: removedBy.name,
+          avatar: removedBy.avatar,
+          email: removedBy.email,
+        },
+        roomId,
+      });
+    }
+
+    // Revalidate the page to reflect changes
+    revalidatePath(`/lessonplans/${roomId}`);
+    revalidatePath(`/lessonplans`);
+
     return parseStringify(updatedRoom);
   } catch (error) {
     console.log(`Error happened while removing a collaborator: ${error}`);
+    throw error; // Re-throw the error so the UI can handle it
   }
 };
 

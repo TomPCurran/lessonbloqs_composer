@@ -108,6 +108,8 @@ export interface Bloq extends LsonObject {
 export interface BloqType {
   title: string;
   key: string;
+  icon?: React.ComponentType<{ className?: string }>;
+  description: string;
 }
 
 export interface BloqProps {

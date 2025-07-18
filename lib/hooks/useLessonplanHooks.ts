@@ -1,63 +1,110 @@
 import { useMutation } from "@liveblocks/react";
 import { LiveObject } from "@liveblocks/client";
 import { v4 as uuidv4 } from "uuid";
-import type { Bloq, BloqType } from "@/types";
+import type { Bloq, BloqType, DocumentDataWithOwner } from "@/types";
 import { updateDocument, deleteDocument } from "@/lib/actions/room.actions";
-import { useState, useCallback } from "react";
-import { DocumentDataWithOwner } from "@/types";
+import { useState, useCallback, useMemo } from "react";
 
-export function useLessonPlanMutations(roomId?: string) {
-  const updateLessonplan = useMutation(
-    ({ storage }, updates: { title?: string; description?: string }) => {
-      // Check if storage is loaded
-      if (!storage) return;
-
-      const lessonPlan = storage.get("lessonPlan");
-      if (lessonPlan) {
-        lessonPlan.update({
-          ...updates,
-          updatedAt: Date.now(),
-        });
-      }
-    },
-    []
-  );
+export function useLessonPlanMutations() {
+  console.log("🎯 [useLessonPlanMutations] Hook initialized");
 
   const addBloq = useMutation(({ storage }, bloqType: BloqType) => {
-    // Check if storage is loaded
-    if (!storage) return;
+    console.log("🎯 [addBloq] Starting mutation", {
+      bloqType: bloqType.title,
+      key: bloqType.key,
+      timestamp: new Date().toISOString(),
+    });
 
     const bloqs = storage.get("bloqs");
-    if (!bloqs) return;
 
-    const newBloq = new LiveObject({
-      id: uuidv4(),
-      title: bloqType.title,
-      type: bloqType.key,
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-      order: bloqs.length,
-      content: "",
+    console.log("🎯 [addBloq] Got bloqs from storage", {
+      bloqsType: typeof bloqs,
+      isLiveList: bloqs && typeof bloqs === "object" && "push" in bloqs,
+      currentLength: bloqs?.length || 0,
+      timestamp: new Date().toISOString(),
     });
-    console.log("[addBloq] Adding new bloq:", newBloq.toObject());
-    bloqs.push(newBloq);
+
+    if (!bloqs || !(bloqs && typeof bloqs === "object" && "push" in bloqs)) {
+      console.error(
+        "❌ [addBloq] Bloqs is not a LiveList or is not initialized.",
+        {
+          bloqs,
+          bloqsType: typeof bloqs,
+          isLiveList: bloqs && typeof bloqs === "object" && "push" in bloqs,
+        }
+      );
+      return;
+    }
+
+    // **FIX**: Use consistent timestamp
+    const now = Date.now();
+
+    try {
+      const newBloq = new LiveObject({
+        id: uuidv4(),
+        title: bloqType.title,
+        type: bloqType.key,
+        createdAt: now,
+        updatedAt: now,
+        order: bloqs.length,
+        content: "",
+      });
+
+      console.log("🎯 [addBloq] Created new bloq object", {
+        bloqId: newBloq.get("id"),
+        bloqTitle: newBloq.get("title"),
+        bloqType: newBloq.get("type"),
+        order: newBloq.get("order"),
+        timestamp: new Date().toISOString(),
+      });
+
+      bloqs.push(newBloq);
+
+      console.log("✅ [addBloq] Bloq added successfully", {
+        newLength: bloqs.length,
+        timestamp: new Date().toISOString(),
+      });
+    } catch (error) {
+      console.error("❌ [addBloq] Failed to add bloq:", error, {
+        timestamp: new Date().toISOString(),
+      });
+      throw error;
+    }
   }, []);
+
+  console.log("🎯 [useLessonPlanMutations] Returning mutations");
 
   const updateBloq = useMutation(
     ({ storage }, id: string, updates: Partial<Bloq>) => {
-      // Check if storage is loaded
-      if (!storage) return;
+      console.log("🔄 [updateBloq] Starting mutation", {
+        bloqId: id,
+        updates,
+        timestamp: new Date().toISOString(),
+      });
 
       const bloqs = storage.get("bloqs");
-      if (!bloqs) return;
+      if (!bloqs) {
+        console.error("❌ [updateBloq] No bloqs found in storage");
+        return;
+      }
 
-      const bloqIndex = bloqs.findIndex((bloq) => bloq.get("id") === id);
+      const bloqIndex = bloqs.findIndex((b) => b.get("id") === id);
+      console.log("🔄 [updateBloq] Found bloq at index", {
+        bloqIndex,
+        totalBloqs: bloqs.length,
+        timestamp: new Date().toISOString(),
+      });
+
       if (bloqIndex !== -1) {
         const bloq = bloqs.get(bloqIndex);
         if (bloq) {
           bloq.update({
             ...updates,
             updatedAt: Date.now(),
+          });
+          console.log("✅ [updateBloq] Bloq updated successfully", {
+            bloqId: id,
+            timestamp: new Date().toISOString(),
           });
         }
       }
@@ -66,74 +113,152 @@ export function useLessonPlanMutations(roomId?: string) {
   );
 
   const removeBloq = useMutation(({ storage }, id: string) => {
-    // Check if storage is loaded
-    if (!storage) return;
+    console.log("🗑️ [removeBloq] Starting mutation", {
+      bloqId: id,
+      timestamp: new Date().toISOString(),
+    });
 
     const bloqs = storage.get("bloqs");
-    if (!bloqs) return;
+    if (!bloqs) {
+      console.error("❌ [removeBloq] No bloqs found in storage");
+      return;
+    }
 
-    const bloqIndex = bloqs.findIndex((bloq) => bloq.get("id") === id);
+    const bloqIndex = bloqs.findIndex((b) => b.get("id") === id);
+    console.log("🗑️ [removeBloq] Found bloq at index", {
+      bloqIndex,
+      totalBloqs: bloqs.length,
+      timestamp: new Date().toISOString(),
+    });
+
     if (bloqIndex !== -1) {
       bloqs.delete(bloqIndex);
+      console.log("✅ [removeBloq] Bloq removed successfully", {
+        bloqId: id,
+        newLength: bloqs.length,
+        timestamp: new Date().toISOString(),
+      });
     }
   }, []);
 
-  // Separate function to update document metadata
-  const updateDocumentMetadata = async (title: string) => {
-    if (roomId) {
-      console.log("Updating document metadata:", { roomId, title });
-      try {
-        await updateDocument(roomId, title);
-        console.log("Document metadata updated successfully");
-      } catch (error) {
-        console.error("Failed to update document metadata:", error);
-        // You might want to show a toast notification here
-        // toast.error("Failed to save title to server");
-      }
-    }
-  };
+  const updateLessonplan = useMutation(
+    ({ storage }, updates: { title?: string; description?: string }) => {
+      console.log("📝 [updateLessonplan] Starting mutation", {
+        updates,
+        timestamp: new Date().toISOString(),
+      });
 
-  // Function to delete the current document
-  const deleteCurrentDocument = async (userId: string) => {
-    if (roomId) {
-      console.log("Deleting document:", roomId);
-      try {
-        await deleteDocument(roomId, userId);
-        console.log("Document deleted successfully");
-      } catch (error) {
-        console.error("Failed to delete document:", error);
-        throw error; // Re-throw so the UI can handle it
+      const lessonPlan = storage.get("lessonPlan");
+      if (lessonPlan) {
+        lessonPlan.update({
+          ...updates,
+          updatedAt: Date.now(),
+        });
+        console.log("✅ [updateLessonplan] Lesson plan updated successfully", {
+          timestamp: new Date().toISOString(),
+        });
+      } else {
+        console.error("❌ [updateLessonplan] No lesson plan found in storage");
       }
-    }
-  };
+    },
+    []
+  );
 
-  return {
-    updateLessonplan,
-    addBloq,
-    updateBloq,
-    removeBloq,
-    updateDocumentMetadata,
-    deleteCurrentDocument,
-  };
+  console.log("🎯 [useLessonPlanMutations] Returning mutations");
+
+  // **FIX**: Memoize the return object to prevent unnecessary re-renders
+  return useMemo(
+    () => ({
+      addBloq,
+      updateBloq,
+      removeBloq,
+      updateLessonplan,
+    }),
+    [addBloq, updateBloq, removeBloq, updateLessonplan]
+  );
 }
 
-// Hook for managing lesson plans list
+export function useDocumentActions(roomId?: string) {
+  const updateDocumentMetadata = async (title: string) => {
+    console.log("📄 [updateDocumentMetadata] Starting", {
+      roomId,
+      title,
+      timestamp: new Date().toISOString(),
+    });
+
+    if (roomId) {
+      try {
+        await updateDocument(roomId, title);
+        console.log("✅ [updateDocumentMetadata] Success", {
+          roomId,
+          title,
+          timestamp: new Date().toISOString(),
+        });
+      } catch (error) {
+        console.error("❌ [updateDocumentMetadata] Failed:", error, {
+          roomId,
+          title,
+          timestamp: new Date().toISOString(),
+        });
+      }
+    }
+  };
+
+  const deleteCurrentDocument = async (userId: string) => {
+    console.log("🗑️ [deleteCurrentDocument] Starting", {
+      roomId,
+      userId,
+      timestamp: new Date().toISOString(),
+    });
+
+    if (roomId) {
+      try {
+        await deleteDocument(roomId, userId);
+        console.log("✅ [deleteCurrentDocument] Success", {
+          roomId,
+          userId,
+          timestamp: new Date().toISOString(),
+        });
+      } catch (error) {
+        console.error("❌ [deleteCurrentDocument] Failed:", error, {
+          roomId,
+          userId,
+          timestamp: new Date().toISOString(),
+        });
+        throw error;
+      }
+    }
+  };
+
+  return { updateDocumentMetadata, deleteCurrentDocument };
+}
+
 export function useLessonPlanList() {
   const [documents, setDocuments] = useState<DocumentDataWithOwner[]>([]);
 
   const deleteDocumentFromList = useCallback(
     async (roomId: string, userId: string) => {
+      console.log("🗑️ [deleteDocumentFromList] Starting", {
+        roomId,
+        userId,
+        timestamp: new Date().toISOString(),
+      });
+
       try {
-        console.log("Deleting document from list:", roomId);
         await deleteDocument(roomId, userId);
-
-        // Remove the document from the local state
         setDocuments((prev) => prev.filter((doc) => doc.id !== roomId));
-
-        console.log("Document deleted from list successfully");
+        console.log("✅ [deleteDocumentFromList] Success", {
+          roomId,
+          userId,
+          timestamp: new Date().toISOString(),
+        });
         return true;
       } catch (error) {
-        console.error("Failed to delete document from list:", error);
+        console.error("❌ [deleteDocumentFromList] Failed:", error, {
+          roomId,
+          userId,
+          timestamp: new Date().toISOString(),
+        });
         throw error;
       }
     },
@@ -141,6 +266,10 @@ export function useLessonPlanList() {
   );
 
   const setDocumentsList = useCallback((docs: DocumentDataWithOwner[]) => {
+    console.log("📋 [setDocumentsList] Setting documents", {
+      count: docs.length,
+      timestamp: new Date().toISOString(),
+    });
     setDocuments(docs);
   }, []);
 
