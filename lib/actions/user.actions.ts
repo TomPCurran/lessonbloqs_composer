@@ -53,6 +53,53 @@ export const getClerkUsers = async ({
   }
 };
 
+export const getUserByEmail = async (
+  email: string
+): Promise<UserData | null> => {
+  console.log("👥 [user.actions] getUserByEmail called", { email });
+
+  try {
+    const clerk = await clerkClient();
+
+    // Search for users by email address
+    const { data } = await clerk.users.getUserList({
+      emailAddress: [email],
+    });
+
+    console.log("👥 [user.actions] User search result", {
+      email,
+      userCount: data.length,
+    });
+
+    if (data.length === 0) {
+      console.log("👥 [user.actions] No user found for email", { email });
+      return null;
+    }
+
+    // Get the first user (should be the only one for a unique email)
+    const user = data[0];
+    const userData: UserData = {
+      id: user.id,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email:
+        user.emailAddresses.find((e) => e.id === user.primaryEmailAddressId)
+          ?.emailAddress || email,
+      imageUrl: user.imageUrl,
+    };
+
+    console.log("👥 [user.actions] Returning user data", {
+      userId: userData.id,
+      email: userData.email,
+    });
+
+    return userData;
+  } catch (error) {
+    console.error(`👥 [user.actions] Error fetching user by email: ${error}`);
+    return null;
+  }
+};
+
 export const getDocumentUsers = async ({
   roomId,
   currentUser,

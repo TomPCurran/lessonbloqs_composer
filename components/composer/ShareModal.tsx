@@ -161,6 +161,28 @@ const ShareModal = ({
       await fetchRoomUsers();
     } catch (error) {
       console.error("Failed to share document:", error);
+
+      // Provide user-friendly error messages
+      let errorMessage = "Failed to share document. Please try again.";
+      if (error instanceof Error) {
+        if (error.message.includes("User not found")) {
+          errorMessage =
+            "User not found. Please make sure the email address is correct and the user has an account.";
+        } else if (
+          error.message.includes("Viewers cannot change permissions")
+        ) {
+          errorMessage = "You don't have permission to share this document.";
+        } else if (
+          error.message.includes("You cannot change your own permissions")
+        ) {
+          errorMessage = "You cannot change your own permissions.";
+        } else {
+          errorMessage = error.message;
+        }
+      }
+
+      // You could add a toast notification here
+      alert(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -197,6 +219,28 @@ const ShareModal = ({
       setEditingUser(null);
     } catch (error) {
       console.error("Failed to update user permission:", error);
+
+      // Provide user-friendly error messages
+      let errorMessage = "Failed to update user permission. Please try again.";
+      if (error instanceof Error) {
+        if (error.message.includes("User not found")) {
+          errorMessage =
+            "User not found. Please make sure the email address is correct.";
+        } else if (
+          error.message.includes("Viewers cannot change permissions")
+        ) {
+          errorMessage =
+            "You don't have permission to change user permissions.";
+        } else if (
+          error.message.includes("You cannot change your own permissions")
+        ) {
+          errorMessage = "You cannot change your own permissions.";
+        } else {
+          errorMessage = error.message;
+        }
+      }
+
+      alert(errorMessage);
     }
   };
 
@@ -228,6 +272,28 @@ const ShareModal = ({
       await fetchRoomUsers();
     } catch (error) {
       console.error("Failed to remove collaborator:", error);
+
+      // Provide user-friendly error messages
+      let errorMessage = "Failed to remove collaborator. Please try again.";
+      if (error instanceof Error) {
+        if (error.message.includes("User not found")) {
+          errorMessage =
+            "User not found. Please make sure the email address is correct.";
+        } else if (
+          error.message.includes("Cannot remove the document creator")
+        ) {
+          errorMessage = "Cannot remove the document creator.";
+        } else if (error.message.includes("You cannot remove yourself")) {
+          errorMessage = "You cannot remove yourself from the document.";
+        } else if (error.message.includes("You don't have permission")) {
+          errorMessage =
+            "You don't have permission to remove users from this document.";
+        } else {
+          errorMessage = error.message;
+        }
+      }
+
+      alert(errorMessage);
     } finally {
       setRemovingUser(null);
     }

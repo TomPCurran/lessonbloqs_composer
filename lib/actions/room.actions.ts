@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from "uuid";
 import { revalidatePath } from "next/cache";
 import { liveblocks } from "@/lib/auth/liveblocks";
 import { getAccessType, parseStringify } from "../utils";
+import { getUserByEmail } from "@/lib/actions/user.actions";
 import {
   CreateDocumentParams,
   RoomAccesses,
@@ -156,8 +157,17 @@ export const updateDocumentAccess = async ({
       throw new Error("You cannot change your own permissions.");
     }
 
+    // Get the user by email to get their userId
+    const targetUser = await getUserByEmail(email);
+    if (!targetUser) {
+      throw new Error(
+        "User not found. Please make sure the email address is correct and the user has an account."
+      );
+    }
+
+    // Use userId as the key instead of email
     const usersAccesses: RoomAccesses = {
-      [email]: getAccessType(userType) as AccessType,
+      [targetUser.id]: getAccessType(userType) as AccessType,
     };
 
     const updatedRoom = await liveblocks.updateRoom(roomId, {
@@ -203,15 +213,21 @@ export const removeCollaborator = async ({
   try {
     const room = await liveblocks.getRoom(roomId);
 
-    // Check if the user exists in the room
-    if (!room.usersAccesses[email]) {
+    // Get the user by email to get their userId
+    const targetUser = await getUserByEmail(email);
+    if (!targetUser) {
+      throw new Error(
+        "User not found. Please make sure the email address is correct."
+      );
+    }
+
+    // Check if the user exists in the room using userId
+    if (!room.usersAccesses[targetUser.id]) {
       throw new Error("User does not have access to this document");
     }
 
     // Prevent removing the document creator
-    // We need to get the user ID for the email being removed to compare with creatorId
-    // For now, we'll check if the email is the creator's email from metadata
-    if (room.metadata.email === email) {
+    if (targetUser.id === room.metadata.creatorId) {
       throw new Error("Cannot remove the document creator");
     }
 
@@ -221,7 +237,7 @@ export const removeCollaborator = async ({
     }
 
     // Check if the user doing the removal has permission
-    const currentUserAccess = room.usersAccesses[removedBy.email];
+    const currentUserAccess = room.usersAccesses[removedBy.id];
     if (
       !currentUserAccess ||
       !currentUserAccess.some((access) => access === "room:write")
@@ -231,10 +247,10 @@ export const removeCollaborator = async ({
       );
     }
 
-    // Remove the user's access by setting it to null
+    // Remove the user's access by setting it to null using userId
     const updatedRoom = await liveblocks.updateRoom(roomId, {
       usersAccesses: {
-        [email]: null,
+        [targetUser.id]: null,
       },
     });
 
