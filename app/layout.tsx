@@ -6,6 +6,7 @@ import NavBar from "@/components/NavBar";
 import { cn } from "@/lib/utils";
 import { ClerkProvider } from "@clerk/nextjs";
 import Provider from "@/lib/providers/Provider";
+import AppStateManager from "@/components/providers/AppStateManager";
 
 import "@blocknote/core/fonts/inter.css";
 import "@blocknote/core/style.css";
@@ -71,6 +72,7 @@ export default function RootLayout({
             storageKey="lessonbloqs-theme"
           >
             <Provider>
+              <AppStateManager />
               <LayoutContent>{children}</LayoutContent>
             </Provider>
           </ThemeProvider>

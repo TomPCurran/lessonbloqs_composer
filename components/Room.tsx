@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import { RoomProvider, useStatus } from "@liveblocks/react/suspense";
 import Loader from "@/components/Loader";
 import Canvas from "./composer/Canvas";
@@ -7,10 +8,10 @@ import { LiveObject, LiveList } from "@liveblocks/client";
 import Link from "next/link";
 import { RoomProps, UserData } from "@/types";
 import { getUserColor } from "@/lib/utils";
-import React, { useEffect } from "react";
 import DocumentHeader from "@/components/composer/DocumentHeader";
 import { FloatingToolbar } from "@/components/composer/FloatingToolbar";
 import { AlertCircle, FileX } from "lucide-react";
+import { useAppStore } from "@/lib/stores/appStore";
 
 // Material Design loading component
 const RoomLoader = () => (
@@ -86,87 +87,28 @@ const ConnectedRoomContent = React.memo(function ConnectedRoomContent({
 }) {
   const status = useStatus();
   const isConnected = status === "connected";
+  const setGlobalLoading = useAppStore((s) => s.setGlobalLoading);
+  const setGlobalError = useAppStore((s) => s.setGlobalError);
 
-  console.log(
-    "🔗 [ConnectedRoomContent] Status:",
-    status,
-    "isConnected:",
-    isConnected,
-    "timestamp:",
-    new Date().toISOString()
-  );
-
-  // Add more detailed status logging
-  useEffect(() => {
-    console.log("🔗 [ConnectedRoomContent] Status changed:", {
-      status,
-      isConnected,
-      documentId,
-      userId: user.id,
-      timestamp: new Date().toISOString(),
-    });
-
-    // Add timeout to detect if connection is stuck
-    if (status === "initial") {
-      const timeout = setTimeout(() => {
-        console.warn(
-          "🔗 [ConnectedRoomContent] Connection stuck at initial for 10 seconds"
-        );
-      }, 10000);
-
-      return () => clearTimeout(timeout);
+  // Add more detailed status logging and global loading/error
+  React.useEffect(() => {
+    if (!isConnected) {
+      let message = "Connecting...";
+      if (status === "initial") message = "Initializing connection...";
+      if (status === "connecting") message = "Connecting to Liveblocks...";
+      if (status === "disconnected" || status === "reconnecting")
+        message = "Reconnecting...";
+      setGlobalLoading(true, message);
+    } else {
+      setGlobalLoading(false);
     }
-  }, [status, isConnected, documentId, user.id]);
+    return () => setGlobalLoading(false);
+  }, [isConnected, status, setGlobalLoading]);
+
+  // Optionally, handle unrecoverable errors (not shown in this component, but could be added)
 
   if (!isConnected) {
-    console.log(
-      "🔗 [ConnectedRoomContent] Waiting for connection, showing loader"
-    );
-    return (
-      <div className="main-layout min-h-screen animate-fade-in">
-        <DocumentHeader
-          documentId={documentId}
-          initialTitle={initialDocument.metadata?.title}
-          currentUserType={currentUserType}
-        />
-        <div className="content-area">
-          <div className="mx-auto max-w-6xl px-grid-2 py-grid-3 sm:px-grid-3 lg:px-grid-4 space-grid-4">
-            {/* Floating Toolbar */}
-            <div className="flex justify-center">
-              <FloatingToolbar
-                roomId={documentId}
-                currentUserType={currentUserType}
-                roomMetadata={initialDocument.metadata}
-                currentUser={user}
-              />
-            </div>
-
-            {/* Canvas Container with Loading State */}
-            <div className="google-card p-0 overflow-hidden">
-              <div className="flex items-center justify-center min-h-[600px] w-full">
-                <div className="text-center space-grid-4">
-                  <div className="w-16 h-16 mx-auto rounded-lg bg-primary/10 flex items-center justify-center mb-grid-4">
-                    <Loader />
-                  </div>
-                  <div className="space-grid-2">
-                    <div className="animate-pulse space-grid-1">
-                      <div className="h-2 bg-muted rounded-full w-32 mx-auto"></div>
-                      <div className="h-2 bg-muted rounded-full w-24 mx-auto"></div>
-                    </div>
-                    <p className="text-body-medium text-muted-foreground">
-                      {status === "initial" && "Initializing connection..."}
-                      {status === "connecting" && "Connecting to Liveblocks..."}
-                      {status === "disconnected" && "Reconnecting..."}
-                      {status === "reconnecting" && "Reconnecting..."}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
+    return null; // Global loading overlay will show
   }
 
   console.log("🔗 [ConnectedRoomContent] Connected! Rendering Canvas");
@@ -210,21 +152,28 @@ const Room = React.memo(function Room({
   user,
   error,
 }: RoomPropsFixed) {
-  console.log("🏠 [Room] Rendering Room component", {
-    documentId,
-    hasInitialDocument: !!initialDocument,
-    userId: user?.id,
-    error,
-  });
+  const setGlobalError = useAppStore((s) => s.setGlobalError);
+
+  React.useEffect(() => {
+    if (error) {
+      setGlobalError(
+        error === "ACCESS_DENIED"
+          ? "You don't have permission to access this document."
+          : error
+      );
+    } else {
+      setGlobalError(null);
+    }
+    return () => setGlobalError(null);
+  }, [error, setGlobalError]);
 
   if (error) {
-    console.log("🏠 [Room] Error state", { error });
-    return <RoomError error={error} />;
+    return null; // Global error overlay will show
   }
 
   if (!initialDocument) {
-    console.log("🏠 [Room] No initial document, showing loader");
-    return <RoomLoader />;
+    // Show global loading overlay
+    return null;
   }
 
   // Define initial storage structure. This is only used if the room is new.

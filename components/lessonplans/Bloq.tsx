@@ -135,7 +135,7 @@ function Bloq({ bloq, currentUser, currentUserType }: BloqProps) {
         <div className="space-grid-1">
           <div className="relative group/title">
             <Input
-              value={bloq.title}
+              value={bloq.title ?? ""}
               onChange={handleTitleChange}
               placeholder={canEdit ? "Block title..." : "Untitled Block"}
               disabled={!canEdit}

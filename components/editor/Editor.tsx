@@ -8,6 +8,8 @@ import { cn } from "@/lib/utils";
 import React from "react";
 import { FileText, Eye } from "lucide-react";
 import { useTheme } from "@/app/theme-provider"; // Import your theme hook
+import { usePreferencesStore } from "@/lib/stores/preferencesStore";
+import { useAppStore } from "@/lib/stores/appStore";
 
 interface EditorProps {
   bloqId: string;
@@ -45,6 +47,20 @@ export function Editor({
   const doc = yjsContext?.doc;
   const provider = yjsContext?.provider;
   const { theme } = useTheme();
+  // Get editor settings from user preferences
+  const editorSettings = usePreferencesStore((state) => state.editorSettings);
+  const setGlobalLoading = useAppStore((s) => s.setGlobalLoading);
+  // const setGlobalError = useAppStore((s) => s.setGlobalError);
+
+  // Show global loading while editor is not ready
+  React.useEffect(() => {
+    if (!provider || !doc) {
+      setGlobalLoading(true, "Loading editor...");
+    } else {
+      setGlobalLoading(false, "");
+    }
+    return () => setGlobalLoading(false, "");
+  }, [provider, doc, setGlobalLoading]);
 
   const editor = useCreateBlockNote({
     collaboration:
@@ -65,7 +81,11 @@ export function Editor({
     placeholders: {
       paragraph: "",
     },
-    theme: theme === "dark" ? "dark" : "light", // Force BlockNote to use correct theme
+    // theme: theme === "dark" ? "dark" : "light", // Remove if not supported
+    // fontSize: editorSettings.fontSize,
+    // autoSave: editorSettings.autoSave,
+    // spellCheck: editorSettings.spellCheck,
+    // wordCount: editorSettings.wordCount,
   });
 
   // Disable editing for viewers
@@ -75,7 +95,7 @@ export function Editor({
     }
   }, [editor, canEdit]);
 
-  // A more robust loading state
+  // No local loading or error state
   if (!editor) {
     return <EditorLoadingState />;
   }
@@ -94,7 +114,7 @@ export function Editor({
       {/* Toolbar - only show for editable editors */}
       {canEdit && (
         <div className="google-surface border-b border-border/30">
-          <EditorToolbar editor={editor} />
+          <EditorToolbar editor={editor} editorSettings={editorSettings} />
         </div>
       )}
 

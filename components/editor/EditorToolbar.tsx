@@ -5,12 +5,18 @@ import { useEditorContentOrSelectionChange } from "@blocknote/react";
 import { BlockNoteEditor } from "@blocknote/core"; // Import the type
 import { Bold, Italic, Underline, Type, List, ListOrdered } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { EditorSettings } from "@/lib/stores/preferencesStore";
+import { usePreferencesStore } from "@/lib/stores/preferencesStore";
 
 interface EditorToolbarProps {
   editor: BlockNoteEditor | null; // Use the specific type instead of 'any'
+  editorSettings: EditorSettings;
 }
 
-export function EditorToolbar({ editor }: EditorToolbarProps) {
+export function EditorToolbar({ editor, editorSettings }: EditorToolbarProps) {
+  const updateEditorSettings = usePreferencesStore(
+    (state) => state.updateEditorSettings
+  );
   const [currentBlock, setCurrentBlock] = React.useState<any>(null);
   const [activeStyles, setActiveStyles] = React.useState<any>({});
 
@@ -199,6 +205,51 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
           <ListOrdered className="w-4 h-4 mr-1" />
           <span className="text-body-small">1,2,3</span>
         </button>
+      </div>
+
+      {/* Editor Settings Controls */}
+      <div className="ml-4 flex items-center gap-3 text-xs text-muted-foreground">
+        {/* Font Size Selector */}
+        <label className="flex items-center gap-1">
+          <span>Font:</span>
+          <select
+            value={editorSettings.fontSize}
+            onChange={(e) =>
+              updateEditorSettings({ fontSize: Number(e.target.value) })
+            }
+            className="border rounded px-1 py-0.5 bg-background text-foreground"
+          >
+            {[12, 14, 16, 18, 20, 22, 24].map((size) => (
+              <option key={size} value={size}>
+                {size}px
+              </option>
+            ))}
+          </select>
+        </label>
+        {/* Spellcheck Toggle */}
+        <label className="flex items-center gap-1 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={editorSettings.spellCheck}
+            onChange={() =>
+              updateEditorSettings({ spellCheck: !editorSettings.spellCheck })
+            }
+            className="accent-primary"
+          />
+          <span>Spellcheck</span>
+        </label>
+        {/* AutoSave Toggle */}
+        <label className="flex items-center gap-1 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={editorSettings.autoSave}
+            onChange={() =>
+              updateEditorSettings({ autoSave: !editorSettings.autoSave })
+            }
+            className="accent-primary"
+          />
+          <span>AutoSave</span>
+        </label>
       </div>
     </div>
   );

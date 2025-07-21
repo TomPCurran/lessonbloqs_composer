@@ -45,6 +45,10 @@ export interface FormState {
     }
   >;
 
+  documentCreation: {
+    isCreating: boolean;
+  };
+
   // Actions for contact form
   updateContactForm: (field: string, value: string) => void;
   setContactFormErrors: (errors: Record<string, string>) => void;
@@ -60,6 +64,7 @@ export interface FormState {
   setDocumentLastSaved: (timestamp: number) => void;
   setDocumentAutoSave: (enabled: boolean) => void;
   resetDocumentEditing: () => void;
+  setDocumentCreating: (isCreating: boolean) => void;
 
   // Actions for share form
   updateShareForm: (field: string, value: string) => void;
@@ -127,6 +132,10 @@ export const useFormStore = create<FormState>()(
       },
 
       genericForms: {},
+
+      documentCreation: {
+        isCreating: false,
+      },
 
       // Contact form actions
       updateContactForm: (field, value) => {
@@ -276,6 +285,11 @@ export const useFormStore = create<FormState>()(
           },
         });
       },
+
+      setDocumentCreating: (isCreating) =>
+        set((state) => ({
+          documentCreation: { ...state.documentCreation, isCreating },
+        })),
 
       // Share form actions
       updateShareForm: (field, value) => {
@@ -465,6 +479,9 @@ export const useFormStore = create<FormState>()(
             lastShared: null,
           },
           genericForms: {},
+          documentCreation: {
+            isCreating: false,
+          },
         });
       },
 
