@@ -32,6 +32,7 @@ import {
   Loader2,
   Trash2,
 } from "lucide-react";
+import { useFormStore } from "@/lib/stores/formStore";
 
 const ShareModal = ({
   roomId,
@@ -48,10 +49,18 @@ const ShareModal = ({
   const [editingUser, setEditingUser] = useState<string | null>(null);
   const [editingPermission, setEditingPermission] =
     useState<UserType>("viewer");
-  const [email, setEmail] = useState("");
-  const [permission, setPermission] = useState<UserType>("viewer");
   const [roomUsers, setRoomUsers] = useState<User[]>([]);
   const [loadingUsers, setLoadingUsers] = useState(false);
+
+  // Zustand form store for share form
+  const { shareForm, updateShareForm, resetShareForm } = useFormStore();
+
+  // Reset share form when modal closes
+  useEffect(() => {
+    if (!open) {
+      resetShareForm();
+    }
+  }, [open, resetShareForm]);
 
   // Fetch all users with access to the room
   const fetchRoomUsers = async () => {
@@ -132,7 +141,7 @@ const ShareModal = ({
   };
 
   const shareDocumentHandler = async () => {
-    if (!currentUser || !email.trim()) return;
+    if (!currentUser || !shareForm.email.trim()) return;
 
     setLoading(true);
     try {
@@ -151,13 +160,12 @@ const ShareModal = ({
 
       await updateDocumentAccess({
         roomId,
-        email: email.trim().toLowerCase(),
-        userType: permission,
+        email: shareForm.email.trim().toLowerCase(),
+        userType: shareForm.permission,
         updatedBy,
       });
 
-      setEmail("");
-      setPermission("viewer");
+      resetShareForm();
       await fetchRoomUsers();
     } catch (error) {
       console.error("Failed to share document:", error);
@@ -407,8 +415,10 @@ const ShareModal = ({
                   id="email"
                   type="email"
                   placeholder="colleague@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value.toLowerCase())}
+                  value={shareForm.email}
+                  onChange={(e) =>
+                    updateShareForm("email", e.target.value.toLowerCase())
+                  }
                   className="google-input pl-14"
                   disabled={currentUserType === "viewer" || loading}
                 />
@@ -417,15 +427,19 @@ const ShareModal = ({
               <div className="share-modal-row">
                 <div className="flex-1 min-w-0">
                   <UserTypeSelector
-                    userType={permission}
-                    setUserType={setPermission}
+                    userType={shareForm.permission}
+                    setUserType={(val) =>
+                      updateShareForm("permission", val as "editor" | "viewer")
+                    }
                     disabled={currentUserType === "viewer" || loading}
                   />
                 </div>
                 <Button
                   onClick={shareDocumentHandler}
                   disabled={
-                    !email.trim() || loading || currentUserType === "viewer"
+                    !shareForm.email.trim() ||
+                    loading ||
+                    currentUserType === "viewer"
                   }
                   className="google-button-primary min-w-[120px]"
                 >

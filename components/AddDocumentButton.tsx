@@ -5,12 +5,12 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 import { createDocument } from "@/lib/actions/room.actions";
-import { useState } from "react";
+import { useFormStore } from "@/lib/stores/formStore";
 
 const AddDocumentBtn = () => {
   const router = useRouter();
   const { user } = useUser();
-  const [isCreating, setIsCreating] = useState(false);
+  const { documentCreation, setDocumentCreating } = useFormStore();
 
   const addDocumentHandler = async () => {
     if (!user) {
@@ -18,7 +18,7 @@ const AddDocumentBtn = () => {
       return;
     }
 
-    setIsCreating(true);
+    setDocumentCreating(true);
 
     try {
       const document = await createDocument({
@@ -34,7 +34,7 @@ const AddDocumentBtn = () => {
     } catch (error) {
       console.error("Failed to create document:", error);
     } finally {
-      setIsCreating(false);
+      setDocumentCreating(false);
     }
   };
 
@@ -42,7 +42,7 @@ const AddDocumentBtn = () => {
     <Button
       type="button"
       onClick={addDocumentHandler}
-      disabled={isCreating || !user}
+      disabled={documentCreation.isCreating || !user}
       size="default"
       className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg shadow-sm hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
     >
@@ -54,7 +54,7 @@ const AddDocumentBtn = () => {
         className="h-5 w-5"
       />
       <span className="font-medium">
-        {isCreating ? "Creating..." : "Start a blank document"}
+        {documentCreation.isCreating ? "Creating..." : "Start a blank document"}
       </span>
     </Button>
   );

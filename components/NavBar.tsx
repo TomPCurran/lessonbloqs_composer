@@ -17,12 +17,12 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useUIStore } from "@/lib/stores/uiStore";
+import { useAppStore } from "@/lib/stores/appStore";
 
 export default function Navbar() {
   const [isMounted, setIsMounted] = useState(false);
   const { isSignedIn, isLoaded } = useUser();
   const { signOut } = useClerk();
-
   // Zustand store for UI state
   const {
     isMobileMenuOpen,
@@ -32,6 +32,7 @@ export default function Navbar() {
     setSignInModalOpen,
     setSignUpModalOpen,
   } = useUIStore();
+  // No local loading or error state
 
   // Prevent hydration mismatch by only rendering auth-dependent content after mount
   useEffect(() => {
@@ -45,10 +46,14 @@ export default function Navbar() {
   }, []);
 
   const handleSignOut = async () => {
+    // setGlobalLoading(true, "Signing out..."); // This line is removed
     try {
       await signOut();
+      // setGlobalLoading(false, ""); // This line is removed
     } catch (error) {
       console.error("Error signing out:", error);
+      // setGlobalError("Failed to sign out. Please try again."); // This line is removed
+      // setGlobalLoading(false, ""); // This line is removed
     }
   };
 

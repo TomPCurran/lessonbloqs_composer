@@ -1,6 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useState } from "react";
+import { usePreferencesStore } from "@/lib/stores/preferencesStore";
 
 export type Theme = "light" | "dark" | "system";
 
@@ -23,24 +24,16 @@ const ThemeContext = createContext<ThemeContextValue>({
 
 export function ThemeProvider({
   children,
-  defaultTheme = "system",
-  storageKey = "ui-theme",
   attribute = "class",
 }: ThemeProviderProps) {
-  const [theme, setThemeState] = useState<Theme>(defaultTheme);
+  // Use Zustand user preferences store
+  const theme = usePreferencesStore((state) => state.theme);
+  const setTheme = usePreferencesStore((state) => state.setTheme);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
-    try {
-      const stored = localStorage.getItem(storageKey) as Theme;
-      if (stored && ["light", "dark", "system"].includes(stored)) {
-        setThemeState(stored);
-      }
-    } catch {
-      /* ignore */
-    }
-  }, [storageKey]);
+  }, []);
 
   useEffect(() => {
     if (!mounted) return;
@@ -62,16 +55,7 @@ export function ThemeProvider({
     } else {
       apply(theme);
     }
-    try {
-      localStorage.setItem(storageKey, theme);
-    } catch {
-      /* ignore */
-    }
-  }, [theme, mounted, attribute, storageKey]);
-
-  const setTheme = (value: Theme) => {
-    setThemeState(value);
-  };
+  }, [theme, mounted, attribute]);
 
   if (!mounted) {
     return <div style={{ visibility: "hidden" }}>{children}</div>;

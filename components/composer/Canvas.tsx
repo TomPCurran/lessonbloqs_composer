@@ -7,6 +7,7 @@ import BloqContainer from "@/components/lessonplans/BloqContainer";
 import { YjsProvider } from "@/lib/providers/yjsProvider";
 import { UserData } from "@/types";
 import { CommentPanelProvider } from "@/components/lessonplans/BloqComment";
+import { useAppStore } from "@/lib/stores/appStore";
 
 interface CanvasProps {
   currentUser: UserData;
@@ -17,6 +18,9 @@ const Canvas = React.memo(function Canvas({
   currentUser,
   currentUserType,
 }: CanvasProps) {
+  const setGlobalLoading = useAppStore((s) => s.setGlobalLoading);
+  // No local loading or error state
+
   console.log("🎨 [Canvas] Rendering Canvas", {
     userId: currentUser.id,
     currentUserType,

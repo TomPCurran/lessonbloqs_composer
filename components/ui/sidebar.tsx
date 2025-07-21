@@ -5,7 +5,7 @@ import { Slot } from "@radix-ui/react-slot";
 import { VariantProps, cva } from "class-variance-authority";
 import { PanelLeft } from "lucide-react";
 
-import { useIsMobile } from "@/hooks/use-mobile";
+import { useIsMobile } from "@/lib/hooks/useMobile";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,9 +24,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { usePreferencesStore } from "@/lib/stores/preferencesStore";
 
-const SIDEBAR_COOKIE_NAME = "sidebar_state";
-const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7;
 const SIDEBAR_WIDTH = "16rem";
 const SIDEBAR_WIDTH_MOBILE = "18rem";
 const SIDEBAR_WIDTH_ICON = "3rem";
@@ -56,16 +55,16 @@ function useSidebar() {
 const SidebarProvider = React.forwardRef<
   HTMLDivElement,
   React.ComponentProps<"div"> & {
-    defaultOpen?: boolean;
-    open?: boolean;
-    onOpenChange?: (open: boolean) => void;
+    // defaultOpen?: boolean;
+    // open?: boolean;
+    // onOpenChange?: (open: boolean) => void;
   }
 >(
   (
     {
-      defaultOpen = true,
-      open: openProp,
-      onOpenChange: setOpenProp,
+      // defaultOpen = true,
+      // open: openProp,
+      // onOpenChange: setOpenProp,
       className,
       style,
       children,
@@ -75,32 +74,36 @@ const SidebarProvider = React.forwardRef<
   ) => {
     const isMobile = useIsMobile();
     const [openMobile, setOpenMobile] = React.useState(false);
+    // Zustand user preferences store for desktop sidebar
+    const sidebarCollapsed = usePreferencesStore(
+      (state) => state.sidebarCollapsed
+    );
+    const setSidebarCollapsed = usePreferencesStore(
+      (state) => state.setSidebarCollapsed
+    );
 
-    // This is the internal state of the sidebar.
-    // We use openProp and setOpenProp for control from outside the component.
-    const [_open, _setOpen] = React.useState(defaultOpen);
-    const open = openProp ?? _open;
+    // For desktop, use Zustand; for mobile, use local state
+    const open = isMobile ? openMobile : !sidebarCollapsed;
     const setOpen = React.useCallback(
       (value: boolean | ((value: boolean) => boolean)) => {
-        const openState = typeof value === "function" ? value(open) : value;
-        if (setOpenProp) {
-          setOpenProp(openState);
+        if (isMobile) {
+          setOpenMobile(
+            typeof value === "function" ? value(openMobile) : value
+          );
         } else {
-          _setOpen(openState);
+          // Invert value for collapsed (true = open, false = collapsed)
+          const openState =
+            typeof value === "function" ? value(!sidebarCollapsed) : value;
+          setSidebarCollapsed(!openState);
         }
-
-        // This sets the cookie to keep the sidebar state.
-        document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`;
       },
-      [setOpenProp, open]
+      [isMobile, openMobile, sidebarCollapsed, setSidebarCollapsed]
     );
 
     // Helper to toggle the sidebar.
     const toggleSidebar = React.useCallback(() => {
-      return isMobile
-        ? setOpenMobile((open) => !open)
-        : setOpen((open) => !open);
-    }, [isMobile, setOpen, setOpenMobile]);
+      setOpen((prev) => !prev);
+    }, [setOpen]);
 
     // Adds a keyboard shortcut to toggle the sidebar.
     React.useEffect(() => {

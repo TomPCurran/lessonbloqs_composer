@@ -1,9 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
-import Image from "next/image";
 import { cn } from "@/lib/utils";
-// import { deleteDocument } from "@/lib/actions/room.actions";
+import { useAppStore } from "@/lib/stores/appStore";
 import {
   Dialog,
   DialogTrigger,
@@ -25,10 +24,12 @@ interface DeleteModalProps {
 
 export function DeleteModal({ roomId, onDelete, trigger }: DeleteModalProps) {
   const [open, setOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
+  // No local loading state
+  const setGlobalLoading = useAppStore((s) => s.setGlobalLoading);
+  const setGlobalError = useAppStore((s) => s.setGlobalError);
 
   const handleDelete = async () => {
-    setLoading(true);
+    setGlobalLoading(true, "Deleting document...");
     try {
       if (onDelete) {
         await onDelete(roomId);
@@ -37,13 +38,12 @@ export function DeleteModal({ roomId, onDelete, trigger }: DeleteModalProps) {
         const { deleteDocument } = await import("@/lib/actions/room.actions");
         await deleteDocument(roomId);
       }
-
       setOpen(false);
     } catch (error) {
       console.error("Delete error:", error);
-      // You might want to show a toast notification here
+      setGlobalError("Failed to delete document. Please try again.");
     } finally {
-      setLoading(false);
+      setGlobalLoading(false, "");
     }
   };
 
@@ -79,10 +79,10 @@ export function DeleteModal({ roomId, onDelete, trigger }: DeleteModalProps) {
           <Button
             variant="destructive"
             onClick={handleDelete}
-            disabled={loading}
+            // No local loading state
             className="w-full sm:w-auto"
           >
-            {loading ? "Deleting..." : "Delete"}
+            Delete
           </Button>
         </DialogFooter>
       </DialogContent>

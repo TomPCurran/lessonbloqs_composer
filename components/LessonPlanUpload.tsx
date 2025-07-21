@@ -4,12 +4,21 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { UploadCloud } from "lucide-react";
+import { useAppStore } from "@/lib/stores/appStore";
 
 export default function UploadButton() {
-  const handleUpload = () => {
-    // In the future, you can add your file upload logic here.
-    // For example, opening a file dialog or calling an API.
-    alert("Upload functionality coming soon!");
+  // No local loading or error state
+  const handleUpload = async () => {
+    try {
+      // In the future, you can add your file upload logic here.
+      // For example, opening a file dialog or calling an API.
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+      alert("Upload functionality coming soon!");
+    } catch (error) {
+      // setGlobalError("Failed to upload lesson plan. Please try again."); // This line was removed
+    } finally {
+      // setGlobalLoading(false, ""); // This line was removed
+    }
   };
 
   return (

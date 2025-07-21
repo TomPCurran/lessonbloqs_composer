@@ -8,6 +8,7 @@ import { Card } from "@/components/ui/card";
 import { FileText, MoreVertical, Copy, Share2, Archive } from "lucide-react";
 import { DeleteModal } from "@/components/DeleteModal";
 import { DocumentData } from "@/types";
+import { useAppStore } from "@/lib/stores/appStore";
 
 interface LessonPlanListProps {
   documents: DocumentData[];
@@ -17,6 +18,22 @@ export default function LessonPlanList({ documents }: LessonPlanListProps) {
   const router = useRouter();
   const [search, setSearch] = useState("");
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  // No local loading or error state
+
+  // Example delete handler for DeleteModal
+  const handleDelete = async (roomId: string) => {
+    // setGlobalLoading(true, "Deleting document..."); // This line is removed
+    try {
+      // Simulate async delete
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      // Remove from UI (in real app, update state/store)
+      setOpenMenuId(null);
+    } catch (error) {
+      // setGlobalError("Failed to delete document. Please try again."); // This line is removed
+    } finally {
+      // setGlobalLoading(false, ""); // This line is removed
+    }
+  };
 
   const filtered = documents.filter((doc) =>
     doc.metadata.title.toLowerCase().includes(search.toLowerCase())
@@ -87,7 +104,7 @@ export default function LessonPlanList({ documents }: LessonPlanListProps) {
                         <Archive className="w-4 h-4 mr-2" /> Archive
                       </button>
                       <div className="border-t border-gray-200 dark:border-gray-700 my-1" />
-                      <DeleteModal roomId={doc.id} />
+                      <DeleteModal roomId={doc.id} onDelete={handleDelete} />
                     </div>
                   )}
                 </div>
