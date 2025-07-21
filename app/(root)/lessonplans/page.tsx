@@ -11,7 +11,7 @@ import UploadButton from "@/components/LessonPlanUpload";
 import DocumentTabs from "@/components/DocumentTabs";
 import { LessonbloqsLogoAnimated } from "@/components/AnimatedLogo";
 import { DocumentDataWithOwner } from "@/types";
-
+import { ZustandTest } from "@/components/ui/zustand-test";
 // A separate async component to handle data fetching and processing.
 async function DocumentsData() {
   const user = await currentUser();
@@ -98,6 +98,8 @@ const LessonPlansPage = () => {
       <Suspense fallback={<LessonbloqsLogoAnimated />}>
         <DocumentsData />
       </Suspense>
+
+      <ZustandTest />
     </div>
   );
 };

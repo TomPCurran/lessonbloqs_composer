@@ -7,7 +7,9 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Menu, X, User, LogOut, BookOpen } from "lucide-react";
+
 import { SignIn, SignUp, useUser, useClerk } from "@clerk/nextjs";
+
 import {
   Dialog,
   DialogContent,
@@ -34,6 +36,12 @@ export default function Navbar() {
   // Prevent hydration mismatch by only rendering auth-dependent content after mount
   useEffect(() => {
     setIsMounted(true);
+    // Debug: Log Zustand state when NavBar mounts
+    console.log("🎯 NavBar mounted with Zustand state:", {
+      isSignInModalOpen,
+      isSignUpModalOpen,
+      isMobileMenuOpen,
+    });
   }, []);
 
   const handleSignOut = async () => {

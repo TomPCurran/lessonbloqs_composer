@@ -5,12 +5,38 @@ import { getUserColor } from "@/lib/utils";
 
 export async function POST(request: NextRequest) {
   try {
+    console.log("🔐 [Liveblocks Auth] Starting authentication...");
+
     // Get the current user from Clerk
     const { userId } = await auth();
     const user = await currentUser();
 
+    console.log("🔐 [Liveblocks Auth] User info:", {
+      userId,
+      hasUser: !!user,
+      email: user?.emailAddresses[0]?.emailAddress,
+    });
+
     if (!userId || !user) {
+      console.log("🔐 [Liveblocks Auth] Unauthorized - no user found");
       return new Response("Unauthorized", { status: 401 });
+    }
+
+    // Parse the request body
+    const body = await request.json();
+    console.log("🔐 [Liveblocks Auth] Request body:", body);
+
+    // Extract room from the request
+    const { room } = body;
+    console.log("🔐 [Liveblocks Auth] Room access request:", { room });
+
+    // Validate room parameter
+    if (!room || typeof room !== "string") {
+      console.error("🔐 [Liveblocks Auth] Invalid room parameter:", {
+        room,
+        type: typeof room,
+      });
+      return new Response("Invalid room parameter", { status: 400 });
     }
 
     // Prefer firstName + lastName, fallback to fullName, fallback to email
@@ -37,12 +63,12 @@ export async function POST(request: NextRequest) {
     });
 
     // Give the user access to the room
-    const { room } = await request.json();
     session.allow(room, session.FULL_ACCESS);
 
     // Return the session
-    const { status, body } = await session.authorize();
-    return new Response(body, { status });
+    const { status, body: responseBody } = await session.authorize();
+    console.log("🔐 [Liveblocks Auth] Session authorized:", { status });
+    return new Response(responseBody, { status });
   } catch (error) {
     console.error("Liveblocks auth error:", error);
     return new Response("Internal Server Error", { status: 500 });

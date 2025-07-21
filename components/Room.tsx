@@ -1,15 +1,14 @@
 "use client";
 
-import { RoomProvider } from "@liveblocks/react/suspense";
+import { RoomProvider, useStatus } from "@liveblocks/react/suspense";
 import Loader from "@/components/Loader";
 import Canvas from "./composer/Canvas";
 import { LiveObject, LiveList } from "@liveblocks/client";
 import Link from "next/link";
 import { RoomProps, UserData } from "@/types";
 import { getUserColor } from "@/lib/utils";
-import React from "react";
+import React, { useEffect } from "react";
 import DocumentHeader from "@/components/composer/DocumentHeader";
-
 import { FloatingToolbar } from "@/components/composer/FloatingToolbar";
 import { AlertCircle, FileX } from "lucide-react";
 
@@ -72,6 +71,134 @@ const RoomError = ({ error }: { error: string }) => (
     </div>
   </div>
 );
+
+// Connection-aware wrapper component
+const ConnectedRoomContent = React.memo(function ConnectedRoomContent({
+  documentId,
+  initialDocument,
+  user,
+  currentUserType,
+}: {
+  documentId: string;
+  initialDocument: NonNullable<RoomProps["initialDocument"]>;
+  user: UserData;
+  currentUserType: "creator" | "editor" | "viewer";
+}) {
+  const status = useStatus();
+  const isConnected = status === "connected";
+
+  console.log(
+    "🔗 [ConnectedRoomContent] Status:",
+    status,
+    "isConnected:",
+    isConnected,
+    "timestamp:",
+    new Date().toISOString()
+  );
+
+  // Add more detailed status logging
+  useEffect(() => {
+    console.log("🔗 [ConnectedRoomContent] Status changed:", {
+      status,
+      isConnected,
+      documentId,
+      userId: user.id,
+      timestamp: new Date().toISOString(),
+    });
+
+    // Add timeout to detect if connection is stuck
+    if (status === "initial") {
+      const timeout = setTimeout(() => {
+        console.warn(
+          "🔗 [ConnectedRoomContent] Connection stuck at initial for 10 seconds"
+        );
+      }, 10000);
+
+      return () => clearTimeout(timeout);
+    }
+  }, [status, isConnected, documentId, user.id]);
+
+  if (!isConnected) {
+    console.log(
+      "🔗 [ConnectedRoomContent] Waiting for connection, showing loader"
+    );
+    return (
+      <div className="main-layout min-h-screen animate-fade-in">
+        <DocumentHeader
+          documentId={documentId}
+          initialTitle={initialDocument.metadata?.title}
+          currentUserType={currentUserType}
+        />
+        <div className="content-area">
+          <div className="mx-auto max-w-6xl px-grid-2 py-grid-3 sm:px-grid-3 lg:px-grid-4 space-grid-4">
+            {/* Floating Toolbar */}
+            <div className="flex justify-center">
+              <FloatingToolbar
+                roomId={documentId}
+                currentUserType={currentUserType}
+                roomMetadata={initialDocument.metadata}
+                currentUser={user}
+              />
+            </div>
+
+            {/* Canvas Container with Loading State */}
+            <div className="google-card p-0 overflow-hidden">
+              <div className="flex items-center justify-center min-h-[600px] w-full">
+                <div className="text-center space-grid-4">
+                  <div className="w-16 h-16 mx-auto rounded-lg bg-primary/10 flex items-center justify-center mb-grid-4">
+                    <Loader />
+                  </div>
+                  <div className="space-grid-2">
+                    <div className="animate-pulse space-grid-1">
+                      <div className="h-2 bg-muted rounded-full w-32 mx-auto"></div>
+                      <div className="h-2 bg-muted rounded-full w-24 mx-auto"></div>
+                    </div>
+                    <p className="text-body-medium text-muted-foreground">
+                      {status === "initial" && "Initializing connection..."}
+                      {status === "connecting" && "Connecting to Liveblocks..."}
+                      {status === "disconnected" && "Reconnecting..."}
+                      {status === "reconnecting" && "Reconnecting..."}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  console.log("🔗 [ConnectedRoomContent] Connected! Rendering Canvas");
+
+  return (
+    <div className="main-layout min-h-screen animate-fade-in">
+      <DocumentHeader
+        documentId={documentId}
+        initialTitle={initialDocument.metadata?.title}
+        currentUserType={currentUserType}
+      />
+      <div className="content-area">
+        <div className="mx-auto max-w-6xl px-grid-2 py-grid-3 sm:px-grid-3 lg:px-grid-4 space-grid-4">
+          {/* Floating Toolbar */}
+          <div className="flex justify-center">
+            <FloatingToolbar
+              roomId={documentId}
+              currentUserType={currentUserType}
+              roomMetadata={initialDocument.metadata}
+              currentUser={user}
+            />
+          </div>
+
+          {/* Canvas Container */}
+          <div className="google-card p-0 overflow-hidden">
+            <Canvas currentUser={user} currentUserType={currentUserType} />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+});
 
 interface RoomPropsFixed extends Omit<RoomProps, "collaborators"> {
   collaborators?: UserData[];
@@ -170,40 +297,32 @@ const Room = React.memo(function Room({
     initialPresence: initialPresence.user,
   });
 
+  console.log("🏠 [Room] About to render RoomProvider with:", {
+    id: documentId,
+    hasInitialStorage: !!initialStorage,
+    hasInitialPresence: !!initialPresence,
+  });
+
+  // Debug: Check if the room exists and is accessible
+  console.log("🏠 [Room] Room details:", {
+    roomId: documentId,
+    metadata: initialDocument.metadata,
+    usersAccesses: initialDocument.usersAccesses,
+    currentUserAccess: initialDocument.usersAccesses?.[user.id],
+  });
+
   return (
     <RoomProvider
       id={documentId}
       initialStorage={initialStorage}
       initialPresence={initialPresence}
     >
-      <div className="main-layout min-h-screen animate-fade-in">
-        <DocumentHeader
-          documentId={documentId}
-          initialTitle={initialDocument.metadata?.title}
-          currentUserType={currentUserType}
-        />
-        <div className="content-area">
-          <div className="mx-auto max-w-6xl px-grid-2 py-grid-3 sm:px-grid-3 lg:px-grid-4 space-grid-4">
-            {/* Floating Toolbar */}
-            <div className="flex justify-center">
-              <FloatingToolbar
-                roomId={documentId}
-                currentUserType={currentUserType}
-                roomMetadata={initialDocument.metadata}
-                currentUser={user as UserData}
-              />
-            </div>
-
-            {/* Canvas Container */}
-            <div className="google-card p-0 overflow-hidden">
-              <Canvas
-                currentUser={user as UserData}
-                currentUserType={currentUserType}
-              />
-            </div>
-          </div>
-        </div>
-      </div>
+      <ConnectedRoomContent
+        documentId={documentId}
+        initialDocument={initialDocument}
+        user={user as UserData}
+        currentUserType={currentUserType}
+      />
     </RoomProvider>
   );
 });

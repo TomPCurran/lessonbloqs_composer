@@ -1,19 +1,26 @@
 "use client";
 
-import { LiveblocksProvider } from "@liveblocks/react/suspense";
 import React from "react";
+import { LiveblocksProvider } from "@liveblocks/react/suspense";
 import { getClerkUsers } from "@/lib/actions/user.actions";
 import { getDocumentUsers } from "@/lib/actions/user.actions";
-import { useUser } from "@clerk/nextjs";
 import { getUserColor } from "@/lib/utils";
+import { useUser } from "@clerk/nextjs";
 
 const Provider = ({ children }: { children: React.ReactNode }) => {
   const { user: clerkUser } = useUser();
 
+  console.log("🌐 [Global Provider] Setting up LiveblocksProvider", {
+    hasUser: !!clerkUser,
+    userId: clerkUser?.id,
+  });
+
   return (
     <LiveblocksProvider
       authEndpoint="/api/liveblocks/auth"
+      throttle={100}
       resolveUsers={async ({ userIds }) => {
+        console.log("🌐 [Global Provider] Resolving users:", { userIds });
         const users = await getClerkUsers({ userIds });
         return users.map((user) => ({
           name: `${user.firstName} ${user.lastName}`,
@@ -24,9 +31,13 @@ const Provider = ({ children }: { children: React.ReactNode }) => {
         }));
       }}
       resolveMentionSuggestions={async ({ text, roomId }) => {
+        console.log("🌐 [Global Provider] Resolving mention suggestions:", {
+          text,
+          roomId,
+        });
         const roomUsers = await getDocumentUsers({
           roomId,
-          currentUser: clerkUser?.emailAddresses[0]?.emailAddress || "",
+          currentUser: clerkUser?.id || "",
           text,
         });
         return roomUsers;

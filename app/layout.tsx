@@ -6,7 +6,6 @@ import NavBar from "@/components/NavBar";
 import { cn } from "@/lib/utils";
 import { ClerkProvider } from "@clerk/nextjs";
 import Provider from "@/lib/providers/Provider";
-import { NotificationContainer } from "@/components/ui/notifications";
 
 import "@blocknote/core/fonts/inter.css";
 import "@blocknote/core/style.css";
@@ -73,7 +72,6 @@ export default function RootLayout({
           >
             <Provider>
               <LayoutContent>{children}</LayoutContent>
-              <NotificationContainer />
             </Provider>
           </ThemeProvider>
         </body>

@@ -215,6 +215,7 @@ const ShareModal = ({
         userType: newPermission,
         updatedBy,
       });
+
       await fetchRoomUsers();
       setEditingUser(null);
     } catch (error) {

@@ -1,12 +1,10 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React from "react";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { useStatus } from "@liveblocks/react";
 import BloqContainer from "@/components/lessonplans/BloqContainer";
 import { YjsProvider } from "@/lib/providers/yjsProvider";
-import LessonbloqsLogoAnimated from "@/components/AnimatedLogo";
 import { UserData } from "@/types";
 import { CommentPanelProvider } from "@/components/lessonplans/BloqComment";
 
@@ -14,26 +12,6 @@ interface CanvasProps {
   currentUser: UserData;
   currentUserType: "creator" | "editor" | "viewer";
 }
-
-// Material Design loading component
-const CanvasLoadingState = () => (
-  <div className="flex items-center justify-center min-h-[600px] w-full">
-    <div className="text-center space-grid-4">
-      <div className="w-16 h-16 mx-auto rounded-lg bg-primary/10 flex items-center justify-center mb-grid-4">
-        <LessonbloqsLogoAnimated />
-      </div>
-      <div className="space-grid-2">
-        <div className="animate-pulse space-grid-1">
-          <div className="h-2 bg-muted rounded-full w-32 mx-auto"></div>
-          <div className="h-2 bg-muted rounded-full w-24 mx-auto"></div>
-        </div>
-        <p className="text-body-medium text-muted-foreground">
-          Connecting to your workspace...
-        </p>
-      </div>
-    </div>
-  </div>
-);
 
 const Canvas = React.memo(function Canvas({
   currentUser,
@@ -44,38 +22,6 @@ const Canvas = React.memo(function Canvas({
     currentUserType,
     timestamp: new Date().toISOString(),
   });
-
-  const status = useStatus();
-  const isReady = status === "connected";
-
-  // Monitor status changes
-  useEffect(() => {
-    console.log("🎨 [Canvas] Status changed:", {
-      status,
-      isReady,
-      timestamp: new Date().toISOString(),
-    });
-  }, [status, isReady]);
-
-  console.log(
-    "🎨 [Canvas] Status:",
-    status,
-    "isReady:",
-    isReady,
-    "Status type:",
-    typeof status,
-    "Timestamp:",
-    new Date().toISOString()
-  );
-
-  if (!isReady) {
-    console.log("🎨 [Canvas] Showing loading state - Status:", status);
-    return (
-      <div className="google-card min-h-[600px] animate-fade-in">
-        <CanvasLoadingState />
-      </div>
-    );
-  }
 
   console.log("🎨 [Canvas] Rendering main content with YjsProvider");
 

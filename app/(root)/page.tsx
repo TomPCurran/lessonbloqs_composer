@@ -14,6 +14,8 @@ import ValuesAgencySection from "@/components/landingPage/ValuesAgencySection";
 import ValuesCollaborationSection from "@/components/landingPage/ValuesCollaborationSection";
 import ValuesEngagementSection from "@/components/landingPage/ValuesEngagementSection";
 import MissionStatement from "@/components/landingPage/MissionStatement";
+import { ZustandTest } from "@/components/ui/zustand-test";
+import { ZustandEnterpriseTest } from "@/components/ui/zustand-enterprise-test";
 
 const LandingPage = () => {
   const [showNav, setShowNav] = useState(false);
@@ -42,6 +44,13 @@ const LandingPage = () => {
   return (
     // Override layout container constraints for full-screen experience
     <div className="fixed inset-0 overflow-auto bg-background">
+      {/* Zustand Test Components - Remove these after testing */}
+      <div className="absolute top-4 left-4 z-50">
+        <ZustandTest />
+      </div>
+      <div className="absolute top-4 right-4 z-50">
+        <ZustandEnterpriseTest />
+      </div>
       <nav
         className={`${
           showNav ? "fixed" : "absolute"
