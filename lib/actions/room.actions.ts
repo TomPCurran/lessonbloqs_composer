@@ -178,7 +178,7 @@ export const updateDocumentAccess = async ({
       const notificationId = nanoid();
 
       await liveblocks.triggerInboxNotification({
-        userId: email,
+        userId: targetUser.id, // Changed from email to targetUser.id
         kind: "$documentAccess",
         subjectId: notificationId,
         activityData: {
@@ -191,8 +191,8 @@ export const updateDocumentAccess = async ({
         roomId,
       });
     }
-
-    revalidatePath(`/lessonplans/${roomId}`);
+    // Only revalidate the lessonplans page, not the individual document page
+    // to prevent connection disruptions during sharing
     revalidatePath(`/lessonplans`);
     return parseStringify(updatedRoom);
   } catch (error) {
@@ -254,12 +254,11 @@ export const removeCollaborator = async ({
       },
     });
 
-    // Send notification to the removed user
     if (updatedRoom) {
       const notificationId = nanoid();
 
       await liveblocks.triggerInboxNotification({
-        userId: email,
+        userId: targetUser.id, // Changed from email to targetUser.id
         kind: "$documentAccess",
         subjectId: notificationId,
         activityData: {
@@ -272,7 +271,6 @@ export const removeCollaborator = async ({
         roomId,
       });
     }
-
     // Revalidate the page to reflect changes
     revalidatePath(`/lessonplans/${roomId}`);
     revalidatePath(`/lessonplans`);

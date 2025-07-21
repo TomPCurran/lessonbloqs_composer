@@ -4,20 +4,21 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Send, Mail, Phone, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useFormStore } from "@/lib/stores/formStore";
 
 const ContactForm = () => {
   const [isVisible, setIsVisible] = useState(false);
   const sectionRef = useRef<HTMLElement>(null);
-  const [formState, setFormState] = useState({
-    name: "",
-    email: "",
-    subject: "",
-    message: "",
-    role: "teacher", // Default role selection
-  });
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitSuccess, setSubmitSuccess] = useState(false);
+
+  // Use Zustand form store
+  const {
+    contactForm,
+    updateContactForm,
+    setContactFormErrors,
+    setContactFormSubmitting,
+    setContactFormSuccess,
+    validateContactForm,
+  } = useFormStore();
 
   // Track visibility for animations
   useEffect(() => {
@@ -32,43 +33,24 @@ const ContactForm = () => {
     };
   }, []);
 
-  // Form validation function
-  const validateForm = () => {
-    const newErrors: Record<string, string> = {};
-    if (!formState.name.trim()) newErrors.name = "Name is required";
-    if (!formState.email.trim()) {
-      newErrors.email = "Email is required";
-    } else if (!/\S+@\S+\.\S+/.test(formState.email)) {
-      newErrors.email = "Email is invalid";
-    }
-    if (!formState.message.trim()) newErrors.message = "Message is required";
-    return newErrors;
-  };
-
   // Form submission handler
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const newErrors = validateForm();
-    setErrors(newErrors);
+    const newErrors = validateContactForm();
+    setContactFormErrors(newErrors);
 
     if (Object.keys(newErrors).length === 0) {
-      setIsSubmitting(true);
+      setContactFormSubmitting(true);
       try {
         // Simulate API call - replace with actual API endpoint in production
         await new Promise((resolve) => setTimeout(resolve, 1500));
-        setSubmitSuccess(true);
-        setFormState({
-          name: "",
-          email: "",
-          subject: "",
-          message: "",
-          role: "teacher",
-        });
-        setTimeout(() => setSubmitSuccess(false), 3000);
+        setContactFormSuccess(true);
+        // Reset form after successful submission
+        setTimeout(() => setContactFormSuccess(false), 3000);
       } catch (error) {
         console.error("Error submitting form:", error);
       }
-      setIsSubmitting(false);
+      setContactFormSubmitting(false);
     }
   };
 
@@ -79,10 +61,7 @@ const ContactForm = () => {
     >
   ) => {
     const { name, value } = e.target;
-    setFormState((prev) => ({ ...prev, [name]: value }));
-    if (errors[name]) {
-      setErrors((prev) => ({ ...prev, [name]: "" }));
-    }
+    updateContactForm(name, value);
   };
 
   // Contact information cards with semantic colors
@@ -223,17 +202,17 @@ const ContactForm = () => {
                     id="name"
                     name="name"
                     placeholder="Jane Doe"
-                    value={formState.name}
+                    value={contactForm.name}
                     onChange={handleChange}
                     className={`google-input ${
-                      errors.name
+                      contactForm.errors.name
                         ? "border-destructive focus-visible:border-destructive"
                         : ""
                     }`}
                   />
-                  {errors.name && (
+                  {contactForm.errors.name && (
                     <p className="mt-1 text-label-medium text-destructive">
-                      {errors.name}
+                      {contactForm.errors.name}
                     </p>
                   )}
                 </div>
@@ -249,17 +228,17 @@ const ContactForm = () => {
                     id="email"
                     name="email"
                     placeholder="jane@school.edu"
-                    value={formState.email}
+                    value={contactForm.email}
                     onChange={handleChange}
                     className={`google-input ${
-                      errors.email
+                      contactForm.errors.email
                         ? "border-destructive focus-visible:border-destructive"
                         : ""
                     }`}
                   />
-                  {errors.email && (
+                  {contactForm.errors.email && (
                     <p className="mt-1 text-label-medium text-destructive">
-                      {errors.email}
+                      {contactForm.errors.email}
                     </p>
                   )}
                 </div>
@@ -278,7 +257,7 @@ const ContactForm = () => {
                         id={option.value}
                         name="role"
                         value={option.value}
-                        checked={formState.role === option.value}
+                        checked={contactForm.role === option.value}
                         onChange={handleChange}
                         className="h-4 w-4 text-secondary focus:ring-secondary focus:ring-2 border-border transition-colors duration-200"
                       />
@@ -306,7 +285,7 @@ const ContactForm = () => {
                   id="subject"
                   name="subject"
                   placeholder="How can we help you?"
-                  value={formState.subject}
+                  value={contactForm.subject}
                   onChange={handleChange}
                   className="google-input"
                 />
@@ -324,18 +303,18 @@ const ContactForm = () => {
                   id="message"
                   name="message"
                   placeholder="Tell us how we can help..."
-                  value={formState.message}
+                  value={contactForm.message}
                   onChange={handleChange}
                   rows={6}
                   className={`google-input resize-none ${
-                    errors.message
+                    contactForm.errors.message
                       ? "border-destructive focus-visible:border-destructive"
                       : ""
                   }`}
                 />
-                {errors.message && (
+                {contactForm.errors.message && (
                   <p className="mt-1 text-label-medium text-destructive">
-                    {errors.message}
+                    {contactForm.errors.message}
                   </p>
                 )}
               </div>
@@ -346,16 +325,18 @@ const ContactForm = () => {
                   type="submit"
                   className={`google-button-primary px-8 py-3 elevation-2 hover:elevation-3 
                     transform hover:scale-105 motion-standard ${
-                      isSubmitting ? "opacity-75 cursor-not-allowed" : ""
+                      contactForm.isSubmitting
+                        ? "opacity-75 cursor-not-allowed"
+                        : ""
                     }`}
-                  disabled={isSubmitting}
+                  disabled={contactForm.isSubmitting}
                 >
-                  {isSubmitting ? (
+                  {contactForm.isSubmitting ? (
                     <div className="flex items-center">
                       <div className="animate-spin rounded-full h-4 w-4 border-2 border-secondary-foreground border-t-transparent mr-2" />
                       Sending...
                     </div>
-                  ) : submitSuccess ? (
+                  ) : contactForm.submitSuccess ? (
                     <div className="flex items-center">
                       <div className="mr-2">✓</div>
                       Sent!
@@ -384,7 +365,7 @@ const ContactForm = () => {
             >
               Privacy Policy
             </a>
-            . We'll never share your details without your permission.
+            . We&apos;ll never share your details without your permission.
           </div>
         </div>
       </div>

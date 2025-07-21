@@ -14,7 +14,6 @@ import "./globals.css";
 import "../styles/blocknote-light-theme-fix.css";
 
 import "./globals.css";
-import { usePathname } from "next/navigation";
 
 const inter = Inter({
   variable: "--font-inter",

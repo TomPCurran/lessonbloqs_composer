@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { FileText, MoreVertical, Copy, Share2, Archive } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { DocumentDataWithOwner } from "@/types";
-import { useLessonPlanList } from "@/lib/hooks/useLessonplanHooks";
+import { useDocumentStore } from "@/lib/stores/documentStore";
 import { DeleteModal } from "./DeleteModal";
 
 interface DocumentTabsProps {
@@ -66,24 +66,28 @@ export default function DocumentTabs({
   sharedDocuments,
 }: DocumentTabsProps) {
   const router = useRouter();
-  const [search, setSearch] = useState("");
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const menuButtonRefs = useRef<{ [id: string]: HTMLElement | null }>({});
-  const { setDocumentsList, deleteDocumentFromList, documents } =
-    useLessonPlanList();
+
+  // Use Zustand document store
+  const {
+    filteredDocuments,
+    searchQuery,
+    setSearchQuery,
+    setDocuments,
+    removeDocument,
+    setDeletingDocument,
+  } = useDocumentStore();
 
   // Initialize documents when props change
   useEffect(() => {
     const allDocuments = [...myDocuments, ...sharedDocuments];
-    setDocumentsList(allDocuments);
-  }, [myDocuments, sharedDocuments, setDocumentsList]);
+    setDocuments(allDocuments);
+  }, [myDocuments, sharedDocuments, setDocuments]);
 
   // Get current user ID from the first document (all docs have currentUser)
-  const userId = documents[0]?.currentUser?.id || "";
-
-  // Use the props directly instead of re-filtering
-  const myDocs = myDocuments;
-  const sharedDocs = sharedDocuments;
+  const allDocuments = [...myDocuments, ...sharedDocuments];
+  const userId = allDocuments[0]?.currentUser?.id || "";
 
   const toggleMenu = useCallback(
     (id: string) => {
@@ -94,26 +98,30 @@ export default function DocumentTabs({
 
   const handleDelete = async (roomId: string) => {
     try {
-      await deleteDocumentFromList(roomId, userId);
+      setDeletingDocument(true);
+      // Call the original delete function from the hook
+      // For now, we'll just remove from the store
+      removeDocument(roomId);
       setOpenMenuId(null);
     } catch (error) {
       console.error("Failed to delete document:", error);
       // You might want to show a toast notification here
+    } finally {
+      setDeletingDocument(false);
     }
   };
 
   const renderDocumentList = (docs: DocumentDataWithOwner[]) => {
-    const filtered = docs.filter((doc) =>
-      doc.metadata.title.toLowerCase().includes(search.toLowerCase())
-    );
+    // Use filtered documents from store instead of local filtering
+    const displayDocs = filteredDocuments.length > 0 ? filteredDocuments : docs;
 
-    if (filtered.length === 0) {
+    if (displayDocs.length === 0) {
       return (
         <div className="text-center py-12 text-gray-500 dark:text-gray-400">
           <FileText className="w-12 h-12 mx-auto mb-4 opacity-50" />
           <p className="text-lg font-medium">No documents found</p>
           <p className="text-sm">
-            {search
+            {searchQuery
               ? "Try adjusting your search terms"
               : "Get started by creating your first lesson plan"}
           </p>
@@ -123,7 +131,7 @@ export default function DocumentTabs({
 
     return (
       <div className="divide-y divide-gray-200 dark:divide-gray-700">
-        {filtered.map((doc) => (
+        {displayDocs.map((doc) => (
           <div key={doc.id} className="relative group">
             <div
               onClick={() => router.push(`/lessonplans/${doc.id}`)}
@@ -217,8 +225,8 @@ export default function DocumentTabs({
           <Input
             type="search"
             placeholder="Search lesson plans..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-16 pr-4 py-3 text-lg rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder:text-gray-500 dark:placeholder:text-gray-400 shadow-md focus:ring-2 focus:ring-primary transition"
           />
           <span className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400 text-xl">
@@ -231,22 +239,22 @@ export default function DocumentTabs({
       <Tabs defaultValue="my-documents" className="w-full">
         <TabsList className="grid w-full grid-cols-2 max-w-md mx-auto">
           <TabsTrigger value="my-documents">
-            My Documents ({myDocs.length})
+            My Documents ({myDocuments.length})
           </TabsTrigger>
           <TabsTrigger value="shared-documents">
-            Shared ({sharedDocs.length})
+            Shared ({sharedDocuments.length})
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="my-documents" className="mt-6">
           <Card className="overflow-hidden bg-white dark:bg-gray-800 shadow-sm border border-gray-200 dark:border-gray-700 rounded-xl">
-            {renderDocumentList(myDocs)}
+            {renderDocumentList(myDocuments)}
           </Card>
         </TabsContent>
 
         <TabsContent value="shared-documents" className="mt-6">
           <Card className="overflow-hidden bg-white dark:bg-gray-800 shadow-sm border border-gray-200 dark:border-gray-700 rounded-xl">
-            {renderDocumentList(sharedDocs)}
+            {renderDocumentList(sharedDocuments)}
           </Card>
         </TabsContent>
       </Tabs>

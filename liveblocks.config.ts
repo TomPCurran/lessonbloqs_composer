@@ -92,6 +92,31 @@ declare global {
       updatedAt: number;
       userCount: number;
     };
+
+    // Activities for inbox notifications
+    Activities: {
+      // Document access notification
+      $documentAccess: {
+        userType: "creator" | "editor" | "viewer" | "removed";
+        title: string;
+        updatedBy: string;
+        avatar?: string;
+        email: string;
+      };
+      // Document shared notification
+      $documentShared: {
+        documentTitle: string;
+        sharedBy: string;
+        accessType: "viewer" | "editor";
+      };
+      // Comment notification
+      $documentComment: {
+        bloqId: string;
+        comment: string;
+        userName: string;
+        userAvatar?: string;
+      };
+    };
   }
 }
 
