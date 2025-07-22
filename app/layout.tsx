@@ -26,29 +26,6 @@ export const metadata: Metadata = {
   description: "A modern collaborative document editor",
 };
 
-// Client component to handle pathname-based layout
-function LayoutContent({ children }: { children: React.ReactNode }) {
-  // This would normally use usePathname, but we can't use hooks in layout
-  // So we'll handle this differently - check if it's the landing page
-  const isLandingPage =
-    typeof window !== "undefined" && window.location.pathname === "/";
-
-  return (
-    <>
-      <NavBar />
-      {isLandingPage ? (
-        // Landing page: full-screen layout
-        <main className="min-h-screen">{children}</main>
-      ) : (
-        // Other pages: container layout with padding
-        <main className="container mx-auto px-4 md:px-8 lg:px-16 pt-16 pb-8">
-          {children}
-        </main>
-      )}
-    </>
-  );
-}
-
 export default function RootLayout({
   children,
 }: {
@@ -73,7 +50,11 @@ export default function RootLayout({
           >
             <Provider>
               <AppStateManager />
-              <LayoutContent>{children}</LayoutContent>
+              <main className="mx-auto px-4 md:px-8 lg:px-16 pt-16 pb-">
+                {/* <main className="container mx-auto px-4 md:px-8 lg:px-16 pt-16 pb-8"> */}
+                <NavBar />
+                {children}
+              </main>
             </Provider>
           </ThemeProvider>
         </body>

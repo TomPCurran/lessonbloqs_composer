@@ -11,7 +11,7 @@ export const createInitialStorage = ({
   timestamp: number;
 }) => ({
   lessonPlan: new LiveObject({
-    title: title || "Untitled Lesson Plan",
+    title: title ?? "",
     description: "",
     createdAt: timestamp,
     updatedAt: timestamp,

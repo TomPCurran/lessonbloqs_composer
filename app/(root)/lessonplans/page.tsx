@@ -1,4 +1,3 @@
-// lessonbloqs_composer copy/app/(root)/lessonplans/page.tsx
 import React, { Suspense } from "react";
 import { currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
@@ -12,7 +11,7 @@ import DocumentTabs from "@/components/DocumentTabs";
 import { LessonbloqsLogoAnimated } from "@/components/AnimatedLogo";
 import { DocumentDataWithOwner } from "@/types";
 import { ZustandTest } from "@/components/ui/zustand-test";
-// A separate async component to handle data fetching and processing.
+import Notification from "@/components/notifications/Notification";
 async function DocumentsData() {
   const user = await currentUser();
   if (!user) redirect("/sign-in");
