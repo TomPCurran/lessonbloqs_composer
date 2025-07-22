@@ -17,7 +17,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useUIStore } from "@/lib/stores/uiStore";
-import { useAppStore } from "@/lib/stores/appStore";
 
 export default function Navbar() {
   const [isMounted, setIsMounted] = useState(false);

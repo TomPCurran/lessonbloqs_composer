@@ -81,7 +81,6 @@ async function DocumentsData() {
 const LessonPlansPage = () => {
   return (
     <div className="container mx-auto p-8 space-y-6">
-      <Notification />
       <Card className="bg-white dark:bg-gray-800 shadow-md p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border border-gray-200 dark:border-gray-700 rounded-xl">
         <div className="flex items-center gap-3">
           <List className="w-8 h-8 text-primary" />

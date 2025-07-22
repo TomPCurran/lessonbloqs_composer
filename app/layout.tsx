@@ -50,7 +50,8 @@ export default function RootLayout({
           >
             <Provider>
               <AppStateManager />
-              <main className="container mx-auto px-4 md:px-8 lg:px-16 pt-16 pb-8">
+              <main className="mx-auto px-4 md:px-8 lg:px-16 pt-16 pb-">
+                {/* <main className="container mx-auto px-4 md:px-8 lg:px-16 pt-16 pb-8"> */}
                 <NavBar />
                 {children}
               </main>

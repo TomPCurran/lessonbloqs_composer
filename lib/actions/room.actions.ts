@@ -24,7 +24,7 @@ export const createDocument = async ({
     const metadata = {
       creatorId: userId,
       email,
-      title: "Untitled",
+      title: "",
     };
 
     const usersAccesses: RoomAccesses = {
@@ -100,7 +100,6 @@ export const updateDocument = async (roomId: string, title: string) => {
     });
 
     revalidatePath("/lessonplans");
-    revalidatePath(`/lessonplans/${roomId}`);
 
     return parseStringify(updatedRoom);
   } catch (error) {
@@ -152,7 +151,6 @@ const sendNotification = async (
       roomId,
       notificationId,
     });
-
     await liveblocks.triggerInboxNotification({
       userId: targetUserId,
       kind,
@@ -201,6 +199,7 @@ export const updateDocumentAccess = async ({
 
     // Check if this is a new user being added or existing user being updated
     const wasAlreadyShared = room.usersAccesses[targetUser.id];
+    const previousUserType = wasAlreadyShared ? wasAlreadyShared[0] : undefined;
 
     // Use userId as the key instead of email
     const usersAccesses: RoomAccesses = {
@@ -222,14 +221,18 @@ export const updateDocumentAccess = async ({
         "$documentAccess",
         {
           userType,
+          previousUserType,
           title: notificationTitle,
           updatedBy: updatedBy.name,
-          avatar: updatedBy.avatar,
-          email: updatedBy.email,
+          updatedByAvatar: updatedBy.avatar,
+          updatedByEmail: updatedBy.email,
           documentTitle: room.metadata.title || "Untitled Document",
           documentId: roomId,
           isNewShare: !wasAlreadyShared,
           timestamp: new Date().toISOString(),
+          customMessage: wasAlreadyShared
+            ? `${updatedBy.name} changed your permissions for "${room.metadata.title}" from ${previousUserType} to ${userType}.`
+            : `${updatedBy.name} shared "${room.metadata.title}" with you as a ${userType}.`,
         },
         roomId
       );
@@ -365,12 +368,13 @@ export const shareDocument = async ({
       "$documentShared",
       {
         documentTitle: room.metadata.title || "Untitled Document",
-        sharedBy: sharedBy.name,
-        accessType: userType,
-        avatar: sharedBy.avatar,
-        email: sharedBy.email,
         documentId: roomId,
+        accessType: userType,
+        sharedBy: sharedBy.name,
+        sharedByAvatar: sharedBy.avatar,
+        sharedByEmail: sharedBy.email,
         timestamp: new Date().toISOString(),
+        customMessage: `${sharedBy.name} shared "${room.metadata.title}" with you as a ${userType}.`,
       },
       roomId
     );
@@ -406,11 +410,13 @@ export const sendCommentMention = async ({
         bloqId: bloqId || "",
         comment:
           comment.length > 100 ? comment.substring(0, 100) + "..." : comment,
-        userName: mentionedBy.name,
-        userAvatar: mentionedBy.avatar,
+        mentionedBy: mentionedBy.name,
+        mentionedByAvatar: mentionedBy.avatar,
+        mentionedByEmail: mentionedBy.email,
         documentTitle: room.metadata.title || "Untitled Document",
         documentId: roomId,
         timestamp: new Date().toISOString(),
+        customMessage: `${mentionedBy.name} mentioned you in a comment on "${room.metadata.title}".`,
       },
       roomId
     );

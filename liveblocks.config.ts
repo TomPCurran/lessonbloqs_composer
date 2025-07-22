@@ -93,28 +93,45 @@ declare global {
       userCount: number;
     };
 
-    // Activities for inbox notifications
+    // Activities for inbox notifications - Updated to match what we're actually sending
     Activities: {
       // Document access notification
       $documentAccess: {
         userType: "creator" | "editor" | "viewer" | "removed";
+        previousUserType?: string;
         title: string;
         updatedBy: string;
-        avatar?: string;
-        email: string;
+        updatedByAvatar?: string;
+        updatedByEmail: string;
+        documentTitle: string;
+        documentId: string;
+        isNewShare?: boolean;
+        isRemoval?: boolean;
+        timestamp: string;
+        customMessage: string;
       };
       // Document shared notification
       $documentShared: {
         documentTitle: string;
+        documentId: string;
         sharedBy: string;
+        sharedByAvatar?: string;
+        sharedByEmail: string;
         accessType: "viewer" | "editor";
+        timestamp: string;
+        customMessage: string;
       };
       // Comment notification
       $documentComment: {
         bloqId: string;
         comment: string;
-        userName: string;
-        userAvatar?: string;
+        mentionedBy: string;
+        mentionedByAvatar?: string;
+        mentionedByEmail: string;
+        documentTitle: string;
+        documentId: string;
+        timestamp: string;
+        customMessage: string;
       };
     };
   }
