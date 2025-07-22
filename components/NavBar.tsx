@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Menu, X, User, LogOut, BookOpen } from "lucide-react";
-
+import Notification from "@/components/notifications/Notification";
 import { SignIn, SignUp, useUser, useClerk } from "@clerk/nextjs";
 
 import {
@@ -88,16 +88,8 @@ export default function Navbar() {
             <ThemeToggle />
             {isMounted && isLoaded && isSignedIn ? (
               <>
-                <Link href="/profile">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="flex items-center gap-2 text-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
-                  >
-                    <User className="h-4 w-4" />
-                    <span>Profile</span>
-                  </Button>
-                </Link>
+                <Notification />
+
                 <Button
                   variant="ghost"
                   size="sm"

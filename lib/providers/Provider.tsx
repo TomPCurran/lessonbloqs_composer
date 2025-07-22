@@ -6,6 +6,8 @@ import { getClerkUsers } from "@/lib/actions/user.actions";
 import { getDocumentUsers } from "@/lib/actions/user.actions";
 import { getUserColor } from "@/lib/utils";
 import { useUser } from "@clerk/nextjs";
+import { ClientSideSuspense } from "@liveblocks/react/suspense";
+import LessonbloqsLogoAnimated from "@/components/AnimatedLogo";
 
 const Provider = ({ children }: { children: React.ReactNode }) => {
   const { user: clerkUser } = useUser();
@@ -20,7 +22,6 @@ const Provider = ({ children }: { children: React.ReactNode }) => {
       authEndpoint="/api/liveblocks/auth"
       throttle={100}
       resolveUsers={async ({ userIds }) => {
-        console.log("🌐 [Global Provider] Resolving users:", { userIds });
         const users = await getClerkUsers({ userIds });
         return users.map((user) => ({
           name: `${user.firstName} ${user.lastName}`,
@@ -31,10 +32,6 @@ const Provider = ({ children }: { children: React.ReactNode }) => {
         }));
       }}
       resolveMentionSuggestions={async ({ text, roomId }) => {
-        console.log("🌐 [Global Provider] Resolving mention suggestions:", {
-          text,
-          roomId,
-        });
         const roomUsers = await getDocumentUsers({
           roomId,
           currentUser: clerkUser?.id || "",
@@ -43,7 +40,15 @@ const Provider = ({ children }: { children: React.ReactNode }) => {
         return roomUsers;
       }}
     >
-      {children}
+      <ClientSideSuspense
+        fallback={
+          <div className="flex items-center justify-center h-screen">
+            <LessonbloqsLogoAnimated />
+          </div>
+        }
+      >
+        {children}
+      </ClientSideSuspense>
     </LiveblocksProvider>
   );
 };
