@@ -86,7 +86,7 @@ const ShareModal = ({
           }`.trim(),
           email: clerkUser.email,
           avatar: clerkUser.imageUrl,
-          color: getUserColor(clerkUser.id),
+          color: getUserColor(),
           userType,
         };
       });
@@ -124,7 +124,7 @@ const ShareModal = ({
       }`.trim(),
       email: currentUser.email,
       avatar: currentUser.imageUrl,
-      color: getUserColor(currentUser.id),
+      color: getUserColor(),
       userType: getActualUserType({
         id: currentUser.id,
         email: currentUser.email,
@@ -154,7 +154,7 @@ const ShareModal = ({
         }`.trim(),
         email: currentUser.email,
         avatar: currentUser.imageUrl,
-        color: getUserColor(currentUser.id),
+        color: getUserColor(),
         userType: currentUserType,
       };
 
@@ -212,7 +212,7 @@ const ShareModal = ({
       }`.trim(),
       email: currentUser.email,
       avatar: currentUser.imageUrl,
-      color: getUserColor(currentUser.id),
+      color: getUserColor(),
       userType: currentUserType,
     };
 
@@ -269,7 +269,7 @@ const ShareModal = ({
         }`.trim(),
         email: currentUser.email,
         avatar: currentUser.imageUrl,
-        color: getUserColor(currentUser.id),
+        color: getUserColor(),
         userType: currentUserType,
       };
 

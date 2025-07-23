@@ -192,17 +192,26 @@ const Room = React.memo(function Room({
       lastSaved: Date.now(),
     }),
   };
-
-  // Define the user's initial presence.
   const initialPresence = {
     cursor: null,
     activeBloqId: null,
     user: {
       name: `${user.firstName} ${user.lastName}`,
-      color: getUserColor(user.id),
+      color: getUserColor(user.id), // Add user.id parameter
       avatar: user.imageUrl,
     },
   };
+
+  console.log("🏠 [Room] initialPresence:", initialPresence);
+  // const initialPresence = {
+  //   cursor: null,
+  //   activeBloqId: null,
+  //   user: {
+  //     name: `${user.firstName} ${user.lastName}`,
+  //     color: getUserColor(user.id), // Add user.id parameter
+  //     avatar: user.imageUrl,
+  //   },
+  // };
 
   // Compute currentUserType based on user's access
   const currentUserType = (() => {

@@ -45,7 +45,6 @@ export const dateConverter = (timestamp: string): string => {
   }
 };
 
-// Function to generate a random color in hex format, excluding specified colors
 export function getRandomColor() {
   const avoidColors = ["#000000", "#FFFFFF", "#8B4513"]; // Black, White, Brown in hex format
 
@@ -85,12 +84,21 @@ export const brightColors = [
   "#FF6347", // Darker Neon Vermilion
 ];
 
-export function getUserColor(userId: string) {
-  let sum = 0;
-  for (let i = 0; i < userId.length; i++) {
-    sum += userId.charCodeAt(i);
+export function getUserColor(userId?: string) {
+  if (!userId) {
+    // Fallback to random color if no userId provided
+    return getRandomColor();
   }
 
-  const colorIndex = sum % brightColors.length;
+  // Create a hash from the userId to get a consistent index
+  let hash = 0;
+  for (let i = 0; i < userId.length; i++) {
+    const char = userId.charCodeAt(i);
+    hash = (hash << 5) - hash + char;
+    hash = hash & hash; // Convert to 32-bit integer
+  }
+
+  // Use absolute value and modulo to get a valid index
+  const colorIndex = Math.abs(hash) % brightColors.length;
   return brightColors[colorIndex];
 }

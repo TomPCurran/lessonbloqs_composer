@@ -106,17 +106,52 @@ export const getDocumentUsers = async ({
   text,
 }: {
   roomId: string;
-  currentUser: string; // Now expects userId
-  text: string;
+  currentUser: string; // Current user's ID
+  text: string; // Search text
 }) => {
-  const room = await liveblocks.getRoom(roomId);
-  const userIds = Object.keys(room.usersAccesses).filter(
-    (id) => id !== currentUser
-  );
+  try {
+    // Get the room to access all users
+    const room = await liveblocks.getRoom(roomId);
 
-  return userIds.filter((id) =>
-    text.length ? id.toLowerCase().includes(text.toLowerCase()) : true
-  );
+    // Get all user IDs except current user
+    const userIds = Object.keys(room.usersAccesses).filter(
+      (id) => id !== currentUser
+    );
+
+    // If no userIds, return empty array
+    if (userIds.length === 0) {
+      return [];
+    }
+
+    // Get user details from Clerk
+    const users = await getClerkUsers({ userIds });
+
+    // Filter users based on search text
+    if (text.length > 0) {
+      const lowerCaseText = text.toLowerCase();
+
+      const filteredUsers = users.filter((user) => {
+        const fullName = `${user.firstName} ${user.lastName}`.toLowerCase();
+        const email = user.email?.toLowerCase() || "";
+
+        return (
+          fullName.includes(lowerCaseText) ||
+          email.includes(lowerCaseText) ||
+          user.firstName?.toLowerCase().includes(lowerCaseText) ||
+          user.lastName?.toLowerCase().includes(lowerCaseText)
+        );
+      });
+
+      // Return user IDs of filtered users
+      return filteredUsers.map((user) => user.id);
+    }
+
+    // If no search text, return all user IDs
+    return userIds;
+  } catch (error) {
+    console.error(`Error fetching document users: ${error}`);
+    return [];
+  }
 };
 
 // export const getDocumentUsers = async ({

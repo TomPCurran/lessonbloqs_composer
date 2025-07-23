@@ -5,7 +5,7 @@ import { BlockNoteView } from "@blocknote/mantine";
 import { useYjs } from "@/lib/providers/yjsProvider";
 import { EditorToolbar } from "@/components/editor/EditorToolbar";
 import { cn } from "@/lib/utils";
-import React from "react";
+import React, { useRef } from "react";
 import { FileText, Eye } from "lucide-react";
 import { useTheme } from "@/app/theme-provider"; // Import your theme hook
 import { usePreferencesStore } from "@/lib/stores/preferencesStore";
@@ -15,10 +15,10 @@ interface EditorProps {
   bloqId: string;
   userName: string;
   userColor: string;
-  initialContent?: string; // Optional initial content
-  canEdit: boolean; // Whether the user can edit this content
+  userId: string; // Add userId prop for consistent user identification
+  initialContent?: string;
+  canEdit: boolean;
 }
-
 // Material Design Loading State
 const EditorLoadingState = () => (
   <div className="min-h-[150px] flex items-center justify-center space-grid-3">
@@ -40,6 +40,7 @@ export function Editor({
   bloqId,
   userName,
   userColor,
+  userId, // Add userId parameter
   initialContent,
   canEdit,
 }: EditorProps) {
@@ -47,12 +48,9 @@ export function Editor({
   const doc = yjsContext?.doc;
   const provider = yjsContext?.provider;
   const { theme } = useTheme();
-  // Get editor settings from user preferences
   const editorSettings = usePreferencesStore((state) => state.editorSettings);
   const setGlobalLoading = useAppStore((s) => s.setGlobalLoading);
-  // const setGlobalError = useAppStore((s) => s.setGlobalError);
 
-  // Show global loading while editor is not ready
   React.useEffect(() => {
     if (!provider || !doc) {
       setGlobalLoading(true, "Loading editor...");
@@ -62,16 +60,21 @@ export function Editor({
     return () => setGlobalLoading(false, "");
   }, [provider, doc, setGlobalLoading]);
 
+  // Use consistent user ID and color for all editors
+  const initialUser = useRef({
+    id: userId, // Use the actual user ID for consistent identification
+    name: userName,
+    color: userColor, // Use the color passed from props
+  });
+  console.log("👤 [Editor] initialUser:", initialUser.current);
+
   const editor = useCreateBlockNote({
     collaboration:
       provider && doc
         ? {
             provider,
             fragment: doc.getXmlFragment(`blocknote-${bloqId}`),
-            user: {
-              name: userName,
-              color: userColor,
-            },
+            user: initialUser.current, // Only set once
           }
         : undefined,
     initialContent:
@@ -81,11 +84,6 @@ export function Editor({
     placeholders: {
       paragraph: "",
     },
-    // theme: theme === "dark" ? "dark" : "light", // Remove if not supported
-    // fontSize: editorSettings.fontSize,
-    // autoSave: editorSettings.autoSave,
-    // spellCheck: editorSettings.spellCheck,
-    // wordCount: editorSettings.wordCount,
   });
 
   // Disable editing for viewers
@@ -95,7 +93,15 @@ export function Editor({
     }
   }, [editor, canEdit]);
 
-  // No local loading or error state
+  React.useEffect(() => {
+    if (editor) {
+      const editorElement = editor.domElement;
+      if (editorElement) {
+        editorElement.style.setProperty("--user-color", userColor);
+      }
+    }
+  }, [editor, userColor]);
+
   if (!editor) {
     return <EditorLoadingState />;
   }
@@ -177,7 +183,7 @@ export function Editor({
           <div className="flex items-center gap-grid-1 text-body-small text-muted-foreground">
             <div
               className="w-2 h-2 rounded-full"
-              style={{ backgroundColor: userColor }}
+              style={{ backgroundColor: initialUser.current.color }}
             />
             <span>
               {canEdit ? `Editing as ${userName}` : `Viewing as ${userName}`}

@@ -13,7 +13,12 @@ import { Bell, Check, X, User, FileText } from "lucide-react";
 import {
   useInboxNotifications,
   useMarkInboxNotificationAsRead,
+  useMarkAllInboxNotificationsAsRead,
 } from "@liveblocks/react/suspense";
+import type {
+  InboxNotificationData,
+  InboxNotificationCustomData,
+} from "@liveblocks/core";
 import { cn } from "@/lib/utils";
 
 const Notification = () => {
@@ -23,6 +28,7 @@ const Notification = () => {
   // This is the hook that should work now
   const { inboxNotifications } = useInboxNotifications();
   const markAsRead = useMarkInboxNotificationAsRead();
+  const markAllAsRead = useMarkAllInboxNotificationsAsRead();
 
   console.log("🔔 [Notifications] inboxNotifications:", inboxNotifications);
 
@@ -53,106 +59,196 @@ const Notification = () => {
     }
   };
 
-  // Helper function to safely get activity data
-  const getActivityData = (notification: any) => {
-    return notification.activities?.[0]?.data || {};
+  // Helper: Type guards for notification kinds
+  function isCustomNotification(
+    notification: InboxNotificationData
+  ): notification is InboxNotificationCustomData {
+    return (
+      typeof notification.kind === "string" &&
+      notification.kind !== "thread" &&
+      notification.kind !== "textMention" &&
+      Object.prototype.hasOwnProperty.call(notification, "activities")
+    );
+  }
+
+  function isThreadNotification(
+    notification: InboxNotificationData
+  ): notification is Extract<InboxNotificationData, { kind: "thread" }> {
+    return notification.kind === "thread";
+  }
+
+  function isTextMentionNotification(
+    notification: InboxNotificationData
+  ): notification is Extract<InboxNotificationData, { kind: "textMention" }> {
+    return notification.kind === "textMention";
+  }
+
+  function isInboxNotificationCustomData(
+    notification: InboxNotificationData
+  ): notification is InboxNotificationCustomData {
+    return (
+      isCustomNotification(notification) &&
+      "activities" in (notification as Record<string, unknown>) &&
+      Array.isArray((notification as Record<string, unknown>).activities)
+    );
+  }
+
+  // Helper to check if a value is probably a React element
+  function isProbablyReactElement(val: unknown): boolean {
+    return (
+      typeof val === "object" &&
+      val !== null &&
+      // React elements have a $$typeof property that is a symbol
+      typeof (val as { $$typeof?: unknown }).$$typeof === "symbol"
+    );
+  }
+
+  // Helper function to safely get activity data for custom notifications
+  const getActivityData = (
+    notification: InboxNotificationData
+  ): Record<string, unknown> | undefined => {
+    if (isInboxNotificationCustomData(notification)) {
+      const custom = notification as InboxNotificationCustomData;
+      if (Array.isArray(custom.activities)) {
+        const data = custom.activities[0]?.data;
+        if (
+          data &&
+          typeof data === "object" &&
+          data !== null &&
+          !isProbablyReactElement(data)
+        ) {
+          return data as Record<string, unknown>;
+        }
+      }
+    }
+    return undefined;
   };
 
   // Helper function to get notification title
-  const getNotificationTitle = (notification: any) => {
+  const getNotificationTitle = (notification: InboxNotificationData) => {
     const activityData = getActivityData(notification);
 
-    // Use custom message if available, otherwise fall back to title or default
-    if (activityData.customMessage) {
+    if (typeof activityData?.customMessage === "string") {
       return activityData.customMessage;
     }
 
-    // Handle different notification types with fallbacks
-    switch (notification.kind) {
-      case "$documentAccess":
-        if (activityData.isRemoval) {
-          return `You were removed from "${
-            activityData.documentTitle || "a document"
-          }"`;
-        }
-        if (activityData.isNewShare) {
-          return `${activityData.updatedBy} shared "${
-            activityData.documentTitle || "a document"
-          }" with you`;
-        }
-        return `Your permissions for "${
-          activityData.documentTitle || "a document"
-        }" were updated`;
-
-      case "$documentShared":
-        return `${activityData.sharedBy} shared "${
-          activityData.documentTitle || "a document"
-        }" with you`;
-
-      case "$documentComment":
-        return `${activityData.mentionedBy} mentioned you in "${
-          activityData.documentTitle || "a document"
-        }"`;
-
-      default:
-        return (
-          activityData.title ||
-          `New ${notification.kind.replace("$", "")} notification`
-        );
+    if (isCustomNotification(notification)) {
+      switch (notification.kind) {
+        case "$documentAccess":
+          if (activityData?.isRemoval) {
+            return `You were removed from &quot;${
+              activityData?.documentTitle ?? "a document"
+            }&quot;`;
+          }
+          if (activityData?.isNewShare) {
+            return `${activityData?.updatedBy ?? "Someone"} shared &quot;${
+              activityData?.documentTitle ?? "a document"
+            }&quot; with you`;
+          }
+          return `Your permissions for &quot;${
+            activityData?.documentTitle ?? "a document"
+          }&quot; were updated`;
+        case "$documentShared":
+          return `${activityData?.sharedBy ?? "Someone"} shared &quot;${
+            activityData?.documentTitle ?? "a document"
+          }&quot; with you`;
+        case "$documentComment":
+          return `${
+            activityData?.mentionedBy ?? "Someone"
+          } mentioned you in &quot;${
+            activityData?.documentTitle ?? "a document"
+          }&quot;`;
+        default:
+          return typeof activityData?.title === "string"
+            ? activityData.title
+            : `New ${notification.kind.replace("$", "")} notification`;
+      }
+    } else if (isThreadNotification(notification)) {
+      return "New thread notification";
+    } else if (isTextMentionNotification(notification)) {
+      return `You were mentioned`;
     }
+    return "New notification";
   };
 
-  const handleNotificationClick = async (notification: any) => {
+  const handleNotificationClick = async (
+    notification: InboxNotificationData
+  ) => {
     // Mark as read when clicked
     if (!notification.readAt) {
       await handleMarkAsRead(notification.id);
     }
 
-    // Navigate to the document if documentId is available
+    // Navigate to the document if documentId is available (for custom notifications)
     const activityData = getActivityData(notification);
-    const documentId = activityData.documentId || notification.roomId;
-
+    let documentId: string | undefined = undefined;
+    if (isCustomNotification(notification)) {
+      documentId =
+        typeof activityData?.documentId === "string"
+          ? activityData.documentId
+          : notification.roomId;
+    } else if (
+      isThreadNotification(notification) ||
+      isTextMentionNotification(notification)
+    ) {
+      documentId = notification.roomId;
+    }
     if (documentId) {
       setIsOpen(false);
       router.push(`/lessonplans/${documentId}`);
     }
   };
 
-  const getNotificationIcon = (kind: string, activityData?: any) => {
-    switch (kind) {
-      case "$documentAccess":
-        if (activityData?.isRemoval) {
-          return <X className="w-4 h-4 text-red-500" />;
-        }
-        return <FileText className="w-4 h-4 text-blue-500" />;
-      case "$documentShared":
-        return <FileText className="w-4 h-4 text-green-500" />;
-      case "$documentComment":
-        return <User className="w-4 h-4 text-purple-500" />;
-      default:
-        return <Bell className="w-4 h-4 text-gray-500" />;
+  const getNotificationIcon = (
+    notification: InboxNotificationData,
+    activityData?: Record<string, unknown>
+  ) => {
+    if (isCustomNotification(notification)) {
+      switch (notification.kind) {
+        case "$documentAccess":
+          if (
+            activityData &&
+            typeof activityData === "object" &&
+            "isRemoval" in activityData &&
+            activityData.isRemoval
+          ) {
+            return <X className="w-4 h-4 text-red-500" />;
+          }
+          return <FileText className="w-4 h-4 text-blue-500" />;
+        case "$documentShared":
+          return <FileText className="w-4 h-4 text-green-500" />;
+        case "$documentComment":
+          return <User className="w-4 h-4 text-purple-500" />;
+        default:
+          return <Bell className="w-4 h-4 text-gray-500" />;
+      }
+    } else if (isThreadNotification(notification)) {
+      return <FileText className="w-4 h-4 text-blue-500" />;
+    } else if (isTextMentionNotification(notification)) {
+      return <User className="w-4 h-4 text-orange-500" />;
     }
+    return <Bell className="w-4 h-4 text-gray-500" />;
   };
 
-  const formatTime = (timestamp: string) => {
+  const formatTime = (timestamp: string | Date | null | undefined) => {
     if (!timestamp) return "Unknown time";
-
-    try {
-      const date = new Date(timestamp);
-      if (isNaN(date.getTime())) return "Unknown time";
-
-      const now = new Date();
-      const diffInMinutes = Math.floor(
-        (now.getTime() - date.getTime()) / (1000 * 60)
-      );
-
-      if (diffInMinutes < 1) return "Just now";
-      if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
-      if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)}h ago`;
-      return `${Math.floor(diffInMinutes / 1440)}d ago`;
-    } catch (error) {
+    let date: Date;
+    if (typeof timestamp === "string") {
+      date = new Date(timestamp);
+    } else if (timestamp instanceof Date) {
+      date = timestamp;
+    } else {
       return "Unknown time";
     }
+    if (isNaN(date.getTime())) return "Unknown time";
+    const now = new Date();
+    const diffInMinutes = Math.floor(
+      (now.getTime() - date.getTime()) / (1000 * 60)
+    );
+    if (diffInMinutes < 1) return "Just now";
+    if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
+    if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)}h ago`;
+    return `${Math.floor(diffInMinutes / 1440)}d ago`;
   };
 
   return (
@@ -198,7 +294,7 @@ const Notification = () => {
             </div>
           ) : (
             <div className="divide-y divide-border">
-              {inboxNotifications.map((notification) => {
+              {inboxNotifications.map((notification: InboxNotificationData) => {
                 const activityData = getActivityData(notification);
                 const notificationTitle = getNotificationTitle(notification);
 
@@ -214,7 +310,7 @@ const Notification = () => {
                   >
                     <div className="flex items-start gap-3">
                       <div className="flex-shrink-0 mt-1">
-                        {getNotificationIcon(notification.kind, activityData)}
+                        {getNotificationIcon(notification, activityData)}
                       </div>
 
                       <div className="flex-1 min-w-0">
@@ -227,37 +323,54 @@ const Notification = () => {
                             {/* Enhanced notification details */}
                             <div className="mt-1 space-y-1">
                               {/* Document title */}
-                              {activityData.documentTitle && (
+                              {typeof activityData?.documentTitle ===
+                                "string" && (
                                 <p className="text-xs text-muted-foreground">
                                   Document:{" "}
                                   <span className="font-medium">
-                                    {activityData.documentTitle}
+                                    {typeof activityData.documentTitle ===
+                                      "string" ||
+                                    typeof activityData.documentTitle ===
+                                      "number"
+                                      ? activityData.documentTitle
+                                      : ""}
                                   </span>
                                 </p>
                               )}
 
                               {/* User who performed the action */}
-                              {(activityData.updatedBy ||
-                                activityData.sharedBy ||
-                                activityData.mentionedBy) && (
+                              {(typeof activityData?.updatedBy === "string" ||
+                                typeof activityData?.sharedBy === "string" ||
+                                typeof activityData?.mentionedBy ===
+                                  "string") && (
                                 <p className="text-xs text-muted-foreground">
                                   By:{" "}
-                                  {activityData.updatedBy ||
-                                    activityData.sharedBy ||
-                                    activityData.mentionedBy}
+                                  {typeof activityData?.updatedBy === "string"
+                                    ? activityData.updatedBy
+                                    : typeof activityData?.sharedBy === "string"
+                                    ? activityData.sharedBy
+                                    : typeof activityData?.mentionedBy ===
+                                      "string"
+                                    ? activityData.mentionedBy
+                                    : ""}
                                 </p>
                               )}
 
                               {/* Permission change details */}
                               {notification.kind === "$documentAccess" &&
-                                activityData.userType &&
-                                !activityData.isRemoval && (
+                                typeof activityData?.userType === "string" &&
+                                !activityData?.isRemoval && (
                                   <p className="text-xs text-blue-600 dark:text-blue-400">
                                     Access level:{" "}
                                     <span className="font-medium capitalize">
-                                      {activityData.userType}
+                                      {typeof activityData.userType ===
+                                        "string" ||
+                                      typeof activityData.userType === "number"
+                                        ? activityData.userType
+                                        : ""}
                                     </span>
-                                    {activityData.previousUserType && (
+                                    {typeof activityData?.previousUserType ===
+                                      "string" && (
                                       <span>
                                         {" "}
                                         (changed from{" "}
@@ -269,9 +382,14 @@ const Notification = () => {
 
                               {/* Comment preview */}
                               {notification.kind === "$documentComment" &&
-                                activityData.comment && (
+                                typeof activityData?.comment === "string" && (
                                   <p className="text-xs text-muted-foreground italic">
-                                    "{activityData.comment}"
+                                    &quot;
+                                    {typeof activityData.comment === "string" ||
+                                    typeof activityData.comment === "number"
+                                      ? activityData.comment
+                                      : ""}
+                                    &quot;
                                   </p>
                                 )}
                             </div>
@@ -295,10 +413,36 @@ const Notification = () => {
 
                         <p className="text-xs text-muted-foreground mt-2">
                           {formatTime(
-                            activityData.timestamp ||
-                              notification.activities?.[0]?.createdAt ||
-                              notification.createdAt ||
-                              ""
+                            isCustomNotification(notification)
+                              ? (() => {
+                                  const custom = notification;
+                                  if (
+                                    Array.isArray(custom.activities) &&
+                                    typeof custom.activities[0]?.createdAt ===
+                                      "string"
+                                  ) {
+                                    return custom.activities[0].createdAt;
+                                  }
+                                  if (
+                                    Array.isArray(custom.activities) &&
+                                    custom.activities[0]?.createdAt
+                                  ) {
+                                    return String(
+                                      custom.activities[0].createdAt
+                                    );
+                                  }
+                                  return undefined;
+                                })()
+                              : (() => {
+                                  const notifiedAt = (
+                                    notification as { notifiedAt?: unknown }
+                                  ).notifiedAt;
+                                  if (typeof notifiedAt === "string")
+                                    return notifiedAt;
+                                  if (notifiedAt instanceof Date)
+                                    return notifiedAt.toISOString();
+                                  return undefined;
+                                })()
                           )}
                         </p>
                       </div>
@@ -320,9 +464,13 @@ const Notification = () => {
               variant="ghost"
               size="sm"
               className="w-full text-xs text-muted-foreground hover:text-foreground"
-              onClick={() => setIsOpen(false)}
+              onClick={async () => {
+                await markAllAsRead();
+                setIsOpen(false);
+              }}
+              disabled={unreadCount === 0}
             >
-              View all notifications
+              Mark all as read
             </Button>
           </div>
         )}
