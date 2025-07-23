@@ -36,12 +36,7 @@ export default function Navbar() {
   // Prevent hydration mismatch by only rendering auth-dependent content after mount
   useEffect(() => {
     setIsMounted(true);
-    // Debug: Log Zustand state when NavBar mounts
-    console.log("🎯 NavBar mounted with Zustand state:", {
-      isSignInModalOpen,
-      isSignUpModalOpen,
-      isMobileMenuOpen,
-    });
+
   }, []);
 
   const handleSignOut = async () => {

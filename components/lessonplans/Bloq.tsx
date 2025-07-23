@@ -25,13 +25,7 @@ function Bloq({ bloq, user, currentUserType }: BloqProps) {
   const bloqRef = useRef<HTMLDivElement>(null);
   const canEdit = currentUserType === "creator" || currentUserType === "editor";
 
-  console.log("🧱 [Bloq] Rendering bloq", {
-    bloqId: bloq.id,
-    bloqTitle: bloq.title,
-    userInfo: user,
-    currentUserType,
-    timestamp: new Date().toISOString(),
-  });
+
 
   const userName = user.name;
 

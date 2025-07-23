@@ -5,20 +5,10 @@ import { getUserColor } from "@/lib/utils";
 
 export async function POST(request: NextRequest) {
   try {
-    console.log("🔐 [Liveblocks Auth] Starting authentication...");
 
-    // Get the current user from Clerk
     const { userId } = await auth();
     const user = await currentUser();
-
-    console.log("🔐 [Liveblocks Auth] User info:", {
-      userId,
-      hasUser: !!user,
-      email: user?.emailAddresses[0]?.emailAddress,
-    });
-
     if (!userId || !user) {
-      console.log("🔐 [Liveblocks Auth] Unauthorized - no user found");
       return new Response("Unauthorized", { status: 401 });
     }
 
@@ -66,12 +56,7 @@ export async function POST(request: NextRequest) {
       session.allow(room, session.FULL_ACCESS);
     } else {
       // User-only authentication for inbox notifications
-      console.log(
-        "🔐 [Liveblocks Auth] Authenticating for user-level access (notifications)"
-      );
-      // For inbox notifications, we don't need to grant access to any specific room
-      // The session will be used to fetch user's notifications across all rooms they have access to
-    }
+        }
 
     // Return the session
     const { status, body: responseBody } = await session.authorize();

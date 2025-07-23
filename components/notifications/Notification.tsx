@@ -30,22 +30,6 @@ const Notification = () => {
   const markAsRead = useMarkInboxNotificationAsRead();
   const markAllAsRead = useMarkAllInboxNotificationsAsRead();
 
-  console.log("🔔 [Notifications] inboxNotifications:", inboxNotifications);
-
-  // Debug: Log the structure of the first notification
-  if (inboxNotifications.length > 0) {
-    console.log("🔔 [Notifications] First notification structure:", {
-      id: inboxNotifications[0].id,
-      kind: inboxNotifications[0].kind,
-      hasActivities: !!inboxNotifications[0].activities,
-      activitiesLength: inboxNotifications[0].activities?.length || 0,
-      firstActivity: inboxNotifications[0].activities?.[0],
-      roomId: inboxNotifications[0].roomId,
-      readAt: inboxNotifications[0].readAt,
-    });
-  }
-
-  // Filter unread notifications
   const unreadCount = inboxNotifications.filter(
     (notification) => !notification.readAt
   ).length;
@@ -53,7 +37,6 @@ const Notification = () => {
   const handleMarkAsRead = async (notificationId: string) => {
     try {
       await markAsRead(notificationId);
-      console.log("🔔 [Notifications] Marked as read:", notificationId);
     } catch (error) {
       console.error("🔔 [Notifications] Error marking as read:", error);
     }

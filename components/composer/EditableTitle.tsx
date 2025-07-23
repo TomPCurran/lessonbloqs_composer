@@ -69,10 +69,6 @@ const EditableTitle = ({
       debouncedLiveTitle &&
       debouncedLiveTitle !== lessonPlan.title
     ) {
-      console.log(
-        "📝 [EditableTitle] Updating Liveblocks title:",
-        debouncedLiveTitle
-      );
       updateLessonplan({ title: debouncedLiveTitle });
     }
   }, [debouncedLiveTitle, canEdit, updateLessonplan, lessonPlan]);
@@ -85,20 +81,14 @@ const EditableTitle = ({
       debouncedBackendTitle !== lastSavedTitle.current &&
       debouncedBackendTitle.trim() !== ""
     ) {
-      console.log(
-        "💾 [EditableTitle] Saving to backend:",
-        debouncedBackendTitle
-      );
       setIsSaving(true);
 
       updateDocumentMetadata(debouncedBackendTitle)
         .then(() => {
           lastSavedTitle.current = debouncedBackendTitle;
-          console.log("✅ [EditableTitle] Backend save successful");
         })
         .catch((error) => {
-          console.error("❌ [EditableTitle] Backend save failed:", error);
-          // Optionally show error toast here
+          console.error("[EditableTitle] Backend save failed:", error);
         })
         .finally(() => {
           setIsSaving(false);
