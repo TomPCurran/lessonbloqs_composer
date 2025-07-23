@@ -64,15 +64,11 @@ const DocumentErrorState = ({
 );
 
 const Page = async ({ params }: PageProps) => {
-  console.log("📄 [Page] Starting page render", { params });
 
   const resolvedParams = await params;
   const documentId = resolvedParams?.id;
 
-  console.log("📄 [Page] Resolved params", { documentId });
-
   if (!documentId) {
-    console.log("📄 [Page] No documentId, showing error state");
     return (
       <DocumentErrorState
         title="Invalid Document"
@@ -85,43 +81,27 @@ const Page = async ({ params }: PageProps) => {
 
   const clerkUser = await currentUser();
 
-  console.log("📄 [Page] Clerk user", {
-    userId: clerkUser?.id,
-    email: clerkUser?.emailAddresses[0]?.emailAddress,
-  });
 
   if (!clerkUser) {
     redirect("/sign-in");
   }
 
   try {
-    console.log("📄 [Page] Fetching document", {
-      documentId,
-      userId: clerkUser.id,
-    });
-
     const room = await getDocument({
       documentId,
       userId: clerkUser.id,
     });
 
-    console.log("📄 [Page] Document fetched", {
-      roomId: room?.id,
-      hasMetadata: !!room?.metadata,
-      hasUsersAccesses: !!room?.usersAccesses,
-    });
+
 
     if (!room) {
-      console.log("📄 [Page] No room found, redirecting to lessonplans");
       redirect("/lessonplans");
     }
 
     const userIds = Object.keys(room.usersAccesses);
-    console.log("📄 [Page] Getting users", { userIds });
 
     const users = await getClerkUsers({ userIds });
 
-    console.log("📄 [Page] Users fetched", { userCount: users.length });
 
     const collaborators = users
       .filter(
@@ -140,14 +120,6 @@ const Page = async ({ params }: PageProps) => {
       email: clerkUser.emailAddresses[0].emailAddress,
     };
 
-    console.log("📄 [Page] Rendering Room component", {
-      documentId,
-      currentUserData: {
-        id: currentUserData.id,
-        name: `${currentUserData.firstName} ${currentUserData.lastName}`,
-      },
-      collaboratorCount: collaborators.length,
-    });
 
     return (
       <div className="main-layout">

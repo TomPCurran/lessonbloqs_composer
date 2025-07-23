@@ -108,19 +108,11 @@ const BloqContainer = ({
   currentUser,
   currentUserType,
 }: BloqContainerProps) => {
-  console.log("📦 [BloqContainer] Rendering", {
-    userId: currentUser.id,
-    currentUserType,
-    timestamp: new Date().toISOString(),
-  });
+
 
   const lessonPlan = useStorage((root) => root.lessonPlan);
   const bloqs = useStorage((root) => root.bloqs);
 
-  console.log("📦 [BloqContainer] Storage state", {
-    hasLessonPlan: !!lessonPlan,
-    bloqsLength: bloqs?.length || 0,
-  });
 
   // **FIX 7**: Memoize stable user data to prevent prop drilling re-renders
   const stableCurrentUser = useMemo(
@@ -154,13 +146,8 @@ const BloqContainer = ({
 
   // **FIX 8**: Early return with stable loading state (moved after all hooks)
   if (!lessonPlan || !bloqs) {
-    console.log("📦 [BloqContainer] Storage not ready, showing loading state");
     return <LoadingState />;
   }
-
-  console.log("📦 [BloqContainer] Storage ready, rendering bloqs", {
-    sortedBloqsLength: sortedBloqs.length,
-  });
 
   return (
     <div className="space-grid-6 animate-fade-in w-full">

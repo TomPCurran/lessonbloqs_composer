@@ -23,14 +23,7 @@ export const FloatingToolbar = React.memo(function FloatingToolbar({
   roomMetadata,
   currentUser,
 }: FloatingToolbarProps) {
-  console.log("🔧 [FloatingToolbar] Rendering", {
-    roomId,
-    currentUserType,
-    userId: currentUser.id,
-    timestamp: new Date().toISOString(),
-  });
 
-  // Memoize the mutations to prevent unnecessary re-renders
   const mutations = useLessonPlanMutations();
   const { addBloq } = mutations;
 
@@ -38,10 +31,6 @@ export const FloatingToolbar = React.memo(function FloatingToolbar({
   const isStorageReady = bloqs !== undefined;
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  console.log("🔧 [FloatingToolbar] Storage state", {
-    isStorageReady,
-    bloqsLength: bloqs?.length || 0,
-  });
 
   // Check if user can add bloqs (creators and editors can, viewers cannot)
   const canAddBloqs = currentUserType !== "viewer" && isStorageReady;
@@ -123,23 +112,15 @@ export const FloatingToolbar = React.memo(function FloatingToolbar({
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
-                      console.log("🔧 [FloatingToolbar] Bloq clicked", {
-                        bloqType: bloq.title,
-                        canAddBloqs,
-                        timestamp: new Date().toISOString(),
-                      });
+       
                       if (canAddBloqs) {
-                        console.log("🔧 [FloatingToolbar] Calling addBloq", {
-                          bloqType: bloq.title,
-                        });
+        
                         try {
                           addBloq(bloq);
-                          console.log(
-                            "🔧 [FloatingToolbar] addBloq called successfully"
-                          );
+         
                         } catch (error) {
                           console.error(
-                            "🔧 [FloatingToolbar] Error calling addBloq:",
+                            "[FloatingToolbar] Error calling addBloq:",
                             error
                           );
                         }

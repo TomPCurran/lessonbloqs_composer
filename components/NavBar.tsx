@@ -9,7 +9,6 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { Menu, X, User, LogOut, BookOpen } from "lucide-react";
 import Notification from "@/components/notifications/Notification";
 import { SignIn, SignUp, useUser, useClerk } from "@clerk/nextjs";
-
 import {
   Dialog,
   DialogContent,
@@ -36,23 +35,13 @@ export default function Navbar() {
   // Prevent hydration mismatch by only rendering auth-dependent content after mount
   useEffect(() => {
     setIsMounted(true);
-    // Debug: Log Zustand state when NavBar mounts
-    console.log("🎯 NavBar mounted with Zustand state:", {
-      isSignInModalOpen,
-      isSignUpModalOpen,
-      isMobileMenuOpen,
-    });
   }, []);
 
   const handleSignOut = async () => {
-    // setGlobalLoading(true, "Signing out..."); // This line is removed
     try {
       await signOut();
-      // setGlobalLoading(false, ""); // This line is removed
     } catch (error) {
       console.error("Error signing out:", error);
-      // setGlobalError("Failed to sign out. Please try again."); // This line is removed
-      // setGlobalLoading(false, ""); // This line is removed
     }
   };
 
@@ -88,6 +77,16 @@ export default function Navbar() {
             {isMounted && isLoaded && isSignedIn ? (
               <>
                 <Notification />
+                <Link href="/profile">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="flex items-center gap-2 text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
+                  >
+                    <User className="h-4 w-4" />
+                    <span>Profile</span>
+                  </Button>
+                </Link>
 
                 <Button
                   variant="ghost"
@@ -160,15 +159,8 @@ export default function Navbar() {
                 {isMounted && isLoaded && isSignedIn ? (
                   <>
                     <Link href="/profile">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setMobileMenuOpen(false)}
-                        className="flex w-full items-center gap-2 justify-start text-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
-                      >
-                        <User className="h-4 w-4" />
-                        <span>Profile</span>
-                      </Button>
+                      <User className="h-4 w-4" />
+                      <span>Profile</span>
                     </Link>
                     <Button
                       variant="ghost"

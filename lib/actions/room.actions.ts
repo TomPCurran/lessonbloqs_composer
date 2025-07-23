@@ -41,7 +41,6 @@ export const createDocument = async ({
 
     return parseStringify(room);
   } catch (error) {
-    console.log(`Error happened while creating a room: ${error}`);
     throw error; // Re-throw the error so we can handle it properly
   }
 };
@@ -53,31 +52,17 @@ export const getDocument = async ({
   documentId: string;
   userId: string;
 }) => {
-  console.log("🏢 [room.actions] getDocument called", { documentId, userId });
-
   try {
     const document = await liveblocks.getRoom(documentId);
-    console.log("🏢 [room.actions] Room fetched", {
-      roomId: document.id,
-      hasMetadata: !!document.metadata,
-      userCount: Object.keys(document.usersAccesses).length,
-    });
 
     const hasAccess = Object.keys(document.usersAccesses).includes(userId);
-    console.log("🏢 [room.actions] Access check", { hasAccess, userId });
 
     if (!hasAccess) {
-      console.log("🏢 [room.actions] Access denied");
       throw new Error("ACCESS_DENIED");
     }
 
-    console.log("🏢 [room.actions] Returning document");
     return parseStringify(document);
   } catch (error) {
-    console.log(
-      `🏢 [room.actions] Error happened while getting a room: ${error}`
-    );
-    // Re-throw the error so we can handle it properly in the calling component
     throw error;
   }
 };
@@ -103,7 +88,6 @@ export const updateDocument = async (roomId: string, title: string) => {
 
     return parseStringify(updatedRoom);
   } catch (error) {
-    console.log(`Error happened while updating a room: ${error}`);
     throw error; // Re-throw the error so we can handle it properly
   }
 };
@@ -116,7 +100,6 @@ export const getDocuments = async (email: string) => {
     // Return the data array from the response
     return parsedResponse.data || [];
   } catch (error) {
-    console.log(`Error happened while getting rooms: ${error}`);
     throw error; // Re-throw the error so we can handle it properly
   }
 };
@@ -129,7 +112,6 @@ export const getRoomUsers = async (roomId: string) => {
       metadata: room.metadata,
     };
   } catch (error) {
-    console.log(`Error happened while getting room users: ${error}`);
     throw error;
   }
 };
@@ -144,13 +126,6 @@ const sendNotification = async (
   try {
     const notificationId = nanoid();
 
-    console.log("🔔 [Notifications] Sending notification:", {
-      targetUserId,
-      kind,
-      activityData,
-      roomId,
-      notificationId,
-    });
     await liveblocks.triggerInboxNotification({
       userId: targetUserId,
       kind,
@@ -158,8 +133,6 @@ const sendNotification = async (
       activityData,
       roomId,
     });
-
-    console.log("🔔 [Notifications] Notification sent successfully");
   } catch (error) {
     console.error("🔔 [Notifications] Failed to send notification:", error);
     // Don't throw error here - we don't want notification failures to break the main operation
@@ -243,7 +216,6 @@ export const updateDocumentAccess = async ({
     revalidatePath(`/lessonplans`);
     return parseStringify(updatedRoom);
   } catch (error) {
-    console.log(`Error happened while updating a room access: ${error}`);
     throw error;
   }
 };
@@ -329,7 +301,6 @@ export const removeCollaborator = async ({
 
     return parseStringify(updatedRoom);
   } catch (error) {
-    console.log(`Error happened while removing a collaborator: ${error}`);
     throw error; // Re-throw the error so the UI can handle it
   }
 };
@@ -440,7 +411,6 @@ export const deleteDocument = async (roomId: string, userId: string) => {
     revalidatePath("/");
     // Removed redirect("/"); so the UI does not navigate away after deletion
   } catch (error) {
-    console.log(`Error happened while deleting a room: ${error}`);
     throw error;
   }
 };

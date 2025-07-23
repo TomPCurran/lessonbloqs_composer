@@ -111,8 +111,6 @@ const ConnectedRoomContent = React.memo(function ConnectedRoomContent({
     return null; // Global loading overlay will show
   }
 
-  console.log("🔗 [ConnectedRoomContent] Connected! Rendering Canvas");
-
   return (
     <div className="main-layout min-h-screen animate-fade-in">
       <DocumentHeader
@@ -202,28 +200,10 @@ const Room = React.memo(function Room({
     },
   };
 
-  console.log("🏠 [Room] initialPresence:", initialPresence);
-  // const initialPresence = {
-  //   cursor: null,
-  //   activeBloqId: null,
-  //   user: {
-  //     name: `${user.firstName} ${user.lastName}`,
-  //     color: getUserColor(user.id), // Add user.id parameter
-  //     avatar: user.imageUrl,
-  //   },
-  // };
-
   // Compute currentUserType based on user's access
   const currentUserType = (() => {
-    console.log("🏠 [Room] Computing user type", {
-      userId: user.id,
-      creatorId: initialDocument?.metadata?.creatorId,
-      userAccess: initialDocument?.usersAccesses?.[user.id],
-    });
-
     // Check if user is the creator
     if (initialDocument?.metadata?.creatorId === user.id) {
-      console.log("🏠 [Room] User is creator");
       return "creator";
     }
 
@@ -233,41 +213,15 @@ const Room = React.memo(function Room({
     if (userAccess) {
       // If user has room:write access, they're an editor
       if (userAccess.includes("room:write")) {
-        console.log("🏠 [Room] User is editor");
         return "editor";
       }
       // If user has room:read access, they're a viewer
       if (userAccess.includes("room:read")) {
-        console.log("🏠 [Room] User is viewer");
         return "viewer";
       }
     }
-
-    // Default to viewer if no access found
-    console.log("🏠 [Room] User type defaulting to viewer");
     return "viewer";
   })();
-
-  console.log("🏠 [Room] Setting up RoomProvider", {
-    documentId,
-    currentUserType,
-    initialStorageKeys: Object.keys(initialStorage),
-    initialPresence: initialPresence.user,
-  });
-
-  console.log("🏠 [Room] About to render RoomProvider with:", {
-    id: documentId,
-    hasInitialStorage: !!initialStorage,
-    hasInitialPresence: !!initialPresence,
-  });
-
-  // Debug: Check if the room exists and is accessible
-  console.log("🏠 [Room] Room details:", {
-    roomId: documentId,
-    metadata: initialDocument.metadata,
-    usersAccesses: initialDocument.usersAccesses,
-    currentUserAccess: initialDocument.usersAccesses?.[user.id],
-  });
 
   return (
     <RoomProvider

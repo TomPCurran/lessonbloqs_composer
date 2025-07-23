@@ -19,15 +19,8 @@ const Canvas = React.memo(function Canvas({
   currentUserType,
 }: CanvasProps) {
   const setGlobalLoading = useAppStore((s) => s.setGlobalLoading);
-  // No local loading or error state
 
-  console.log("🎨 [Canvas] Rendering Canvas", {
-    userId: currentUser.id,
-    currentUserType,
-    timestamp: new Date().toISOString(),
-  });
 
-  console.log("🎨 [Canvas] Rendering main content with YjsProvider");
 
   return (
     <YjsProvider>

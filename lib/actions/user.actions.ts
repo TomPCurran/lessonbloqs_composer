@@ -9,14 +9,11 @@ export const getClerkUsers = async ({
 }: {
   userIds: string[];
 }): Promise<UserData[]> => {
-  console.log("👥 [user.actions] getClerkUsers called", { userIds });
 
   try {
     // Check if userIds is empty or undefined
     if (!userIds || userIds.length === 0) {
-      console.log(
-        "👥 [user.actions] No userIds provided, returning empty array"
-      );
+
       return [];
     }
 
@@ -24,10 +21,6 @@ export const getClerkUsers = async ({
     const clerk = await clerkClient();
     const { data } = await clerk.users.getUserList({
       userId: userIds,
-    });
-
-    console.log("👥 [user.actions] Clerk users fetched", {
-      userCount: data.length,
     });
 
     const users = data.map((user) => ({
@@ -42,10 +35,6 @@ export const getClerkUsers = async ({
 
     // Filter out any users who couldn't be mapped properly
     const filteredUsers = users.filter((u) => u.email) as UserData[];
-    console.log("👥 [user.actions] Returning filtered users", {
-      originalCount: users.length,
-      filteredCount: filteredUsers.length,
-    });
     return filteredUsers;
   } catch (error) {
     console.error(`👥 [user.actions] Error fetching users: ${error}`);
@@ -56,8 +45,6 @@ export const getClerkUsers = async ({
 export const getUserByEmail = async (
   email: string
 ): Promise<UserData | null> => {
-  console.log("👥 [user.actions] getUserByEmail called", { email });
-
   try {
     const clerk = await clerkClient();
 
@@ -66,13 +53,8 @@ export const getUserByEmail = async (
       emailAddress: [email],
     });
 
-    console.log("👥 [user.actions] User search result", {
-      email,
-      userCount: data.length,
-    });
 
     if (data.length === 0) {
-      console.log("👥 [user.actions] No user found for email", { email });
       return null;
     }
 
@@ -87,12 +69,6 @@ export const getUserByEmail = async (
           ?.emailAddress || email,
       imageUrl: user.imageUrl,
     };
-
-    console.log("👥 [user.actions] Returning user data", {
-      userId: userData.id,
-      email: userData.email,
-    });
-
     return userData;
   } catch (error) {
     console.error(`👥 [user.actions] Error fetching user by email: ${error}`);

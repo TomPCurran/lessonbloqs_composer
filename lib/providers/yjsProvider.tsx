@@ -35,18 +35,11 @@ export function YjsProvider({ children }: { children: ReactNode }) {
   // Storage items can become temporarily undefined during mutations
   const isRoomReady = status === "connected";
 
-  console.log("🔧 [YjsProvider] Status:", status, "isRoomReady:", isRoomReady);
-
   useEffect(() => {
     // **FIXED**: Only initialize Yjs when room is connected
     if (!isRoomReady) {
-      console.log(
-        "🔧 [YjsProvider] Room not connected, skipping initialization"
-      );
       return;
     }
-
-    console.log("🔧 [YjsProvider] Initializing Yjs provider");
 
     // Create the Yjs document and provider only once
     const yDoc = new Y.Doc();
@@ -79,9 +72,6 @@ export function YjsProvider({ children }: { children: ReactNode }) {
   // If room is connected but Yjs is not ready, render children anyway
   // The Editor components will handle their own loading states
   if (!yjsState) {
-    console.log(
-      "🔧 [YjsProvider] Room connected but Yjs not ready, rendering children"
-    );
     return <>{children}</>;
   }
 

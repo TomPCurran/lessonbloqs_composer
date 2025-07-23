@@ -66,7 +66,6 @@ export function Editor({
     name: userName,
     color: userColor, // Use the color passed from props
   });
-  console.log("👤 [Editor] initialUser:", initialUser.current);
 
   const editor = useCreateBlockNote({
     collaboration:
