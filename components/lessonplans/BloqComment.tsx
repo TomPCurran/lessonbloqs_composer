@@ -9,12 +9,14 @@ import React, {
 } from "react";
 import ReactDOM from "react-dom";
 import { useThreads, useCreateThread } from "@liveblocks/react/suspense";
-import { Thread } from "@liveblocks/react-ui";
-import { MessageCircle, Plus, X, Send } from "lucide-react";
+import { Thread, Composer } from "@liveblocks/react-ui";
+import { MessageCircle, Plus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { useUser } from "@clerk/nextjs";
+import { useRoom } from "@liveblocks/react/suspense";
+import { sendCommentMention } from "@/lib/actions/room.actions";
 
 // Global state for managing open comment panels
 const CommentPanelContext = createContext<{
@@ -46,21 +48,60 @@ interface BloqCommentsProps {
   bloqRef: React.RefObject<HTMLDivElement | null>;
 }
 
+// Helper function to extract mentions from comment body
+const extractMentions = (body: any): string[] => {
+  const mentions: string[] = [];
+
+  if (!body?.content) return mentions;
+
+  const traverseContent = (content: any[]) => {
+    content.forEach((block: any) => {
+      if (block.type === "mention" && block.attrs?.id) {
+        mentions.push(block.attrs.id);
+      }
+      if (block.content) {
+        traverseContent(block.content);
+      }
+    });
+  };
+
+  traverseContent(body.content);
+  return [...new Set(mentions)]; // Remove duplicates
+};
+
+// Helper function to extract plain text from comment body
+const extractPlainText = (body: any): string => {
+  if (!body?.content) return "";
+
+  const extractText = (content: any[]): string => {
+    return content
+      .map((block: any) => {
+        if (block.type === "text") {
+          return block.text || "";
+        }
+        if (block.type === "mention" && block.attrs?.id) {
+          return `@${block.attrs.id}`;
+        }
+        if (block.content) {
+          return extractText(block.content);
+        }
+        return "";
+      })
+      .join("");
+  };
+
+  return extractText(body.content);
+};
+
 export function BloqComments({ bloqId, bloqRef }: BloqCommentsProps) {
   console.log("💬 [BloqComment] Rendering BloqComments", { bloqId });
 
   const { openBloqId, setOpenBloqId } = useCommentPanel();
   const isOpen = openBloqId === bloqId;
   const [isCreating, setIsCreating] = useState(false);
-  const [commentText, setCommentText] = useState("");
   const commentsRef = useRef<HTMLDivElement>(null);
   const { user } = useUser();
-
-  console.log("💬 [BloqComment] State", {
-    isOpen,
-    isCreating,
-    hasUser: !!user,
-  });
+  const room = useRoom();
 
   const [panelPosition, setPanelPosition] = useState<{
     top: number;
@@ -77,6 +118,7 @@ export function BloqComments({ bloqId, bloqRef }: BloqCommentsProps) {
     },
   });
   const createThread = useCreateThread();
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as Node;
@@ -92,7 +134,6 @@ export function BloqComments({ bloqId, bloqRef }: BloqCommentsProps) {
       setOpenBloqId(null);
       if (isCreating) {
         setIsCreating(false);
-        setCommentText("");
       }
     };
 
@@ -103,7 +144,7 @@ export function BloqComments({ bloqId, bloqRef }: BloqCommentsProps) {
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [isOpen, isCreating, setOpenBloqId, bloqRef]); // Add bloqRef to the dependency array
+  }, [isOpen, isCreating, setOpenBloqId, bloqRef]);
 
   // Calculate panel position on open
   useEffect(() => {
@@ -111,16 +152,16 @@ export function BloqComments({ bloqId, bloqRef }: BloqCommentsProps) {
       const updatePosition = () => {
         if (buttonRef.current) {
           const buttonRect = buttonRef.current.getBoundingClientRect();
-          const panelWidth = 600; // Increased width
-          const margin = 16; // px
+          const panelWidth = 600;
+          const margin = 16;
           const viewportWidth = window.innerWidth;
           let left = buttonRect.right + margin;
-          let top = buttonRect.top + window.scrollY; // Add scroll offset for absolute positioning
-          // If not enough space on right, flip to left
+          let top = buttonRect.top + window.scrollY;
+
           if (left + panelWidth > viewportWidth) {
             left = buttonRect.left - panelWidth - margin;
           }
-          // Clamp top to viewport
+
           top = Math.max(
             16 + window.scrollY,
             Math.min(top, window.scrollY + window.innerHeight - 400)
@@ -130,8 +171,6 @@ export function BloqComments({ bloqId, bloqRef }: BloqCommentsProps) {
       };
 
       updatePosition();
-
-      // Add scroll listener to update position
       window.addEventListener("scroll", updatePosition);
       window.addEventListener("resize", updatePosition);
 
@@ -145,16 +184,12 @@ export function BloqComments({ bloqId, bloqRef }: BloqCommentsProps) {
     }
   }, [isOpen]);
 
-  const handleCreateComment = () => {
-    if (!commentText.trim() || !user) return;
+  const handleCreateComment = async (body: any) => {
+    if (!user) return;
 
+    // Create the thread first
     createThread({
-      body: {
-        version: 1,
-        content: [
-          { type: "paragraph", children: [{ text: commentText.trim() }] },
-        ],
-      },
+      body,
       metadata: {
         bloqId,
         type: "comment",
@@ -165,7 +200,42 @@ export function BloqComments({ bloqId, bloqRef }: BloqCommentsProps) {
       },
     });
 
-    setCommentText("");
+    // Extract mentions and send notifications
+    const mentionedUserIds = extractMentions(body);
+    const commentText = extractPlainText(body);
+
+    if (mentionedUserIds.length > 0) {
+      console.log("💬 [BloqComment] Found mentions:", mentionedUserIds);
+
+      // Send mention notifications to each mentioned user
+      for (const mentionedUserId of mentionedUserIds) {
+        try {
+          await sendCommentMention({
+            roomId: room.id,
+            mentionedUserId,
+            comment: commentText,
+            mentionedBy: {
+              id: user.id,
+              name: `${user.firstName} ${user.lastName}`,
+              email: user.emailAddresses[0]?.emailAddress || "",
+              avatar: user.imageUrl,
+              color: "", // This field might not be needed for notifications
+            },
+            bloqId,
+          });
+          console.log(
+            "💬 [BloqComment] Mention notification sent to:",
+            mentionedUserId
+          );
+        } catch (error) {
+          console.error(
+            "💬 [BloqComment] Error sending mention notification:",
+            error
+          );
+        }
+      }
+    }
+
     setIsCreating(false);
   };
 
@@ -175,7 +245,6 @@ export function BloqComments({ bloqId, bloqRef }: BloqCommentsProps) {
       setOpenBloqId(null);
       if (isCreating) {
         setIsCreating(false);
-        setCommentText("");
       }
     } else {
       setOpenBloqId(bloqId);
@@ -270,40 +339,26 @@ export function BloqComments({ bloqId, bloqRef }: BloqCommentsProps) {
                 {/* Content */}
                 <div className="flex flex-col h-[calc(100%-5rem)]">
                   <div className="flex-1 p-grid-3 overflow-y-auto space-grid-3 min-h-0">
-                    {/* Comment Creation */}
+                    {/* Comment Creation with Liveblocks Composer */}
                     {isCreating && (
                       <div className="google-card p-grid-3 border-primary/30 bg-primary/5 animate-fade-in">
                         <div className="space-grid-2">
                           <label className="text-label-medium text-foreground">
                             Add Comment
                           </label>
-                          <textarea
-                            placeholder="Share your thoughts..."
-                            className="google-input min-h-[80px] resize-none text-body-medium"
-                            autoFocus
-                            value={commentText}
-                            onChange={(e) => setCommentText(e.target.value)}
-                            onKeyDown={(e) => {
-                              if (e.key === "Enter" && !e.shiftKey) {
-                                e.preventDefault();
-                                handleCreateComment();
-                              }
-                            }}
-                          />
+                          <div className="min-h-[100px]">
+                            <Composer
+                              onComposerSubmit={({ body }) => {
+                                handleCreateComment(body);
+                              }}
+                              autoFocus
+                              placeholder="Share your thoughts... (Type @ to mention someone)"
+                              className="lb-composer-custom"
+                            />
+                          </div>
                           <div className="flex gap-grid-2">
                             <Button
-                              onClick={handleCreateComment}
-                              disabled={!commentText.trim()}
-                              className="google-button-primary flex-1"
-                            >
-                              <Send className="w-4 h-4 mr-2" />
-                              Post Comment
-                            </Button>
-                            <Button
-                              onClick={() => {
-                                setIsCreating(false);
-                                setCommentText("");
-                              }}
+                              onClick={() => setIsCreating(false)}
                               className="google-button-secondary"
                             >
                               Cancel
@@ -312,18 +367,18 @@ export function BloqComments({ bloqId, bloqRef }: BloqCommentsProps) {
                         </div>
                       </div>
                     )}
+
                     {/* List of all threads */}
                     {unresolvedThreads.length > 0
                       ? unresolvedThreads.map((thread) => (
                           <Thread
                             key={thread.id}
                             thread={thread}
-                            showActions={true} // This correctly enables the "..." menu for each thread
-                            className="lb-thread-custom" // Your custom class for styling
+                            showActions={true}
+                            className="lb-thread-custom"
                           />
                         ))
-                      : // Display a message if no comments exist and the user isn't creating one
-                        !isCreating && (
+                      : !isCreating && (
                           <div className="text-center text-muted-foreground p-8 text-body-medium">
                             No comments on this block yet.
                           </div>
@@ -335,9 +390,9 @@ export function BloqComments({ bloqId, bloqRef }: BloqCommentsProps) {
             document.body
           )
         : null}
-      {/* CSS for Liveblocks thread menus */}
+
+      {/* CSS for Liveblocks components */}
       <style jsx global>{`
-        /* Ensure Liveblocks menus appear above comment panel */
         .lb-popover,
         .lb-dropdown,
         [data-radix-popper-content-wrapper],
@@ -347,7 +402,6 @@ export function BloqComments({ bloqId, bloqRef }: BloqCommentsProps) {
           z-index: 150 !important;
         }
 
-        /* Keep comment panel visible when menus open */
         [data-comments-panel] {
           z-index: 100 !important;
         }
@@ -359,14 +413,32 @@ export function BloqComments({ bloqId, bloqRef }: BloqCommentsProps) {
         .lb-thread {
           overflow: visible !important;
         }
+
         .lb-thread[data-resolved="true"] {
-          opacity: 0.6; /* De-emphasize the entire thread */
+          opacity: 0.6;
           transition: opacity 0.2s ease-in-out;
         }
 
-        /* Hide the reply composer for resolved threads */
         .lb-thread[data-resolved="true"] .lb-composer {
           display: none;
+        }
+
+        .lb-composer-custom .lb-composer-editor {
+          min-height: 80px;
+          border: 1px solid hsl(var(--border));
+          border-radius: 0.5rem;
+          padding: 0.75rem;
+          font-size: 0.875rem;
+        }
+
+        .lb-composer-custom .lb-composer-editor:focus {
+          outline: none;
+          border-color: hsl(var(--ring));
+          box-shadow: 0 0 0 2px hsl(var(--ring) / 0.2);
+        }
+
+        .lb-composer-suggestions {
+          z-index: 200 !important;
         }
       `}</style>
     </>

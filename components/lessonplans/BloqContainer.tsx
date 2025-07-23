@@ -2,7 +2,7 @@
 
 import React, { memo, useMemo } from "react";
 import Bloq from "@/components/lessonplans/Bloq";
-import { cn } from "@/lib/utils";
+import { cn, getUserColor } from "@/lib/utils";
 import { useStorage } from "@liveblocks/react";
 import { LiveObject } from "@liveblocks/client";
 import { Bloq as BloqType, UserData } from "@/types";
@@ -88,7 +88,12 @@ const BloqRenderer = memo(
         <div className="google-card hover:elevation-2 transition-all duration-200">
           <Bloq
             bloq={bloqData as BloqType}
-            currentUser={currentUser}
+            user={{
+              id: currentUser.id,
+              name: `${currentUser.firstName} ${currentUser.lastName}`,
+              color: getUserColor(currentUser.id),
+              avatar: currentUser.imageUrl,
+            }}
             currentUserType={currentUserType}
           />
         </div>

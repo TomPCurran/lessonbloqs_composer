@@ -8,43 +8,33 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useLessonPlanMutations } from "@/lib/hooks/useLessonplanHooks";
 import { Editor } from "@/components/editor/Editor";
-import { getUserColor } from "@/lib/utils";
-import { Bloq as BloqType, UserData } from "@/types";
+import { Bloq as BloqType } from "@/types";
 import { BloqComments } from "@/components/lessonplans/BloqComment";
 import { ClientSideSuspense } from "@liveblocks/react/suspense";
 
 interface BloqProps {
   bloq: BloqType;
-  currentUser: UserData;
+  user: { id: string; name: string; color: string; avatar: string };
   currentUserType: "creator" | "editor" | "viewer";
 }
 
-function Bloq({ bloq, currentUser, currentUserType }: BloqProps) {
-  console.log("🧱 [Bloq] Rendering bloq", {
-    bloqId: bloq.id,
-    bloqTitle: bloq.title,
-    userId: currentUser.id,
-    currentUserType,
-    timestamp: new Date().toISOString(),
-  });
-
+function Bloq({ bloq, user, currentUserType }: BloqProps) {
   const [isFocused, setIsFocused] = useState(false);
-  // Memoize the mutations to prevent unnecessary re-renders
   const mutations = useLessonPlanMutations();
   const { updateBloq, removeBloq } = mutations;
   const bloqRef = useRef<HTMLDivElement>(null);
   const canEdit = currentUserType === "creator" || currentUserType === "editor";
 
-  const userName = React.useMemo(
-    () => `${currentUser.firstName} ${currentUser.lastName}`,
-    [currentUser.firstName, currentUser.lastName]
-  );
-  const userColor = React.useMemo(
-    () => getUserColor(currentUser.id),
-    [currentUser.id]
-  );
+  console.log("🧱 [Bloq] Rendering bloq", {
+    bloqId: bloq.id,
+    bloqTitle: bloq.title,
+    userInfo: user,
+    currentUserType,
+    timestamp: new Date().toISOString(),
+  });
 
-  // Use useCallback for event handlers to prevent re-creation on re-renders
+  const userName = user.name;
+
   const handleTitleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       if (!canEdit) return; // Prevent editing if user is viewer
@@ -54,9 +44,7 @@ function Bloq({ bloq, currentUser, currentUserType }: BloqProps) {
   );
 
   const handleRemove = useCallback(() => {
-    console.log("🧱 [Bloq] Remove bloq clicked", { bloqId: bloq.id, canEdit });
     if (!canEdit) return; // Prevent removing if user is viewer
-    console.log("🧱 [Bloq] Calling removeBloq", { bloqId: bloq.id });
     removeBloq(bloq.id);
   }, [bloq.id, removeBloq, canEdit]);
 
@@ -177,7 +165,8 @@ function Bloq({ bloq, currentUser, currentUserType }: BloqProps) {
               key={bloq.id}
               bloqId={bloq.id}
               userName={userName}
-              userColor={userColor}
+              userColor={user.color}
+              userId={user.id}
               initialContent={bloq.content}
               canEdit={canEdit}
             />
