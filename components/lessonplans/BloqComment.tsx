@@ -94,8 +94,6 @@ const extractPlainText = (body: any): string => {
 };
 
 export function BloqComments({ bloqId, bloqRef }: BloqCommentsProps) {
-  console.log("💬 [BloqComment] Rendering BloqComments", { bloqId });
-
   const { openBloqId, setOpenBloqId } = useCommentPanel();
   const isOpen = openBloqId === bloqId;
   const [isCreating, setIsCreating] = useState(false);
@@ -205,9 +203,6 @@ export function BloqComments({ bloqId, bloqRef }: BloqCommentsProps) {
     const commentText = extractPlainText(body);
 
     if (mentionedUserIds.length > 0) {
-      console.log("💬 [BloqComment] Found mentions:", mentionedUserIds);
-
-      // Send mention notifications to each mentioned user
       for (const mentionedUserId of mentionedUserIds) {
         try {
           await sendCommentMention({
@@ -223,10 +218,6 @@ export function BloqComments({ bloqId, bloqRef }: BloqCommentsProps) {
             },
             bloqId,
           });
-          console.log(
-            "💬 [BloqComment] Mention notification sent to:",
-            mentionedUserId
-          );
         } catch (error) {
           console.error(
             "💬 [BloqComment] Error sending mention notification:",
@@ -240,7 +231,6 @@ export function BloqComments({ bloqId, bloqRef }: BloqCommentsProps) {
   };
 
   const toggleComments = () => {
-    console.log("💬 [BloqComment] Toggle comments", { bloqId, isOpen });
     if (isOpen) {
       setOpenBloqId(null);
       if (isCreating) {

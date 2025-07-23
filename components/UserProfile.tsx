@@ -1,8 +1,19 @@
 "use client";
 import React from "react";
 import { useUser } from "@clerk/nextjs";
+import LessonbloqsLogoAnimated from "./AnimatedLogo";
 const UserProfile = () => {
+  // Potentially need to get user from State not from Clerk
   const { user, isLoaded } = useUser();
+
+  if (!isLoaded) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <LessonbloqsLogoAnimated />
+      </div>
+    );
+  }
+
   console.log("[UserProfile] user", user);
   return (
     <div className="min-h-screen bg-background text-foreground">

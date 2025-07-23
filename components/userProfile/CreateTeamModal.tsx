@@ -141,16 +141,6 @@ const CreateTeamModal = () => {
     if (!validateInput()) return;
 
     try {
-      console.log("Team creation started with data:", {
-        name: teamName,
-        orgId: selectedSchool,
-        members: selectedMembers.map((m) => ({
-          id: m.user_id,
-          member_role: m.role,
-        })),
-      });
-
-      // Use our custom hook with correct arguments
       const success = await createTeam(
         teamName,
         selectedSchool,

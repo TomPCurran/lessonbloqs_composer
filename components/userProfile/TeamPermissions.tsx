@@ -215,8 +215,6 @@ const TeamPermissions = ({ teamId }: TeamPermissionsProps) => {
   };
 
   // Debug outputs
-  console.log("TeamPermissions - validSchoolIds:", schoolIds);
-  console.log("TeamPermissions - orgMembers:", members);
 
   return (
     <div className="space-y-4">
