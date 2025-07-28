@@ -7,7 +7,7 @@ import { EditorToolbar } from "@/components/editor/EditorToolbar";
 import { cn } from "@/lib/utils";
 import React, { useRef } from "react";
 import { FileText, Eye } from "lucide-react";
-import { useTheme } from "@/app/theme-provider"; // Import your theme hook
+import { useTheme } from "@/lib/providers/theme-provider"; // Import your theme hook
 import { usePreferencesStore } from "@/lib/stores/preferencesStore";
 import { useAppStore } from "@/lib/stores/appStore";
 

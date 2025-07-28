@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { cn } from "@/lib/utils";
 import { Plus } from "lucide-react";
-import { bloqTypes } from "@/constants";
+import { bloqTypes } from "@/lib/constants";
 import ListItem from "@/components/composer/ListItem";
 import { useLessonPlanMutations } from "@/lib/hooks/useLessonplanHooks";
 import { useStorage } from "@liveblocks/react";

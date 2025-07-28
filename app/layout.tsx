@@ -1,8 +1,7 @@
 // app/layout.tsx
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import { ThemeProvider } from "./theme-provider";
-import NavBar from "@/components/NavBar";
+import { ThemeProvider } from "../lib/providers/theme-provider";
 import { cn } from "@/lib/utils";
 import { ClerkProvider } from "@clerk/nextjs";
 import Provider from "@/lib/providers/Provider";
@@ -50,11 +49,7 @@ export default function RootLayout({
           >
             <Provider>
               <AppStateManager />
-              <main className="mx-auto px-4 md:px-8 lg:px-16 pt-16 pb-">
-                {/* <main className="container mx-auto px-4 md:px-8 lg:px-16 pt-16 pb-8"> */}
-                <NavBar />
-                {children}
-              </main>
+              {children}
             </Provider>
           </ThemeProvider>
         </body>
