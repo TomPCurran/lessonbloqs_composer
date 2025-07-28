@@ -37,7 +37,10 @@ export async function POST(request: NextRequest) {
     }
 
     const { status, body: responseBody } = await session.authorize();
-    return new Response(responseBody, { status });
+    return new Response(responseBody, {
+      status,
+      headers: { "Content-Type": "application/json" },
+    });
   } catch (error) {
     console.error("🔐 [Liveblocks Auth] Authentication error:", error);
     return new Response("Internal Server Error", { status: 500 });

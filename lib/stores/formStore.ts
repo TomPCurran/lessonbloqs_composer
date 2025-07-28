@@ -98,6 +98,20 @@ export interface FormState {
   } | null;
 }
 
+export const ONBOARDING_FORM_ID = "onboarding";
+
+export const getOnboardingFormValues = (state: FormState) =>
+  state.genericForms[ONBOARDING_FORM_ID]?.values || {};
+
+export const getOnboardingFormErrors = (state: FormState) =>
+  state.genericForms[ONBOARDING_FORM_ID]?.errors || {};
+
+export const getOnboardingFormSubmitting = (state: FormState) =>
+  state.genericForms[ONBOARDING_FORM_ID]?.isSubmitting || false;
+
+export const getOnboardingFormValid = (state: FormState) =>
+  state.genericForms[ONBOARDING_FORM_ID]?.isValid || false;
+
 // Create the form store with selective persistence
 export const useFormStore = create<FormState>()(
   persist(

@@ -1,6 +1,13 @@
 // Export all Zustand stores
 export { useUIStore } from "./uiStore";
 export { useDocumentStore } from "./documentStore";
+export {
+  ONBOARDING_FORM_ID,
+  getOnboardingFormValues,
+  getOnboardingFormErrors,
+  getOnboardingFormSubmitting,
+  getOnboardingFormValid,
+} from "./formStore";
 export { useFormStore } from "./formStore";
 
 // Store types for external use

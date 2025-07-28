@@ -1,4 +1,4 @@
-// app/page.tsx - Landing Page Full-Screen Fix
+// app/(landing)/page.tsx - Landing Page Full-Screen Fix
 "use client";
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
@@ -14,8 +14,8 @@ import ValuesAgencySection from "@/components/landingPage/ValuesAgencySection";
 import ValuesCollaborationSection from "@/components/landingPage/ValuesCollaborationSection";
 import ValuesEngagementSection from "@/components/landingPage/ValuesEngagementSection";
 import MissionStatement from "@/components/landingPage/MissionStatement";
-import { ZustandTest } from "@/components/ui/zustand-test";
-import { ZustandEnterpriseTest } from "@/components/ui/zustand-enterprise-test";
+// import { ZustandTest } from "@/components/ui/zustand-test";
+// import { ZustandEnterpriseTest } from "@/components/ui/zustand-enterprise-test";
 
 const LandingPage = () => {
   const [showNav, setShowNav] = useState(false);
@@ -45,11 +45,9 @@ const LandingPage = () => {
     // Override layout container constraints for full-screen experience
     <div className="fixed inset-0 overflow-auto bg-background">
       {/* Zustand Test Components - Remove these after testing */}
-      <div className="absolute top-4 left-4 z-50">
-        <ZustandTest />
-      </div>
+      <div className="absolute top-4 left-4 z-50">{/* <ZustandTest /> */}</div>
       <div className="absolute top-4 right-4 z-50">
-        <ZustandEnterpriseTest />
+        {/* <ZustandEnterpriseTest /> */}
       </div>
       <nav
         className={`${
@@ -91,10 +89,10 @@ const LandingPage = () => {
 
           <div className="hidden md:flex items-center gap-4">
             <Button variant="ghost" className="google-button hover:bg-muted">
-              <Link href="/login">Log In</Link>
+              <Link href="/sign-in">Log In</Link>
             </Button>
             <Button className="google-button-primary elevation-1 hover:elevation-2">
-              <Link href="/register">Get Started</Link>
+              <Link href="/sign-up">Get Started</Link>
             </Button>
           </div>
 
@@ -156,10 +154,10 @@ const LandingPage = () => {
                 variant="ghost"
                 className="google-button justify-center hover:bg-muted"
               >
-                <Link href="/login">Log In</Link>
+                <Link href="/sign-in">Log In</Link>
               </Button>
               <Button className="google-button-primary justify-center">
-                <Link href="/register">Get Started</Link>
+                <Link href="/sign-up">Get Started</Link>
               </Button>
             </div>
           </div>

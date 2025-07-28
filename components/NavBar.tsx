@@ -8,29 +8,16 @@ import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Menu, X, User, LogOut, BookOpen } from "lucide-react";
 import Notification from "@/components/notifications/Notification";
-import { SignIn, SignUp, useUser, useClerk } from "@clerk/nextjs";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { useUser, useClerk } from "@clerk/nextjs";
 import { useUIStore } from "@/lib/stores/uiStore";
 
 export default function Navbar() {
   const [isMounted, setIsMounted] = useState(false);
   const { isSignedIn, isLoaded } = useUser();
   const { signOut } = useClerk();
+
   // Zustand store for UI state
-  const {
-    isMobileMenuOpen,
-    isSignInModalOpen,
-    isSignUpModalOpen,
-    setMobileMenuOpen,
-    setSignInModalOpen,
-    setSignUpModalOpen,
-  } = useUIStore();
-  // No local loading or error state
+  const { isMobileMenuOpen, setMobileMenuOpen } = useUIStore();
 
   // Prevent hydration mismatch by only rendering auth-dependent content after mount
   useEffect(() => {
@@ -97,6 +84,7 @@ export default function Navbar() {
                   <LogOut className="h-4 w-4" />
                   <span>Sign out</span>
                 </Button>
+
                 <Link href="/lessonplans">
                   <Button
                     size="sm"
@@ -109,21 +97,23 @@ export default function Navbar() {
               </>
             ) : isMounted && isLoaded && !isSignedIn ? (
               <div className="flex items-center gap-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setSignInModalOpen(true)}
-                  className="text-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
-                >
-                  Sign In
-                </Button>
-                <Button
-                  size="sm"
-                  onClick={() => setSignUpModalOpen(true)}
-                  className="bg-primary hover:bg-primary/90 text-primary-foreground transition-colors"
-                >
-                  Sign Up
-                </Button>
+                <Link href="/sign-in">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
+                  >
+                    Sign In
+                  </Button>
+                </Link>
+                <Link href="/sign-up">
+                  <Button
+                    size="sm"
+                    className="bg-primary hover:bg-primary/90 text-primary-foreground transition-colors"
+                  >
+                    Sign Up
+                  </Button>
+                </Link>
               </div>
             ) : (
               // Loading state - render skeleton to prevent hydration mismatch
@@ -159,9 +149,17 @@ export default function Navbar() {
                 {isMounted && isLoaded && isSignedIn ? (
                   <>
                     <Link href="/profile">
-                      <User className="h-4 w-4" />
-                      <span>Profile</span>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="flex w-full items-center gap-2 justify-start text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
+                      >
+                        <User className="h-4 w-4" />
+                        <span>Profile</span>
+                      </Button>
                     </Link>
+
                     <Button
                       variant="ghost"
                       size="sm"
@@ -174,6 +172,7 @@ export default function Navbar() {
                       <LogOut className="h-4 w-4" />
                       <span>Sign out</span>
                     </Button>
+
                     <Link href="/lessonplans">
                       <Button
                         size="sm"
@@ -187,27 +186,26 @@ export default function Navbar() {
                   </>
                 ) : isMounted && isLoaded && !isSignedIn ? (
                   <div className="space-y-1">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => {
-                        setSignInModalOpen(true);
-                        setMobileMenuOpen(false);
-                      }}
-                      className="flex w-full items-center gap-2 justify-start text-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
-                    >
-                      Sign In
-                    </Button>
-                    <Button
-                      size="sm"
-                      onClick={() => {
-                        setSignUpModalOpen(true);
-                        setMobileMenuOpen(false);
-                      }}
-                      className="flex w-full items-center gap-2 justify-start bg-primary hover:bg-primary/90 text-primary-foreground transition-colors"
-                    >
-                      Sign Up
-                    </Button>
+                    <Link href="/sign-in">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="flex w-full items-center gap-2 justify-start text-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
+                      >
+                        Sign In
+                      </Button>
+                    </Link>
+
+                    <Link href="/sign-up">
+                      <Button
+                        size="sm"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="flex w-full items-center gap-2 justify-start bg-primary hover:bg-primary/90 text-primary-foreground transition-colors"
+                      >
+                        Sign Up
+                      </Button>
+                    </Link>
                   </div>
                 ) : (
                   // Loading state for mobile
@@ -221,30 +219,6 @@ export default function Navbar() {
           )}
         </div>
       </nav>
-
-      {/* Sign In Modal */}
-      <Dialog open={isSignInModalOpen} onOpenChange={setSignInModalOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Sign In</DialogTitle>
-          </DialogHeader>
-          <div className="flex justify-center">
-            <SignIn />
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Sign Up Modal */}
-      <Dialog open={isSignUpModalOpen} onOpenChange={setSignUpModalOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Sign Up</DialogTitle>
-          </DialogHeader>
-          <div className="flex justify-center">
-            <SignUp />
-          </div>
-        </DialogContent>
-      </Dialog>
     </>
   );
 }
