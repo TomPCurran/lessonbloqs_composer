@@ -9,6 +9,7 @@ const isPublicRoute = createRouteMatcher([
 ]);
 
 const isOnboardingRoute = createRouteMatcher(["/onboarding(.*)"]);
+const isAdminRoute = createRouteMatcher(["/admin(.*)"]);
 
 export default clerkMiddleware(async (auth, req) => {
   const { userId, sessionClaims, redirectToSignIn } = await auth();
@@ -35,6 +36,13 @@ export default clerkMiddleware(async (auth, req) => {
   if (hasCompletedOnboarding && isOnboardingRoute(req)) {
     return NextResponse.redirect(new URL("/profile", req.url));
   }
+  // if (
+  //   isAdminRoute(req) &&
+  //   (await auth()).sessionClaims?.metadata?.role !== "admin"
+  // ) {
+  //   const url = new URL("/", req.url);
+  //   return NextResponse.redirect(url);
+  // }
 
   // Allow access to all other routes for authenticated users
   return NextResponse.next();
